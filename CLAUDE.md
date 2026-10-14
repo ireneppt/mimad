@@ -15,7 +15,7 @@ El equipo no es experto en programación: **explica brevemente qué haces y por 
 ## Perfiles de usuario
 
 1. **Por defecto (jóvenes y adultos)** — Lucía en los ejemplos. Busca planes, se inscribe, ve el mapa, tiene agenda, puede activar "Acompañamiento" para vincularse con un familiar mayor.
-2. **Versión simplificada (mayores, dependientes, personas con discapacidad)** — Carmen en los ejemplos. Botones grandes, un solo paso por pantalla, textos cortos, siempre visible "¿Necesitas ayuda?" y la opción de llamar. Se activa con un interruptor en el login/inicio. Recibe recomendaciones de sus familiares vinculados (y en el futuro por un bot de WhatsApp con botones, sin texto libre).
+2. **Versión simplificada (mayores, dependientes, personas con discapacidad)** — Carmen en los ejemplos. Botones grandes, un solo paso por pantalla, textos cortos, siempre visible "¿Necesitas ayuda?" (sin opción de llamar). Se activa con un interruptor en el login/inicio y queda guardada en el perfil (`mm_perfiles`). Recibe recomendaciones de sus familiares vinculados y también por un bot de WhatsApp con botones, sin texto libre (entra en el prototipo).
 3. **Entidades/organizaciones** — publican eventos. Se verifican cruzando su **NIF** con el Registro de centros de atención social (`entidad_nif`).
 4. **Personas extranjeras** — actividades de los CEPI (centros de integración de inmigrantes), filtros por idioma; la agenda turística existe en 7 idiomas.
 
@@ -26,7 +26,7 @@ Los ejemplos y datos de demo deben ser coherentes: Carmen y Lucía viven en Madr
 - `privado/propuesta.md`: la propuesta completa del datathon, con el detalle funcional de cada pantalla (qué campos tiene, qué botones, cómo se comporta en cada versión). **No la leas en cada tarea**: consúltala solo cuando vayas a construir o cambiar una pantalla o funcionalidad concreta y necesites su detalle. Si contradice a este archivo, manda este archivo.
 - La carpeta `privado/` está en `.gitignore` y **nunca debe subirse al repositorio** (es público). No copies su contenido literal en archivos que sí se suben (README, comentarios, etc.).
 
-## Pantallas (hay diseños en `docs/disenos/`)
+## Pantallas (hay diseños en `disenos/`)
 
 Login (por defecto y simplificada) · Crear cuenta (persona, entidad, simplificada en pasos) · Pantalla de carga · Inicio (lista + interruptor de versión simplificada) · Mapa · Planes (simplificada) · Detalle de evento (ambas versiones) · Agenda (ambas) · Perfil (ambas; arriba, personas vinculadas) · Asistente/recomendaciones (chat IA) y "Pedir consejo" (simplificada) · Crear evento (entidades) · Acompañamiento (gestión de personas vinculadas) · Notificaciones.
 
