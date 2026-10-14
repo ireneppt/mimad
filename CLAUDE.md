@@ -51,7 +51,7 @@ Login (por defecto y simplificada) · Crear cuenta (persona, entidad, simplifica
 ## Reglas de seguridad (importante)
 
 - El proyecto de Supabase tiene **RLS automático activado** y **"Automatically expose new tables" desactivado**. Por tanto, **cada tabla nueva necesita, en su misma migración**:
-  1. `grant` explícito de los permisos necesarios a los roles `anon` / `authenticated` (solo los necesarios).
+  1. `grant` explícito de los permisos necesarios a los roles `anon` / `authenticated` (solo los necesarios), y también a `service_role` si la usa el script de carga o una ruta de servidor (tampoco tiene permisos por defecto).
   2. Políticas RLS que digan quién puede leer/escribir cada fila.
   Si no, la app dará "permission denied".
 - Las tablas de datos abiertos (`da_*`) son de **solo lectura** para `anon` y `authenticated`; solo el script de carga (con la service role key) escribe en ellas.
