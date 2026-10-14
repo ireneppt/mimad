@@ -1,0 +1,30 @@
+@import "tailwindcss";
+
+/* Sistema de diseño de MiMad (ver CLAUDE.md) */
+@theme {
+  --font-sans: var(--font-outfit), system-ui, sans-serif;
+
+  --color-coral: #ff5a6e;
+  --color-ambar: #ffb86c;
+  --color-tinta: #1b2333;
+  /* Rojo de texto con contraste AA sobre blanco (el coral puro no llega a 4.5:1) */
+  --color-coral-texto: #d6334a;
+  --color-gris: #5b6372;
+  --color-crema: #fff4ec;
+  --color-fondo: #f6f7f9;
+}
+
+@utility bg-degradado {
+  background-image: linear-gradient(90deg, var(--color-coral), var(--color-ambar));
+}
+
+body {
+  background: var(--color-fondo);
+  color: var(--color-tinta);
+}
+
+/* Foco visible para navegación con teclado */
+:focus-visible {
+  outline: 3px solid var(--color-tinta);
+  outline-offset: 2px;
+}
