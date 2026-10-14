@@ -1,0 +1,45 @@
+# Carga programada de datos abiertos en Supabase (horas en UTC).
+# También se puede lanzar a mano: pestaña Actions → "Carga de datos abiertos" → Run workflow.
+# Necesita dos secretos del repositorio (Settings → Secrets and variables → Actions):
+#   SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY
+name: Carga de datos abiertos
+
+on:
+  schedule:
+    - cron: "0 4 * * *"    # diaria 04:00      → agenda
+    - cron: "0 3 * * 0"    # domingo 03:00     → centros de atención social
+    - cron: "30 3 * * 1"   # lunes 03:30       → CEPI, centros de mayores, Juntos contra la soledad
+    - cron: "0 3 1 * *"    # día 1, 03:00      → talleres de envejecimiento
+  workflow_dispatch:
+    inputs:
+      fuentes:
+        description: "Fuentes separadas por espacios (vacío = todas)"
+        required: false
+        default: ""
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Elegir fuentes según el horario
+        id: elegir
+        run: |
+          case "${{ github.event.schedule }}" in
+            "0 4 * * *")  echo "fuentes=agenda_madrid" >> "$GITHUB_OUTPUT" ;;
+            "0 3 * * 0")  echo "fuentes=centros_atencion_social" >> "$GITHUB_OUTPUT" ;;
+            "30 3 * * 1") echo "fuentes=cepi_actividades centros_mayores juntos_contra_soledad" >> "$GITHUB_OUTPUT" ;;
+            "0 3 1 * *")  echo "fuentes=talleres_envejecimiento" >> "$GITHUB_OUTPUT" ;;
+            *)            echo "fuentes=${{ github.event.inputs.fuentes }}" >> "$GITHUB_OUTPUT" ;;
+          esac
+      - name: Cargar datos
+        run: npm run ingest -- ${{ steps.elegir.outputs.fuentes }}
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
