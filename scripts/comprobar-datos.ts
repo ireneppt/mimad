@@ -2,6 +2,7 @@
 // Uso: npm run comprobar
 import { createClient } from "@supabase/supabase-js";
 import { config } from "dotenv";
+import { checkUsers } from "./comprobar-usuarios";
 
 config({ path: ".env.local", quiet: true });
 
@@ -56,6 +57,9 @@ async function main() {
   check("verificar_nif reconoce un NIF registrado", nifOk.data?.[0]?.verificada === true, nifOk.data?.[0] ?? nifOk.error?.message);
   const nifNo = await db.rpc("verificar_nif", { nif: "X0000000Z" });
   check("verificar_nif rechaza un NIF inventado", nifNo.data?.[0]?.verificada === false, nifNo.data?.[0] ?? nifNo.error?.message);
+
+  console.log("\nUSUARIOS (cuentas de prueba temporales)");
+  await checkUsers(check);
 
   console.log(ok ? "\nTodo correcto" : "\nHay comprobaciones fallidas");
   process.exit(ok ? 0 : 1);
