@@ -1,0 +1,114 @@
+"use server";
+
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+import { isValidMobile, MIN_PASSWORD_LENGTH, normalizePhone, phoneToEmail } from "@/lib/auth";
+import { INTERESTS } from "@/lib/interests";
+import { GUEST_COOKIE } from "@/lib/supabase/middleware";
+
+export type AuthState = { error?: string; fields?: Record<string, string> };
+
+// Solo se permite volver a rutas internas (evita redirecciones a otras webs)
+function safeNext(next: FormDataEntryValue | null): string {
+  const s = typeof next === "string" ? next : "";
+  return s.startsWith("/") && !s.startsWith("//") ? s : "/";
+}
+
+async function clearGuest() {
+  (await cookies()).delete(GUEST_COOKIE);
+}
+
+export async function login(_prev: AuthState, form: FormData): Promise<AuthState> {
+  const phone = String(form.get("telefono") ?? "");
+  const password = String(form.get("password") ?? "");
+  const fields = { telefono: phone };
+
+  if (!isValidMobile(phone)) {
+    return { error: "Escribe un móvil de 9 cifras que empiece por 6 o 7.", fields };
+  }
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.signInWithPassword({ email: phoneToEmail(phone), password });
+  if (error) {
+    return { error: "El móvil o la contraseña no son correctos.", fields };
+  }
+
+  await clearGuest();
+  const { data: perfil } = await supabase.from("mm_perfiles").select("simplificada").eq("id", data.user.id).single();
+  redirect(perfil?.simplificada ? "/simple" : safeNext(form.get("next")));
+}
+
+export async function signup(_prev: AuthState, form: FormData): Promise<AuthState> {
+  const get = (k: string) => String(form.get(k) ?? "").trim();
+  const fields = {
+    nombre: get("nombre"),
+    telefono: get("telefono"),
+    municipio: get("municipio"),
+    email: get("email"),
+    intereses: form.getAll("intereses").map(String).join(","),
+  };
+  const password = String(form.get("password") ?? "");
+
+  if (!fields.nombre) return { error: "Escribe tu nombre.", fields };
+  if (!isValidMobile(fields.telefono)) return { error: "Escribe un móvil de 9 cifras que empiece por 6 o 7.", fields };
+  if (password.length < MIN_PASSWORD_LENGTH) return { error: `La contraseña necesita al menos ${MIN_PASSWORD_LENGTH} caracteres.`, fields };
+  if (password !== String(form.get("password2") ?? "")) return { error: "Las dos contraseñas no coinciden.", fields };
+  if (fields.email && !/^\S+@\S+\.\S+$/.test(fields.email)) return { error: "El correo electrónico no parece correcto.", fields };
+  if (form.get("privacidad") !== "on") return { error: "Para crear la cuenta tienes que aceptar la política de privacidad.", fields };
+
+  const supabase = await createClient();
+
+  // Municipio → coordenadas aproximadas (centro del municipio, de v_municipios)
+  let lat: number | null = null;
+  let lon: number | null = null;
+  if (fields.municipio) {
+    const { data: m } = await supabase.from("v_municipios").select("nombre, lat, lon").ilike("nombre", fields.municipio).maybeSingle();
+    if (m) {
+      fields.municipio = m.nombre;
+      lat = m.lat;
+      lon = m.lon;
+    }
+  }
+
+  const validInterests = INTERESTS.map((i) => i.id);
+  const { error } = await supabase.auth.signUp({
+    email: phoneToEmail(fields.telefono),
+    password,
+    options: {
+      // El trigger crear_perfil copia estos datos a mm_perfiles
+      data: {
+        nombre: fields.nombre,
+        telefono: normalizePhone(fields.telefono),
+        tipo: "persona",
+        simplificada: false,
+        municipio: fields.municipio || "Madrid",
+        lat,
+        lon,
+        intereses: form.getAll("intereses").map(String).filter((i) => validInterests.includes(i)),
+        email_contacto: fields.email || null,
+        avisos_whatsapp: form.get("whatsapp") === "on",
+      },
+    },
+  });
+
+  if (error) {
+    if (/already registered|already exists/i.test(error.message)) {
+      return { error: "Ya hay una cuenta con este móvil. Inicia sesión.", fields };
+    }
+    return { error: `No se pudo crear la cuenta: ${error.message}`, fields };
+  }
+
+  await clearGuest();
+  redirect("/");
+}
+
+export async function enterAsGuest() {
+  (await cookies()).set(GUEST_COOKIE, "1", { path: "/", maxAge: 60 * 60 * 24 * 30, sameSite: "lax" });
+  redirect("/");
+}
+
+export async function logout() {
+  const supabase = await createClient();
+  await supabase.auth.signOut();
+  redirect("/login");
+}

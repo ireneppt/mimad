@@ -28,3 +28,9 @@ body {
   outline: 3px solid var(--color-tinta);
   outline-offset: 2px;
 }
+
+/* Barra de la pantalla de carga */
+@keyframes carga {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(300%); }
+}
