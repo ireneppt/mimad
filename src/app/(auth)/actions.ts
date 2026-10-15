@@ -35,7 +35,9 @@ export async function login(_prev: AuthState, form: FormData): Promise<AuthState
 
   await clearGuest();
   const { data: perfil } = await supabase.from("mm_perfiles").select("simplificada").eq("id", data.user.id).single();
-  redirect(perfil?.simplificada ? "/simple" : safeNext(form.get("next")));
+  const next = safeNext(form.get("next"));
+  // ?bienvenida=1 hace que el Inicio suba arriba del todo (ver components/Welcome.tsx)
+  redirect(perfil?.simplificada ? "/simple" : next === "/" ? "/?bienvenida=1" : next);
 }
 
 export async function signup(_prev: AuthState, form: FormData): Promise<AuthState> {
@@ -99,12 +101,12 @@ export async function signup(_prev: AuthState, form: FormData): Promise<AuthStat
   }
 
   await clearGuest();
-  redirect("/");
+  redirect("/?bienvenida=nueva");
 }
 
 export async function enterAsGuest() {
   (await cookies()).set(GUEST_COOKIE, "1", { path: "/", maxAge: 60 * 60 * 24 * 30, sameSite: "lax" });
-  redirect("/");
+  redirect("/?bienvenida=1");
 }
 
 export async function logout() {

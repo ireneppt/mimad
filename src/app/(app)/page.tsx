@@ -4,10 +4,12 @@ import { createClient } from "@/lib/supabase/server";
 import { distanceKm, getEvents, getSources } from "@/lib/data";
 import { getCurrentProfile, homeLocation } from "@/lib/profile";
 import EventCard from "@/components/EventCard";
+import Welcome from "@/components/Welcome";
 
 // Inicio provisional (A2): comprueba que las piezas comunes funcionan con datos reales.
 // La pantalla completa con buscador y filtros es la tarea A3.
-export default async function HomePage() {
+export default async function HomePage({ searchParams }: { searchParams: Promise<{ bienvenida?: string }> }) {
+  const { bienvenida } = await searchParams;
   const supabase = await createClient();
   const [perfil, fuentes] = await Promise.all([getCurrentProfile(supabase), getSources(supabase)]);
   const home = homeLocation(perfil);
@@ -15,6 +17,7 @@ export default async function HomePage() {
 
   return (
     <main className="flex flex-col gap-6 px-5 pt-8">
+      <Welcome mode={bienvenida} nombre={perfil?.nombre} />
       <header className="flex items-center gap-4">
         <Image src="/icono.svg" alt="MiMad" width={56} height={56} />
         <div>
