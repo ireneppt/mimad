@@ -5,8 +5,7 @@
 // para que no parpadee. Las animaciones están en globals.css (clases splash-*).
 // Se puede repetir en cualquier momento con playSplash() (p. ej. al crear la cuenta).
 import { useEffect, useState } from "react";
-
-export const SPLASH_KEY = "mm_splash_visto";
+import { SPLASH_KEY } from "@/lib/splash";
 const REPLAY_EVENT = "mm:splash";
 export const SPLASH_DURATION_MS = 2350;
 

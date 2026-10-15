@@ -2,7 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { Outfit } from "next/font/google";
 import "./globals.css";
 import RegisterServiceWorker from "@/components/RegisterServiceWorker";
-import Splash, { SPLASH_KEY } from "@/components/Splash";
+import Splash from "@/components/Splash";
+import { SPLASH_KEY } from "@/lib/splash";
 
 const outfit = Outfit({
   variable: "--font-outfit",

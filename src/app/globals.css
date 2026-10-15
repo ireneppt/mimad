@@ -18,6 +18,12 @@
   background-image: linear-gradient(90deg, var(--color-coral), var(--color-ambar));
 }
 
+/* Versión simplificada (alto contraste): mismo degradado, más oscuro, para que el
+   texto blanco cumpla AA (≥ 4.5:1) en toda la superficie del botón */
+@utility bg-degradado-fuerte {
+  background-image: linear-gradient(90deg, var(--color-coral-texto), #b45309);
+}
+
 body {
   background: var(--color-fondo);
   color: var(--color-tinta);

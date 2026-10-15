@@ -7,7 +7,8 @@ import { isValidMobile, MIN_PASSWORD_LENGTH, normalizePhone, phoneToEmail } from
 import { INTERESTS } from "@/lib/interests";
 import { GUEST_COOKIE } from "@/lib/supabase/middleware";
 
-export type AuthState = { error?: string; fields?: Record<string, string> };
+// field: campo con el error (el registro simplificado vuelve al paso de ese campo)
+export type AuthState = { error?: string; field?: string; fields?: Record<string, string> };
 
 // Solo se permite volver a rutas internas (evita redirecciones a otras webs)
 function safeNext(next: FormDataEntryValue | null): string {
@@ -50,13 +51,17 @@ export async function signup(_prev: AuthState, form: FormData): Promise<AuthStat
     intereses: form.getAll("intereses").map(String).join(","),
   };
   const password = String(form.get("password") ?? "");
+  // Registro de la versión simplificada (/simple/registro): mismo proceso, otro destino
+  const simple = form.get("simplificada") === "1";
+  const fail = (error: string, field?: string): AuthState => ({ error, field, fields });
 
-  if (!fields.nombre) return { error: "Escribe tu nombre.", fields };
-  if (!isValidMobile(fields.telefono)) return { error: "Escribe un móvil de 9 cifras que empiece por 6 o 7.", fields };
-  if (password.length < MIN_PASSWORD_LENGTH) return { error: `La contraseña necesita al menos ${MIN_PASSWORD_LENGTH} caracteres.`, fields };
-  if (password !== String(form.get("password2") ?? "")) return { error: "Las dos contraseñas no coinciden.", fields };
-  if (fields.email && !/^\S+@\S+\.\S+$/.test(fields.email)) return { error: "El correo electrónico no parece correcto.", fields };
-  if (form.get("privacidad") !== "on") return { error: "Para crear la cuenta tienes que aceptar la política de privacidad.", fields };
+  if (!fields.nombre) return fail("Escribe tu nombre.", "nombre");
+  if (!isValidMobile(fields.telefono)) return fail("Escribe un móvil de 9 cifras que empiece por 6 o 7.", "telefono");
+  if (simple && !fields.municipio) return fail("Elige el pueblo o ciudad donde vives.", "municipio");
+  if (password.length < MIN_PASSWORD_LENGTH) return fail(`La contraseña necesita al menos ${MIN_PASSWORD_LENGTH} caracteres.`, "password");
+  if (password !== String(form.get("password2") ?? "")) return fail("Las dos contraseñas no coinciden.", "password");
+  if (fields.email && !/^\S+@\S+\.\S+$/.test(fields.email)) return fail("El correo electrónico no parece correcto.", "email");
+  if (form.get("privacidad") !== "on") return fail("Para crear la cuenta tienes que aceptar la política de privacidad.", "privacidad");
 
   const supabase = await createClient();
 
@@ -82,7 +87,7 @@ export async function signup(_prev: AuthState, form: FormData): Promise<AuthStat
         nombre: fields.nombre,
         telefono: normalizePhone(fields.telefono),
         tipo: "persona",
-        simplificada: false,
+        simplificada: simple,
         municipio: fields.municipio || "Madrid",
         lat,
         lon,
@@ -95,13 +100,13 @@ export async function signup(_prev: AuthState, form: FormData): Promise<AuthStat
 
   if (error) {
     if (/already registered|already exists/i.test(error.message)) {
-      return { error: "Ya hay una cuenta con este móvil. Inicia sesión.", fields };
+      return fail("Ya hay una cuenta con este móvil. Inicia sesión.", "telefono");
     }
-    return { error: `No se pudo crear la cuenta: ${error.message}`, fields };
+    return fail(`No se pudo crear la cuenta: ${error.message}`);
   }
 
   await clearGuest();
-  redirect("/?bienvenida=nueva");
+  redirect(simple ? "/simple/registro/listo" : "/?bienvenida=nueva");
 }
 
 export async function enterAsGuest() {
