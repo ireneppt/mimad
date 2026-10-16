@@ -87,7 +87,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
       <div className="flex flex-col gap-5 bg-fondo px-5 pb-8 pt-5">
         <ViewToggle current="lista" search={search} />
 
-        <nav aria-label="Filtros" className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1">
+        <nav aria-label="Filtros" className="sin-barra -mx-5 flex gap-2 overflow-x-auto px-5 pb-1">
           {chips.filter((c) => !c.hidden).map((c) => {
             const on = active.has(c.id);
             return (

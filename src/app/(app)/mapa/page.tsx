@@ -134,11 +134,11 @@ export default async function MapPage({ searchParams }: { searchParams: Promise<
         />
 
         {/* Controles encima del mapa */}
-        <div className="pointer-events-none absolute inset-x-0 top-0 z-[500] flex flex-col gap-3 p-4">
+        <div className="pointer-events-none absolute inset-x-0 top-0 z-[500] flex flex-col gap-3 bg-gradient-to-b from-white/85 via-white/50 to-transparent p-4 pb-8">
           <div className="pointer-events-auto w-fit">
             <ViewToggle current="mapa" search={search} />
           </div>
-          <nav aria-label="Cuándo" className="pointer-events-auto -mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
+          <nav aria-label="Cuándo" className="sin-barra pointer-events-auto -mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
             <Link href={href({ d: "hoy" })} aria-pressed={day === "hoy"} scroll={false} className={chip(day === "hoy")}>Hoy</Link>
             <Link href={href({ d: "manana" })} aria-pressed={day === "manana"} scroll={false} className={chip(day === "manana")}>Mañana</Link>
             <Link href={href({ d: "semana" })} aria-pressed={day === "semana"} scroll={false} className={chip(day === "semana")}>Esta semana</Link>

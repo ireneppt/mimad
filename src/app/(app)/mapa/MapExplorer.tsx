@@ -1,9 +1,9 @@
 "use client";
 
 // Mapa con Leaflet + OpenStreetMap (sin claves). Los puntos cercanos entre sí se agrupan
-// en un círculo con el número; al tocar uno se abre su ficha abajo.
-// Agrupación propia (sin librerías): en cada zoom se reparten los puntos en una cuadrícula
-// de 56 px de la pantalla y los que caen en la misma casilla forman un grupo.
+// en un marcador "apilado" con el símbolo más frecuente y una burbuja con el número;
+// al tocar un punto se abre su ficha abajo.
+// Agrupación propia (sin librerías), por distancia en la pantalla: se recalcula al mover o hacer zoom.
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import Link from "next/link";
@@ -18,7 +18,7 @@ import { setHereLocation } from "@/lib/locationActions";
 import type { MapPoint, MapSource } from "./types";
 
 type P = { lat: number; lon: number };
-const CELL_PX = 56;
+const CLUSTER_PX = 52; // dos marcadores más cerca que esto (en pantalla) se agrupan
 const PLACE_COLOR = "#1d4ed8"; // lugares en azul; planes en coral
 const EVENT_COLOR = "#d6334a";
 
@@ -95,59 +95,70 @@ export default function MapExplorer({
     function draw() {
       group!.clearLayers();
       const bounds = m!.getBounds().pad(0.3);
-      const cells = new Map<string, MapPoint[]>();
-      for (const p of points) {
-        if (!bounds.contains([p.lat, p.lon])) continue;
-        if (p.id === selectedId) continue; // el elegido se pinta aparte, siempre visible
-        const pt = m!.latLngToLayerPoint([p.lat, p.lon]);
-        const key = `${Math.floor(pt.x / CELL_PX)}:${Math.floor(pt.y / CELL_PX)}`;
-        const list = cells.get(key);
-        if (list) list.push(p);
-        else cells.set(key, [p]);
+      const visible = points
+        .filter((p) => p.id !== selectedId && bounds.contains([p.lat, p.lon])) // el elegido se pinta aparte
+        .map((p) => ({ p, pt: m!.latLngToLayerPoint([p.lat, p.lon]) }));
+
+      // Agrupar por distancia: cada punto sin grupo empieza uno y se lleva a los que
+      // estén a menos de CLUSTER_PX. Así dos grupos nunca quedan pegados.
+      const used = new Array(visible.length).fill(false);
+      const clusters: { seed: MapPoint; members: MapPoint[] }[] = [];
+      for (let i = 0; i < visible.length; i++) {
+        if (used[i]) continue;
+        used[i] = true;
+        const members = [visible[i].p];
+        for (let j = i + 1; j < visible.length; j++) {
+          if (!used[j] && visible[i].pt.distanceTo(visible[j].pt) < CLUSTER_PX) {
+            used[j] = true;
+            members.push(visible[j].p);
+          }
+        }
+        clusters.push({ seed: visible[i].p, members });
       }
 
-      for (const list of cells.values()) {
-        if (list.length === 1) {
-          const p = list[0];
-          const color = p.kind === "lugar" ? PLACE_COLOR : EVENT_COLOR;
-          L.marker([p.lat, p.lon], {
-            title: p.title,
-            alt: p.title,
-            keyboard: true,
-            icon: L.divIcon({
-              className: "",
-              iconSize: [44, 44],
-              iconAnchor: [22, 22],
-              html: `<span style="display:flex;width:44px;height:44px;align-items:center;justify-content:center;border-radius:999px;background:#fff;color:${color};box-shadow:0 2px 6px rgba(0,0,0,.25);border:2px solid ${p.kind === "lugar" ? "#bfdbfe" : "#ffe1e5"}"><svg width="22" height="22"><use href="#mi-${iconKey(p)}"/></svg></span>`,
-            }),
+      for (const { seed, members } of clusters) {
+        // El símbolo del grupo es el del tipo de plan más frecuente
+        const counts = new Map<string, { n: number; p: MapPoint }>();
+        members.forEach((p) => {
+          const k = iconKey(p);
+          const c = counts.get(k);
+          counts.set(k, { n: (c?.n ?? 0) + 1, p: c?.p ?? p });
+        });
+        const top = [...counts.values()].sort((a, b) => b.n - a.n)[0].p;
+        const many = members.length > 1;
+        const isPlace = top.kind === "lugar";
+        const color = isPlace ? PLACE_COLOR : EVENT_COLOR;
+        const ring = isPlace ? "#bfdbfe" : "#ffe1e5";
+        // Un grupo se ve como un montón de marcadores: una sombra de otro detrás y la burbuja con el número
+        const stack = many
+          ? `<span style="position:absolute;left:5px;top:-4px;width:44px;height:44px;border-radius:999px;background:#fff;border:2px solid ${ring};box-shadow:0 1px 4px rgba(0,0,0,.18)"></span>`
+          : "";
+        const badge = many
+          ? `<span style="position:absolute;right:-8px;top:-8px;min-width:26px;height:26px;padding:0 6px;display:flex;align-items:center;justify-content:center;border-radius:999px;background:linear-gradient(135deg,#FF5A6E,#FFB86C);color:#fff;font:700 14px/1 Outfit,sans-serif;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.25)">${members.length > 99 ? "99+" : members.length}</span>`
+          : "";
+
+        L.marker([seed.lat, seed.lon], {
+          title: many ? `${members.length} planes o lugares aquí: toca para acercar` : seed.title,
+          alt: many ? `${members.length} planes o lugares` : seed.title,
+          keyboard: true,
+          icon: L.divIcon({
+            className: "",
+            iconSize: [44, 44],
+            iconAnchor: [22, 22],
+            html: `<span style="position:relative;display:block;width:44px;height:44px">${stack}<span style="position:relative;display:flex;width:44px;height:44px;align-items:center;justify-content:center;border-radius:999px;background:#fff;color:${color};box-shadow:0 2px 6px rgba(0,0,0,.25);border:2px solid ${ring}"><svg width="22" height="22"><use href="#mi-${iconKey(top)}"/></svg></span>${badge}</span>`,
+          }),
+        })
+          .on("click", () => {
+            if (!many) return setSelectedId(seed.id);
+            const b = L.latLngBounds(members.map((p) => [p.lat, p.lon] as [number, number]));
+            if (m!.getZoom() >= 18 || b.getNorthEast().equals(b.getSouthWest())) {
+              // Todos en el mismo sitio (p. ej. varias actividades de un CEPI): abrir el primero
+              setSelectedId(seed.id);
+            } else {
+              m!.fitBounds(b, { padding: [70, 70], maxZoom: 18 });
+            }
           })
-            .on("click", () => setSelectedId(p.id))
-            .addTo(group!);
-        } else {
-          // Grupo: círculo oscuro con el número; al tocarlo se acerca el mapa
-          const lat = list.reduce((s, p) => s + p.lat, 0) / list.length;
-          const lon = list.reduce((s, p) => s + p.lon, 0) / list.length;
-          L.marker([lat, lon], {
-            title: `${list.length} planes o lugares aquí: toca para acercar`,
-            keyboard: true,
-            icon: L.divIcon({
-              className: "",
-              iconSize: [48, 48],
-              iconAnchor: [24, 24],
-              html: `<span style="display:flex;width:48px;height:48px;align-items:center;justify-content:center;border-radius:999px;background:#1B2333;color:#fff;font:700 17px Outfit,sans-serif;border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.3)">${list.length > 99 ? "99+" : list.length}</span>`,
-            }),
-          })
-            .on("click", () => {
-              const b = L.latLngBounds(list.map((p) => [p.lat, p.lon] as [number, number]));
-              if (m!.getZoom() >= 18 || b.getNorthEast().equals(b.getSouthWest())) {
-                // Todos en el mismo sitio (p. ej. varias actividades de un CEPI): abrir el primero
-                setSelectedId(list[0].id);
-              } else {
-                m!.fitBounds(b, { padding: [60, 60], maxZoom: 18 });
-              }
-            })
-            .addTo(group!);
-        }
+          .addTo(group!);
       }
 
       // El elegido: chincheta grande con el degradado de la marca
