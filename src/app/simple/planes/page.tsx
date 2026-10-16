@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, Check } from "lucide-react";
+import { Map as MapIcon } from "lucide-react";
 import SimpleShell from "@/components/simple/SimpleShell";
 import { createClient } from "@/lib/supabase/server";
 import { getEvent, getSources, isAccessible } from "@/lib/data";
@@ -12,6 +13,10 @@ import {
 } from "@/lib/simplePlans";
 import PlanSteps, { type PlanView } from "./PlanSteps";
 import ConflictChoice from "@/components/simple/ConflictChoice";
+import CompanionAsk from "@/components/simple/CompanionAsk";
+import { getMyCompanions } from "@/lib/companion";
+import { siteUrl } from "@/lib/siteUrl";
+
 
 export const metadata = { title: "Planes · MiMad simplificada" };
 
@@ -35,6 +40,8 @@ export default async function SimplePlansPage({
     getSimplePlans(supabase, { home: origin, when, recomendaciones, intereses: perfil?.intereses ?? [] }),
     params.hecho ? getEvent(supabase, params.hecho) : null,
   ]);
+  // Tras apuntarse: "¿Quieres que Lucía vaya contigo?" (si tiene familiares que le acompañan)
+  const companions = done && perfil ? await getMyCompanions(supabase, perfil.id) : [];
   // "Me apunto" a un plan que coincide con otro: se pregunta qué prefiere
   const [choque, con] =
     params.choque && params.con
@@ -140,6 +147,12 @@ export default async function SimplePlansPage({
           </span>
         </p>
       )}
+      {done && companions.length > 0 && (
+        <CompanionAsk
+          companions={companions}
+          plan={{ titulo: done.titulo, cuando: whenInWords(done), lugar: done.lugar ?? done.direccion, url: await siteUrl(`/simple/evento/${encodeURIComponent(done.id)}`) }}
+        />
+      )}
 
       {views.length > 0 ? (
         <PlanSteps plans={views} initial={index} cuando={when} />
@@ -154,6 +167,13 @@ export default async function SimplePlansPage({
           </Link>
         )
       )}
+
+      <Link
+        href={when === "semana" ? "/simple/mapa" : `/simple/mapa?ver=${when}`}
+        className="flex h-16 items-center justify-center gap-3 rounded-2xl border-2 border-slate-400 bg-white text-xl font-bold"
+      >
+        <MapIcon size={26} className="text-coral-texto" aria-hidden="true" /> Verlos en el mapa
+      </Link>
     </SimpleShell>
   );
 }

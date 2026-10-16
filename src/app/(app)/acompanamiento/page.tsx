@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { telHref } from "@/lib/phoneLinks";
 import {
   ArrowLeft, Bell, CalendarDays, Check, Clock, Heart, Hourglass, Phone, Plus, ShieldCheck, X,
 } from "lucide-react";
@@ -117,8 +118,8 @@ function PersonCard({ a }: { a: Acompanada }) {
             <Check size={16} aria-hidden="true" /> Acompañamiento activo
           </span>
         </div>
-        {p.telefono && (
-          <a href={`tel:+34${p.telefono}`} aria-label={`Llamar a ${p.nombre}`} className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-green-700 text-white">
+        {telHref(p.telefono) && (
+          <a href={telHref(p.telefono)!} aria-label={`Llamar a ${p.nombre}`} className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-green-700 text-white">
             <Phone size={24} aria-hidden="true" />
           </a>
         )}

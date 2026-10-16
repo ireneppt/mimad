@@ -8,6 +8,8 @@ import { formatDay, formatWhenLong } from "./format";
 import { INTERESTS } from "./interests";
 
 export type When = "hoy" | "manana" | "semana";
+// Ventanas de días: las pestañas de Planes y, además, "el fin de semana" (Pedir consejo)
+export type PlanWindow = When | "finde";
 
 export const WHEN_LABELS: Record<When, string> = { hoy: "Hoy", manana: "Mañana", semana: "Semana" };
 
@@ -45,10 +47,17 @@ function addDays(iso: string, days: number): string {
 }
 
 // Días que cubre cada pestaña: [primer día, último día]
-function windowFor(when: When): [string, string] {
+export function windowFor(when: PlanWindow): [string, string] {
   const today = todayIso();
   if (when === "hoy") return [today, today];
   if (when === "manana") return [addDays(today, 1), addDays(today, 1)];
+  if (when === "finde") {
+    // Este sábado y domingo (si hoy es domingo, solo hoy)
+    const wd = new Date(`${today}T12:00:00Z`).getUTCDay();
+    if (wd === 0) return [today, today];
+    const sat = addDays(today, wd === 6 ? 0 : 6 - wd);
+    return [sat, addDays(sat, 1)];
+  }
   return [today, addDays(today, 6)];
 }
 
@@ -69,10 +78,10 @@ function matchingInterest(e: Evento, intereses: string[]): string | null {
 }
 
 // Puntuación: más alta = sale antes
-function score(e: Evento, km: number | null, gusto: string | null): number {
+function score(e: Evento, km: number | null, gusto: string | null, todos = false): number {
   let s = 0;
   if (gusto) s += 6; // encaja con lo que eligió al crear la cuenta
-  if (/mayores/i.test(e.publico ?? "")) s += 5;
+  if (!todos && /mayores/i.test(e.publico ?? "")) s += 5;
   if (e.fuente === "juntos_contra_soledad") s += 5;
   if (e.gratuito) s += 2;
   if (isAccessible(e)) s += 2;
@@ -91,9 +100,17 @@ export const MAX_PLANS = 10;
 
 export async function getSimplePlans(
   db: SupabaseClient,
-  opts: { home: { lat: number; lon: number }; when: When; recomendaciones: Recomendacion[]; intereses: string[] }
+  opts: {
+    home: { lat: number; lon: number };
+    when: PlanWindow;
+    recomendaciones: Recomendacion[];
+    intereses: string[];
+    filter?: (e: Evento) => boolean; // solo un tipo de planes (p. ej. "pasear" en Pedir consejo)
+    max?: number; // cuántos devolver (el asistente le pasa más candidatos a Claude)
+    todos?: boolean; // versión por defecto: planes para cualquier edad, también los de los CEPI
+  }
 ): Promise<Plan[]> {
-  const { home, when, recomendaciones, intereses } = opts;
+  const { home, when, recomendaciones, intereses, filter, max = MAX_PLANS, todos = false } = opts;
   const [from, to] = windowFor(when);
   const start = `${from}T00:00:00`;
   const end = `${to}T23:59:59`;
@@ -103,10 +120,9 @@ export async function getSimplePlans(
   const dLat = km / 111;
   const dLon = km / (111 * Math.cos((home.lat * Math.PI) / 180));
 
-  const { data, error } = await db
-    .from("v_eventos")
-    .select("*")
-    .neq("fuente", "cepi_actividades") // actividades para personas migrantes: otro perfil
+  let query = db.from("v_eventos").select("*");
+  if (!todos) query = query.neq("fuente", "cepi_actividades"); // actividades para personas migrantes: otro perfil
+  const { data, error } = await query
     .gte("lat", home.lat - dLat).lte("lat", home.lat + dLat)
     .gte("lon", home.lon - dLon).lte("lon", home.lon + dLon)
     // Recurrentes (sin fecha), o que empiezan en la ventana, o que ya han empezado y siguen
@@ -115,14 +131,16 @@ export async function getSimplePlans(
     .limit(400);
   if (error) throw new Error(`No se pudieron cargar los planes: ${error.message}`);
 
-  const days = when === "semana" ? null : weekdayOf(from);
+  // Días de la semana que cubre la ventana (para los talleres semanales); null = toda la semana
+  const days = when === "semana" ? null : [...new Set([from, to])].map(weekdayOf);
   const now = nowIso();
   const nearby = ((data ?? []) as Evento[]).filter((e) => {
     const publico = e.publico ?? "";
-    if (NOT_FOR_SENIORS.test(publico) && !/mayores/i.test(publico)) return false;
+    if (!todos && NOT_FOR_SENIORS.test(publico) && !/mayores/i.test(publico)) return false;
+    if (filter && !filter(e)) return false;
     if (!e.fecha_inicio) {
-      // Talleres semanales: en "Hoy" y "Mañana", solo los de ese día de la semana
-      if (days && !plain(e.horario ?? "").includes(plain(days))) return false;
+      // Talleres semanales: en "Hoy", "Mañana" o el fin de semana, solo los de esos días
+      if (days && !days.some((d) => plain(e.horario ?? "").includes(plain(d)))) return false;
       // Hoy: si ya ha empezado ("Cada viernes, 12:00 - 13:30" a las 13:05), no se ofrece
       const start = (e.horario ?? "").match(/(\d{1,2}):(\d{2})/);
       if (when === "hoy" && start && `${from}T${start[1].padStart(2, "0")}:${start[2]}` < now) return false;
@@ -148,9 +166,9 @@ export async function getSimplePlans(
   const rest = nearby
     .filter((e) => !recBy.has(e.id))
     .map(toPlan)
-    .sort((a, b) => score(b.evento, b.km, b.gusto) - score(a.evento, a.km, a.gusto) || a.evento.id.localeCompare(b.evento.id));
+    .sort((a, b) => score(b.evento, b.km, b.gusto, todos) - score(a.evento, a.km, a.gusto, todos) || a.evento.id.localeCompare(b.evento.id));
 
-  return [...recommended, ...mixKinds(rest)].slice(0, Math.max(MAX_PLANS, recommended.length));
+  return [...recommended, ...mixKinds(rest, max <= MAX_PLANS ? MAX_PER_KIND : 6)].slice(0, Math.max(max, recommended.length));
 }
 
 // Tipo de plan, para no enseñar seguidos varios casi iguales (p. ej. cinco talleres contra la soledad)
@@ -160,11 +178,11 @@ const kindOf = (p: Plan) => (p.evento.fuente === "agenda_madrid" ? p.evento.cate
 // y con 3 como mucho de cada tipo, para que la lista sea variada
 const MAX_PER_KIND = 3;
 
-function mixKinds(plans: Plan[]): Plan[] {
+function mixKinds(plans: Plan[], perKind = MAX_PER_KIND): Plan[] {
   const pool = [...plans];
   const out: Plan[] = [];
   const count = new Map<string, number>();
-  const room = (p: Plan) => (count.get(kindOf(p)) ?? 0) < MAX_PER_KIND;
+  const room = (p: Plan) => (count.get(kindOf(p)) ?? 0) < perKind;
   while (pool.length) {
     const prev = out.at(-1);
     let i = pool.findIndex((p) => room(p) && (!prev || kindOf(p) !== kindOf(prev)));

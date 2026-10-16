@@ -9,6 +9,10 @@ import RouteMapLazy from "@/components/simple/RouteMapLazy";
 import LeaveConfirm from "@/components/simple/LeaveConfirm";
 import ScrollToHash from "@/components/simple/ScrollToHash";
 import ConflictChoice from "@/components/simple/ConflictChoice";
+import CompanionAsk from "@/components/simple/CompanionAsk";
+import { getMyCompanions } from "@/lib/companion";
+import { siteUrl } from "@/lib/siteUrl";
+
 import SourceTag from "@/components/SourceTag";
 import { createClient } from "@/lib/supabase/server";
 import { accessibilityLabels, getEvent, getSources, isAccessible, type Evento } from "@/lib/data";
@@ -63,6 +67,8 @@ export default async function SimpleEventPage({
   const here = `/simple/evento/${encodeURIComponent(evento.id)}?volver=${encodeURIComponent(volver)}`;
   // "Me apunto" a un plan que coincide con otro de su agenda: se pregunta qué prefiere
   const conflicto = query.con && !apuntada ? await getEvent(supabase, query.con) : null;
+  // Tras apuntarse: "¿Quieres que Lucía vaya contigo?" (si tiene familiares que le acompañan)
+  const companions = query.hecho === evento.id && perfil ? await getMyCompanions(supabase, perfil.id) : [];
   const duration = durationText(evento);
   const extras = accessibilityLabels(evento).filter((l) => !/^Instalación|Sin información|Parcialmente/.test(l));
 
@@ -96,6 +102,12 @@ export default async function SimpleEventPage({
             Lo tienes en <Link href="/simple/agenda" className="font-bold underline">Mis planes</Link>.
           </span>
         </p>
+      )}
+      {companions.length > 0 && (
+        <CompanionAsk
+          companions={companions}
+          plan={{ titulo: evento.titulo, cuando: whenInWords(evento), lugar: evento.lugar ?? evento.direccion, url: await siteUrl(`/simple/evento/${encodeURIComponent(evento.id)}`) }}
+        />
       )}
       {query.quitado && !apuntada && (
         <p role="status" className="rounded-2xl border-2 border-slate-500 bg-slate-100 p-5 text-xl">
