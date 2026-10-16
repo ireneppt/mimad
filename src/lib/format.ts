@@ -66,7 +66,7 @@ export function formatWhenLong(e: Evento): string {
   const h = d.getHours();
   if (!h && !d.getMinutes()) return day;
   const h12 = h % 12 === 0 ? 12 : h % 12;
-  const part = h < 6 ? "de la madrugada" : h < 13 ? "de la mañana" : h < 21 ? "de la tarde" : "de la noche";
+  const part = h < 6 ? "de la madrugada" : h < 12 ? "de la mañana" : h < 14 ? "del mediodía" : h < 21 ? "de la tarde" : "de la noche";
   const min = d.getMinutes() ? ` y ${d.getMinutes()}` : "";
   return `${day}, a las ${h12}${min} ${part}`;
 }

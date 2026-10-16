@@ -24,9 +24,14 @@ export type Recomendacion = { id: string; evento_id: string; de_nombre: string }
 const WEEKDAYS = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
 const MONTHS = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
 
+// Ahora en Madrid como "2026-10-16T13:05"
+function nowIso(): string {
+  return new Date().toLocaleString("sv-SE", { timeZone: "Europe/Madrid" }).replace(" ", "T").slice(0, 16);
+}
+
 // Fecha de hoy en Madrid como "2026-10-16"
 function todayIso(): string {
-  return new Date().toLocaleString("sv-SE", { timeZone: "Europe/Madrid" }).slice(0, 10);
+  return nowIso().slice(0, 10);
 }
 
 function addDays(iso: string, days: number): string {
@@ -50,7 +55,7 @@ function weekdayOf(iso: string): string {
 // "MIÉRCOLES" → "miercoles" (los datos a veces vienen sin tildes o en mayúsculas)
 const plain = (s: string) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
-// Público para el que el plan no tiene sentido (niños, jóvenes...)
+// Público para el que el plan no tiene sentido (niños, jóvenes...), salvo que incluya también a mayores
 const NOT_FOR_SENIORS = /niñ|infantil|joven|jóven|bebé|adolescen/i;
 
 // Puntuación: más alta = sale antes
@@ -60,11 +65,18 @@ function score(e: Evento, km: number | null): number {
   if (e.fuente === "juntos_contra_soledad") s += 5;
   if (e.gratuito) s += 2;
   if (isAccessible(e)) s += 2;
-  // Exposiciones y similares que duran semanas: menos interesantes que una quedada
-  if (e.fecha_inicio && e.fecha_fin && e.fecha_fin.slice(0, 10) > e.fecha_inicio.slice(0, 10)) s -= 2;
+  // Exposiciones o programaciones que duran semanas: menos interesantes que una quedada
+  if (e.fecha_inicio && e.fecha_fin) {
+    const days = (Date.parse(e.fecha_fin.slice(0, 10)) - Date.parse(e.fecha_inicio.slice(0, 10))) / 86_400_000;
+    if (days > 7) s -= 8;
+    else if (days > 1) s -= 2;
+  }
   if (km != null) s -= km; // 1 punto menos por kilómetro
   return s;
 }
+
+// Máximo de planes que se enseñan: pocos y buenos, para no abrumar
+export const MAX_PLANS = 10;
 
 export async function getSimplePlans(
   db: SupabaseClient,
@@ -92,10 +104,21 @@ export async function getSimplePlans(
   if (error) throw new Error(`No se pudieron cargar los planes: ${error.message}`);
 
   const days = when === "semana" ? null : weekdayOf(from);
+  const now = nowIso();
   const nearby = ((data ?? []) as Evento[]).filter((e) => {
-    if (NOT_FOR_SENIORS.test(e.publico ?? "")) return false;
-    // Talleres semanales: en "Hoy" y "Mañana", solo los de ese día de la semana
-    if (!e.fecha_inicio && days) return plain(e.horario ?? "").includes(plain(days));
+    const publico = e.publico ?? "";
+    if (NOT_FOR_SENIORS.test(publico) && !/mayores/i.test(publico)) return false;
+    if (!e.fecha_inicio) {
+      // Talleres semanales: en "Hoy" y "Mañana", solo los de ese día de la semana
+      if (days && !plain(e.horario ?? "").includes(plain(days))) return false;
+      // Hoy: si ya ha empezado ("Cada viernes, 12:00 - 13:30" a las 13:05), no se ofrece
+      const start = (e.horario ?? "").match(/(\d{1,2}):(\d{2})/);
+      if (when === "hoy" && start && `${from}T${start[1].padStart(2, "0")}:${start[2]}` < now) return false;
+      return true;
+    }
+    // Plan de un solo día que ya ha empezado
+    const oneDay = !e.fecha_fin || e.fecha_fin.slice(0, 10) === e.fecha_inicio.slice(0, 10);
+    if (oneDay && e.fecha_inicio.slice(11, 16) !== "00:00" && e.fecha_inicio.slice(0, 16) < now) return false;
     return true;
   });
 
@@ -119,7 +142,7 @@ export async function getSimplePlans(
     .map(toPlan)
     .sort((a, b) => score(b.evento, b.km) - score(a.evento, a.km));
 
-  return [...recommended, ...rest];
+  return [...recommended, ...rest].slice(0, Math.max(MAX_PLANS, recommended.length));
 }
 
 // Recomendaciones pendientes que me han hecho mis familiares (la más reciente primero)
@@ -154,7 +177,7 @@ export function whenInWords(e: Evento): string {
   // Dura varios días y ya ha empezado: "Hasta el 30 de noviembre"
   if (endDay && endDay > startDay && startDay <= today) {
     const [, m, d] = endDay.split("-").map(Number);
-    const until = `Todos los días hasta el ${d} de ${MONTHS[m - 1]}`;
+    const until = `Hasta el ${d} de ${MONTHS[m - 1]}`;
     return e.horario ? `${until}, ${e.horario}` : until;
   }
   const long = formatWhenLong(e);

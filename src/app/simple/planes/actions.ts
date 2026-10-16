@@ -31,5 +31,6 @@ export async function joinPlan(form: FormData) {
     .eq("estado", "pendiente");
 
   revalidatePath("/simple");
-  redirect(`${backPath}${backPath.includes("?") ? "&" : "?"}apuntada=1`);
+  // El plan puede cambiar de sitio en la lista (p. ej. si era recomendado): se confirma arriba por su id
+  redirect(`${backPath}${backPath.includes("?") ? "&" : "?"}hecho=${encodeURIComponent(eventoId)}`);
 }

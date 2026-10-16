@@ -4,7 +4,7 @@ import SimpleShell from "@/components/simple/SimpleShell";
 import { PrimarySubmit } from "@/components/simple/ui";
 import SourceTag from "@/components/SourceTag";
 import { createClient } from "@/lib/supabase/server";
-import { getSources, isAccessible } from "@/lib/data";
+import { getEvent, getSources, isAccessible } from "@/lib/data";
 import { categoryInfo } from "@/lib/categories";
 import { walkingMinutes } from "@/lib/format";
 import { getCurrentProfile, homeLocation } from "@/lib/profile";
@@ -19,7 +19,7 @@ export const metadata = { title: "Planes · MiMad simplificada" };
 export default async function SimplePlansPage({
   searchParams,
 }: {
-  searchParams: Promise<{ cuando?: string; n?: string; apuntada?: string }>;
+  searchParams: Promise<{ cuando?: string; n?: string; hecho?: string }>;
 }) {
   const params = await searchParams;
   const when = parseWhen(params.cuando);
@@ -30,7 +30,10 @@ export default async function SimplePlansPage({
     perfil ? getPendingRecommendations(supabase, perfil.id) : Promise.resolve([]),
     perfil ? getMyInscriptionIds(supabase, perfil.id) : Promise.resolve<string[]>([]),
   ]);
-  const plans = await getSimplePlans(supabase, { home: homeLocation(perfil), when, recomendaciones });
+  const [plans, done] = await Promise.all([
+    getSimplePlans(supabase, { home: homeLocation(perfil), when, recomendaciones }),
+    params.hecho ? getEvent(supabase, params.hecho) : null,
+  ]);
 
   const total = plans.length;
   const index = Math.min(Math.max(Number(params.n) || 0, 0), Math.max(total - 1, 0));
@@ -46,7 +49,11 @@ export default async function SimplePlansPage({
       intro={
         total > 0 ? (
           <p>
-            Hay <strong>{total === 1 ? "1 plan" : `${total} planes`}</strong> cerca de tu casa.
+            {total === 1 ? (
+              <>Hay <strong>1 plan</strong> cerca de tu casa.</>
+            ) : (
+              <>Te enseñamos <strong>{total} planes</strong> cerca de tu casa, de uno en uno.</>
+            )}
           </p>
         ) : (
           <p>No hay planes cerca de tu casa para {when === "semana" ? "esta semana" : WHEN_LABELS[when].toLowerCase()}.</p>
@@ -83,12 +90,21 @@ export default async function SimplePlansPage({
         ))}
       </nav>
 
+      {done && (
+        <p role="status" className="flex items-start gap-3 rounded-2xl border-2 border-green-700 bg-green-50 p-5 text-xl text-green-900">
+          <Check size={32} strokeWidth={3} className="shrink-0" aria-hidden="true" />
+          <span>
+            <strong className="block text-2xl">¡Hecho! Te has apuntado.</strong>
+            «{done.titulo}» ya está en <Link href="/simple/agenda" className="font-bold underline">Mis planes</Link>.
+          </span>
+        </p>
+      )}
+
       {plan ? (
         <PlanCard
           plan={plan}
           fuente={fuentes[plan.evento.fuente]}
           joined={joined}
-          justJoined={joined && params.apuntada === "1"}
           back={here}
           position={`Plan ${index + 1} de ${total}`}
         />
@@ -138,12 +154,11 @@ export default async function SimplePlansPage({
 }
 
 function PlanCard({
-  plan, fuente, joined, justJoined, back, position,
+  plan, fuente, joined, back, position,
 }: {
   plan: Awaited<ReturnType<typeof getSimplePlans>>[number];
   fuente?: Parameters<typeof SourceTag>[0]["fuente"];
   joined: boolean;
-  justJoined: boolean;
   back: string;
   position: string;
 }) {
@@ -199,12 +214,9 @@ function PlanCard({
         </ul>
 
         {joined ? (
-          <p
-            role="status"
-            className="flex items-center gap-3 rounded-2xl bg-green-50 p-4 text-xl font-bold text-green-800"
-          >
+          <p className="flex items-center gap-3 rounded-2xl bg-green-50 p-4 text-xl font-bold text-green-800">
             <Check size={30} strokeWidth={3} aria-hidden="true" />
-            {justJoined ? "¡Hecho! Te has apuntado. Lo tienes en Mis planes." : "Ya te has apuntado a este plan."}
+            Ya te has apuntado a este plan.
           </p>
         ) : (
           <form action={joinPlan}>

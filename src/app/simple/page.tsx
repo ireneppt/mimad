@@ -3,9 +3,8 @@ import { ArrowRight, CalendarHeart, Heart, MessageCircleMore, Sparkles, UserRoun
 import SimpleShell from "@/components/simple/SimpleShell";
 import { createClient } from "@/lib/supabase/server";
 import { getEventsByIds, type Evento } from "@/lib/data";
-import { formatWhen } from "@/lib/format";
 import { getCurrentProfile } from "@/lib/profile";
-import { getMyInscriptionIds, getPendingRecommendations } from "@/lib/simplePlans";
+import { getMyInscriptionIds, getPendingRecommendations, whenInWords } from "@/lib/simplePlans";
 
 export const metadata = { title: "Inicio · MiMad simplificada" };
 
@@ -101,7 +100,6 @@ export default async function SimpleHomePage() {
 function nextPlan(eventos: Evento[]): { count: number; text: string } | null {
   if (eventos.length === 0) return null;
   const sorted = [...eventos].sort((a, b) => (a.fecha_inicio ?? "9999").localeCompare(b.fecha_inicio ?? "9999"));
-  const when = formatWhen(sorted[0]);
-  const day = when.day[0].toLowerCase() + when.day.slice(1);
-  return { count: eventos.length, text: when.time ? `${day} a las ${when.time}` : day };
+  const when = whenInWords(sorted[0]); // "Mañana, jueves 23 de octubre, a las 5 de la tarde"
+  return { count: eventos.length, text: when[0].toLowerCase() + when.slice(1) };
 }
