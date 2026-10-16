@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import {
-  ArrowLeft, ArrowRightLeft, ChevronRight, Heart, Lock, MapPin, Phone, Shield, Smartphone, Sparkles, UserRound,
+  ArrowLeft, ArrowRightLeft, ChevronRight, Heart, Lock, MapPin, Phone, Plus, Shield, Smartphone, Sparkles, UserRound,
 } from "lucide-react";
 import SimpleShell from "@/components/simple/SimpleShell";
 import { Hint, PrimarySubmit } from "@/components/simple/ui";
@@ -121,7 +121,7 @@ export default async function SimpleProfilePage({
         <h2 id="familia" className="text-[1.75rem] font-bold">Quién te acompaña</h2>
         {(familiares ?? []).length === 0 ? (
           <p className="rounded-2xl bg-slate-100 p-5 text-xl leading-snug">
-            Todavía no tienes a nadie. Cuando un familiar te dé su <strong>código</strong>, podrá ver tus planes y recomendarte otros.
+            Todavía no tienes a nadie. Si un familiar te da un <strong>código</strong>, podrá ver tus planes y recomendarte otros.
           </p>
         ) : (
           <>
@@ -145,6 +145,14 @@ export default async function SimpleProfilePage({
             ))}
           </>
         )}
+
+        <Link
+          href="/simple/familia"
+          className="flex min-h-16 items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-coral-texto px-4 text-xl font-bold text-coral-texto"
+        >
+          <Plus size={26} aria-hidden="true" />
+          Añadir a una persona que me acompaña
+        </Link>
 
         {recomendaciones.map((r) => {
           const e = recEvents.find((x) => x.id === r.evento_id);

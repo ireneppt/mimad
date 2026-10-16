@@ -77,6 +77,7 @@ export function relativeDay(date: string): string {
   if (diff <= 0) return "Hoy";
   if (diff === 1) return "Mañana";
   if (diff < 7) return `El ${WEEKDAYS[weekdayIndex(date)]}`;
+  if (diff === 7) return "Dentro de una semana";
   return `Dentro de ${diff} días`;
 }
 
