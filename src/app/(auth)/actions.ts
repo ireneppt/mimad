@@ -6,6 +6,8 @@ import { createClient } from "@/lib/supabase/server";
 import { isValidMobile, MIN_PASSWORD_LENGTH, normalizePhone, phoneToEmail } from "@/lib/auth";
 import { INTERESTS } from "@/lib/interests";
 import { GUEST_COOKIE } from "@/lib/supabase/middleware";
+import { isPostalCode, parsePoint } from "@/lib/location";
+import { postalCodeLocation } from "@/lib/postalCodes";
 
 // field: campo con el error (el registro simplificado vuelve al paso de ese campo)
 export type AuthState = { error?: string; field?: string; fields?: Record<string, string> };
@@ -47,6 +49,7 @@ export async function signup(_prev: AuthState, form: FormData): Promise<AuthStat
     nombre: get("nombre"),
     telefono: get("telefono"),
     municipio: get("municipio"),
+    codigo_postal: get("codigo_postal"),
     email: get("email"),
     intereses: form.getAll("intereses").map(String).join(","),
   };
@@ -58,6 +61,9 @@ export async function signup(_prev: AuthState, form: FormData): Promise<AuthStat
   if (!fields.nombre) return fail("Escribe tu nombre.", "nombre");
   if (!isValidMobile(fields.telefono)) return fail("Escribe un móvil de 9 cifras que empiece por 6 o 7.", "telefono");
   if (simple && !fields.municipio) return fail("Elige el pueblo o ciudad donde vives.", "municipio");
+  if (fields.codigo_postal && !isPostalCode(fields.codigo_postal)) {
+    return fail("El código postal tiene 5 cifras y empieza por 28 (por ejemplo, 28012).", "codigo_postal");
+  }
   if (password.length < MIN_PASSWORD_LENGTH) return fail(`La contraseña necesita al menos ${MIN_PASSWORD_LENGTH} caracteres.`, "password");
   if (password !== String(form.get("password2") ?? "")) return fail("Las dos contraseñas no coinciden.", "password");
   if (fields.email && !/^\S+@\S+\.\S+$/.test(fields.email)) return fail("El correo electrónico no parece correcto.", "email");
@@ -76,6 +82,19 @@ export async function signup(_prev: AuthState, form: FormData): Promise<AuthStat
       lon = m.lon;
     }
   }
+
+  // Casa más precisa que el centro del municipio (redondeada a ~100 m por privacidad):
+  // 1) ubicación del móvil si dijo "estoy en casa", 2) centro de su código postal
+  const here = parsePoint(`${form.get("lat")},${form.get("lon")}`);
+  const postal = fields.codigo_postal ? postalCodeLocation(fields.codigo_postal) : null;
+  if (here) {
+    lat = here.lat;
+    lon = here.lon;
+  } else if (postal) {
+    lat = postal.lat;
+    lon = postal.lon;
+  }
+  if (!fields.municipio && postal) fields.municipio = postal.municipio;
 
   const validInterests = INTERESTS.map((i) => i.id);
   const { error } = await supabase.auth.signUp({

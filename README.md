@@ -24,6 +24,7 @@ Las direcciones de los 8 CEPI se mantienen a mano (el dataset no las incluye) a 
 - **Next.js** (App Router) + TypeScript + Tailwind CSS, publicada en **Vercel**.
 - **Supabase** (PostgreSQL) en Europa. Las tablas `da_*` guardan cada dataset; las vistas `v_eventos` y `v_lugares` los unifican.
 - **GitHub Actions** ejecuta `scripts/ingest` cada día/semana: descarga cada fuente, la normaliza y la guarda. Si una fuente falla, se conservan los datos anteriores y el error queda en `da_fuentes`.
+- **Distancias:** la casa de cada persona se sitúa con su código postal o con la ubicación del móvil (redondeada a unos 100 m). El centro de cada código postal se calcula con datos abiertos (Registro de centros de atención social, sin centros de acogida, y Agenda del Ayuntamiento) y se guarda en `src/data/codigos-postales.json`; se regenera con `npm run codigos-postales`. «Dónde estoy ahora» solo se guarda en una cookie del móvil durante 3 horas.
 
 ## Ejecutarlo en local
 

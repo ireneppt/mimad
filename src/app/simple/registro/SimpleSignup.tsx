@@ -5,7 +5,7 @@
 // Los datos se guardan en el móvil mientras se rellena (salvo la contraseña)
 // y al final se envían todos juntos al mismo registro que la versión por defecto.
 import { useActionState, useEffect, useState } from "react";
-import { Check } from "lucide-react";
+import { Check, LoaderCircle, LocateFixed } from "lucide-react";
 import { signup, type AuthState } from "@/app/(auth)/actions";
 import SimpleShell from "@/components/simple/SimpleShell";
 import {
@@ -13,13 +13,17 @@ import {
 } from "@/components/simple/ui";
 import { INTERESTS } from "@/lib/interests";
 import { isValidMobile, MIN_PASSWORD_LENGTH, normalizePhone } from "@/lib/auth";
+import { isPostalCode, type Point } from "@/lib/location";
+import { useMyLocation } from "@/components/useMyLocation";
 
 export const DRAFT_KEY = "mm_registro_simple";
 const TOTAL = 6;
 // Paso al que hay que volver si el servidor rechaza un campo
-const STEP_OF_FIELD: Record<string, number> = { nombre: 1, telefono: 2, municipio: 3, password: 5 };
+const STEP_OF_FIELD: Record<string, number> = { nombre: 1, telefono: 2, municipio: 3, codigo_postal: 3, password: 5 };
 
-type Draft = { step: number; nombre: string; telefono: string; municipio: string; intereses: string[] };
+type Draft = { step: number; nombre: string; telefono: string; municipio: string; cp: string; intereses: string[] };
+
+const valid3 = (municipio: string, cp: string) => municipio !== "" && (cp === "" || isPostalCode(cp));
 
 export default function SimpleSignup({ municipios }: { municipios: string[] }) {
   const [state, action] = useActionState<AuthState, FormData>(signup, {});
@@ -27,6 +31,9 @@ export default function SimpleSignup({ municipios }: { municipios: string[] }) {
   const [nombre, setNombre] = useState("");
   const [telefono, setTelefono] = useState(""); // solo cifras
   const [municipio, setMunicipio] = useState("");
+  const [cp, setCp] = useState(""); // código postal (opcional)
+  const [homePoint, setHomePoint] = useState<Point | null>(null); // "estoy en casa" (no se guarda en el borrador)
+  const { locate, asking, error: geoError } = useMyLocation();
   const [intereses, setIntereses] = useState<string[]>([]);
   const [password, setPassword] = useState("");
   const [password2, setPassword2] = useState("");
@@ -44,6 +51,7 @@ export default function SimpleSignup({ municipios }: { municipios: string[] }) {
       if (d.nombre) setNombre(d.nombre);
       if (d.telefono) setTelefono(d.telefono);
       if (d.municipio) setMunicipio(d.municipio);
+      if (d.cp) setCp(d.cp);
       if (Array.isArray(d.intereses)) setIntereses(d.intereses);
       if (d.step && d.step > 1) setStep(Math.min(d.step, 5));
     } catch {}
@@ -53,9 +61,9 @@ export default function SimpleSignup({ municipios }: { municipios: string[] }) {
   useEffect(() => {
     if (!loaded) return;
     try {
-      localStorage.setItem(DRAFT_KEY, JSON.stringify({ step, nombre, telefono, municipio, intereses } satisfies Draft));
+      localStorage.setItem(DRAFT_KEY, JSON.stringify({ step, nombre, telefono, municipio, cp, intereses } satisfies Draft));
     } catch {}
-  }, [loaded, step, nombre, telefono, municipio, intereses]);
+  }, [loaded, step, nombre, telefono, municipio, cp, intereses]);
 
   // Si el servidor rechaza algo (p. ej. móvil ya registrado), vuelve al paso de ese campo
   useEffect(() => {
@@ -75,7 +83,7 @@ export default function SimpleSignup({ municipios }: { municipios: string[] }) {
   const valid: Record<number, boolean> = {
     1: nombre.trim().length > 0,
     2: phoneOk,
-    3: municipio !== "",
+    3: valid3(municipio, cp),
     4: true,
     5: passwordOk && password === password2,
   };
@@ -156,7 +164,7 @@ export default function SimpleSignup({ municipios }: { municipios: string[] }) {
         {...shell}
         title="¿Dónde vives?"
         intro={<p>Elige tu <strong>pueblo o ciudad</strong>. Te enseñaremos actividades <strong>cerca de tu casa</strong>.</p>}
-        help={<ol><li>Toca la caja blanca. Aparecerá una lista.</li><li>Busca tu pueblo o ciudad y tócalo.</li><li>Toca el botón naranja <strong>Continuar</strong>.</li></ol>}
+        help={<ol><li>Toca la caja blanca. Aparecerá una lista.</li><li>Busca tu pueblo o ciudad y tócalo.</li><li>Si quieres, escribe tu <strong>código postal</strong> o, si estás en casa, toca <strong>Estoy en casa: usar mi ubicación</strong> y di que sí cuando el móvil pregunte.</li><li>Toca el botón naranja <strong>Continuar</strong>.</li></ol>}
       >
         <div className="flex flex-col gap-3">
           <BigLabel htmlFor="municipio">Tu municipio</BigLabel>
@@ -167,12 +175,40 @@ export default function SimpleSignup({ municipios }: { municipios: string[] }) {
             ))}
           </select>
           {errorBox}
-          {municipio ? (
-            <Hint tone="ok">Muy bien. Ahora toca «Continuar».</Hint>
-          ) : (
-            tried && <Hint tone="error">Elige dónde vives para seguir.</Hint>
-          )}
+          {!municipio && tried && <Hint tone="error">Elige dónde vives para seguir.</Hint>}
         </div>
+
+        {/* Opcional: casa más precisa para calcular bien cuánto se tarda en llegar */}
+        <div className="flex flex-col gap-3 rounded-2xl bg-slate-100 p-4">
+          <p className="text-xl font-bold">Para calcular mejor las distancias <span className="font-normal">(puedes saltarlo)</span></p>
+          <BigLabel htmlFor="codigo_postal">Tu código postal</BigLabel>
+          <BigInput
+            id="codigo_postal"
+            inputMode="numeric"
+            autoComplete="postal-code"
+            maxLength={5}
+            placeholder="Por ejemplo, 28012"
+            value={cp}
+            onChange={(e) => setCp(e.target.value.replace(/\D/g, ""))}
+            className="tracking-widest"
+          />
+          {tried && cp !== "" && !isPostalCode(cp) && (
+            <Hint tone="error">El código postal tiene 5 cifras y empieza por 28.</Hint>
+          )}
+          <p className="text-center text-xl">o</p>
+          <button
+            type="button"
+            onClick={async () => setHomePoint(await locate())}
+            disabled={asking}
+            className="flex min-h-16 items-center justify-center gap-3 rounded-2xl border-2 border-slate-500 bg-white px-4 text-xl font-semibold disabled:opacity-60"
+          >
+            {asking ? <LoaderCircle size={26} className="animate-spin" aria-hidden="true" /> : <LocateFixed size={26} aria-hidden="true" />}
+            {asking ? "Buscando dónde estás…" : "Estoy en casa: usar mi ubicación"}
+          </button>
+          {homePoint && <Hint tone="ok">Hemos guardado dónde está tu casa.</Hint>}
+          {geoError && <Hint tone="error">{geoError}</Hint>}
+        </div>
+        {municipio && valid3(municipio, cp) && <Hint tone="ok">Muy bien. Ahora toca «Continuar».</Hint>}
         {nav}
       </SimpleShell>
     );
@@ -280,7 +316,10 @@ export default function SimpleSignup({ municipios }: { municipios: string[] }) {
         <dt className="text-gris">Móvil</dt>
         <dd className="font-semibold">+34 {formatPhone(telefono)}</dd>
         <dt className="text-gris">Vives en</dt>
-        <dd className="font-semibold">{municipio}</dd>
+        <dd className="font-semibold">
+          {municipio}
+          {homePoint ? " (ubicación de tu casa)" : cp ? ` (${cp})` : ""}
+        </dd>
         <dt className="text-gris">Te gusta</dt>
         <dd className="font-semibold">{chosenLabels.length ? chosenLabels.join(", ") : "Sin elegir"}</dd>
       </dl>
@@ -299,6 +338,13 @@ export default function SimpleSignup({ municipios }: { municipios: string[] }) {
         <input type="hidden" name="nombre" value={nombre.trim()} />
         <input type="hidden" name="telefono" value={telefono} />
         <input type="hidden" name="municipio" value={municipio} />
+        <input type="hidden" name="codigo_postal" value={cp} />
+        {homePoint && (
+          <>
+            <input type="hidden" name="lat" value={homePoint.lat} />
+            <input type="hidden" name="lon" value={homePoint.lon} />
+          </>
+        )}
         {intereses.map((i) => (
           <input key={i} type="hidden" name="intereses" value={i} />
         ))}
