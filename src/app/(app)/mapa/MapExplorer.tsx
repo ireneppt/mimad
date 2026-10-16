@@ -26,12 +26,13 @@ const iconOf = (p: MapPoint): LucideIcon => (p.kind === "lugar" ? placeIcon(p.la
 const iconKey = (p: MapPoint) => `${p.kind}-${p.kind === "lugar" ? p.label : categoryInfo(p.category).label}`.replace(/[^\w-]/g, "_");
 
 export default function MapExplorer({
-  points, sources, origin, center,
+  points, sources, origin, center, legend = false,
 }: {
   points: MapPoint[];
   sources: Record<string, MapSource>;
   origin: P | null;
   center: P;
+  legend?: boolean; // se ven planes y sitios a la vez
 }) {
   const router = useRouter();
   const el = useRef<HTMLDivElement>(null);
@@ -108,7 +109,8 @@ export default function MapExplorer({
         used[i] = true;
         const members = [visible[i].p];
         for (let j = i + 1; j < visible.length; j++) {
-          if (!used[j] && visible[i].pt.distanceTo(visible[j].pt) < CLUSTER_PX) {
+          // Planes con planes y sitios con sitios: nunca se mezclan en un grupo
+          if (!used[j] && visible[j].p.kind === visible[i].p.kind && visible[i].pt.distanceTo(visible[j].pt) < CLUSTER_PX) {
             used[j] = true;
             members.push(visible[j].p);
           }
@@ -126,26 +128,30 @@ export default function MapExplorer({
         });
         const top = [...counts.values()].sort((a, b) => b.n - a.n)[0].p;
         const many = members.length > 1;
+        // Planes: círculo blanco con el símbolo en coral. Sitios: cuadrado azul con el símbolo en blanco.
         const isPlace = top.kind === "lugar";
-        const color = isPlace ? PLACE_COLOR : EVENT_COLOR;
-        const ring = isPlace ? "#bfdbfe" : "#ffe1e5";
-        // Un grupo se ve como un montón de marcadores: una sombra de otro detrás y la burbuja con el número
+        const shape = isPlace
+          ? `border-radius:12px;background:${PLACE_COLOR};color:#fff;border:2px solid #fff`
+          : `border-radius:999px;background:#fff;color:${EVENT_COLOR};border:2px solid #ffe1e5`;
+        // Un grupo se ve como un montón de marcadores: otro asomando detrás y la burbuja con el número
         const stack = many
-          ? `<span style="position:absolute;left:5px;top:-4px;width:44px;height:44px;border-radius:999px;background:#fff;border:2px solid ${ring};box-shadow:0 1px 4px rgba(0,0,0,.18)"></span>`
+          ? `<span style="position:absolute;left:5px;top:-4px;width:44px;height:44px;${shape};opacity:.85;box-shadow:0 1px 4px rgba(0,0,0,.18)"></span>`
           : "";
+        const badgeBg = isPlace ? "#1e3a8a" : "linear-gradient(135deg,#FF5A6E,#FFB86C)";
         const badge = many
-          ? `<span style="position:absolute;right:-8px;top:-8px;min-width:26px;height:26px;padding:0 6px;display:flex;align-items:center;justify-content:center;border-radius:999px;background:linear-gradient(135deg,#FF5A6E,#FFB86C);color:#fff;font:700 14px/1 Outfit,sans-serif;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.25)">${members.length > 99 ? "99+" : members.length}</span>`
+          ? `<span style="position:absolute;right:-8px;top:-8px;min-width:26px;height:26px;padding:0 6px;display:flex;align-items:center;justify-content:center;border-radius:999px;background:${badgeBg};color:#fff;font:700 14px/1 Outfit,sans-serif;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.25)">${members.length > 99 ? "99+" : members.length}</span>`
           : "";
+        const what = isPlace ? (many ? "sitios" : "Sitio") : many ? "planes" : "Plan";
 
         L.marker([seed.lat, seed.lon], {
-          title: many ? `${members.length} planes o lugares aquí: toca para acercar` : seed.title,
-          alt: many ? `${members.length} planes o lugares` : seed.title,
+          title: many ? `${members.length} ${what} aquí: toca para acercar` : `${what}: ${seed.title}`,
+          alt: many ? `${members.length} ${what}` : `${what}: ${seed.title}`,
           keyboard: true,
           icon: L.divIcon({
             className: "",
             iconSize: [44, 44],
             iconAnchor: [22, 22],
-            html: `<span style="position:relative;display:block;width:44px;height:44px">${stack}<span style="position:relative;display:flex;width:44px;height:44px;align-items:center;justify-content:center;border-radius:999px;background:#fff;color:${color};box-shadow:0 2px 6px rgba(0,0,0,.25);border:2px solid ${ring}"><svg width="22" height="22"><use href="#mi-${iconKey(top)}"/></svg></span>${badge}</span>`,
+            html: `<span style="position:relative;display:block;width:44px;height:44px">${stack}<span style="position:relative;display:flex;width:44px;height:44px;align-items:center;justify-content:center;${shape};box-shadow:0 2px 6px rgba(0,0,0,.25)"><svg width="22" height="22"><use href="#mi-${iconKey(top)}"/></svg></span>${badge}</span>`,
           }),
         })
           .on("click", () => {
@@ -171,7 +177,7 @@ export default function MapExplorer({
             className: "",
             iconSize: [56, 68],
             iconAnchor: [28, 66],
-            html: `<span style="position:relative;display:flex;width:56px;height:56px;align-items:center;justify-content:center;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:linear-gradient(135deg,#FFB86C,#FF5A6E);box-shadow:0 4px 10px rgba(214,51,74,.45);border:3px solid #fff"><svg width="26" height="26" style="transform:rotate(45deg);color:#fff"><use href="#mi-${iconKey(sel)}"/></svg></span>`,
+            html: `<span style="position:relative;display:flex;width:56px;height:56px;align-items:center;justify-content:center;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:${sel.kind === "lugar" ? PLACE_COLOR : "linear-gradient(135deg,#FFB86C,#FF5A6E)"};box-shadow:0 4px 10px rgba(0,0,0,.35);border:3px solid #fff"><svg width="26" height="26" style="transform:rotate(45deg);color:#fff"><use href="#mi-${iconKey(sel)}"/></svg></span>`,
           }),
         }).addTo(group!);
       }
@@ -232,9 +238,20 @@ export default function MapExplorer({
         <p role="alert" className="absolute inset-x-4 top-36 z-[500] rounded-xl bg-white p-3 text-sm text-red-800 shadow-lg">{geoError}</p>
       )}
 
+      {legend && (
+        <div aria-hidden="true" className="absolute bottom-6 left-3 z-[500] flex gap-3 rounded-full bg-white/95 px-3 py-1.5 text-sm font-medium shadow-md">
+          <span className="flex items-center gap-1.5">
+            <span className="h-3.5 w-3.5 rounded-full border-2 border-coral bg-white" /> Planes
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="h-3.5 w-3.5 rounded-[3px] bg-blue-700" /> Sitios
+          </span>
+        </div>
+      )}
+
       {points.length === 0 && (
         <p className="absolute inset-x-6 top-1/2 z-[500] -translate-y-1/2 rounded-2xl bg-white p-4 text-center text-base shadow-lg">
-          No hay planes aquí para esas fechas. Prueba con «Esta semana» o activa «Lugares».
+          No hay nada aquí con estos filtros. Prueba con «Esta semana» o con «Todo».
         </p>
       )}
 
@@ -253,13 +270,15 @@ function Sheet({ point: p, source, origin, onClose }: { point: MapPoint; source?
     <div role="dialog" aria-label={p.title} className="absolute inset-x-3 bottom-3 z-[600] flex flex-col gap-3 rounded-3xl bg-white p-4 shadow-2xl">
       <div className="flex items-start gap-3">
         <span
-          className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl ${p.kind === "lugar" ? "bg-blue-50 text-blue-800" : "bg-degradado text-white"}`}
+          className={`flex h-16 w-16 shrink-0 items-center justify-center ${p.kind === "lugar" ? "rounded-2xl bg-blue-700 text-white" : "rounded-full bg-degradado text-white"}`}
           aria-hidden="true"
         >
           <Icon size={30} />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold text-coral-texto">{p.label}</p>
+          <p className={`text-sm font-semibold ${p.kind === "lugar" ? "text-blue-800" : "text-coral-texto"}`}>
+            {p.kind === "lugar" ? "Sitio" : "Plan"} · {p.label}
+          </p>
           <h2 className="line-clamp-2 text-lg font-bold leading-snug">{p.title}</h2>
         </div>
         <button type="button" onClick={onClose} aria-label="Cerrar ficha" className="-mr-1 -mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100">

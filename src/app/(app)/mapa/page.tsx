@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CalendarDays, Landmark } from "lucide-react";
+import { CalendarDays } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { distanceKm, getEvents, getPlaces, getSources, hasEnded, isAccessible, type Evento } from "@/lib/data";
 import { getCurrentProfile } from "@/lib/profile";
@@ -24,15 +24,21 @@ function addDays(iso: string, n: number): string {
   return d.toISOString().slice(0, 10);
 }
 
-// Mapa de planes y lugares (diseño mapa.png). Los filtros van en la dirección:
-// ?d=hoy|manana|semana|AAAA-MM-DD &lugares=1 &q=texto
-export default async function MapPage({ searchParams }: { searchParams: Promise<{ d?: string; lugares?: string; q?: string }> }) {
+type Show = "planes" | "sitios" | "todo";
+
+// Mapa de planes y sitios (diseño mapa.png). Los filtros van en la dirección:
+// ?ver=planes|sitios|todo &d=hoy|manana|semana|AAAA-MM-DD &q=texto
+// Planes = actividades con fecha (v_eventos). Sitios = hogares y centros de mayores, CEPI (v_lugares).
+export default async function MapPage({ searchParams }: { searchParams: Promise<{ d?: string; ver?: string; lugares?: string; q?: string }> }) {
   const params = await searchParams;
   const supabase = await createClient();
   const [perfil, fuentes] = await Promise.all([getCurrentProfile(supabase), getSources(supabase)]);
   const origin = await getOrigin(perfil);
   const search = (params.q ?? "").trim().slice(0, 60);
-  const showPlaces = params.lugares === "1";
+  const show: Show =
+    params.ver === "sitios" || params.ver === "todo" ? params.ver : params.ver === "planes" ? "planes" : params.lugares === "1" ? "todo" : "planes";
+  const showEvents = show !== "sitios";
+  const showPlaces = show !== "planes";
 
   // Qué días: hoy, mañana, los próximos 7 días o una fecha elegida
   const today = new Date().toLocaleString("sv-SE", { timeZone: "Europe/Madrid" }).slice(0, 10);
@@ -50,8 +56,8 @@ export default async function MapPage({ searchParams }: { searchParams: Promise<
 
   const near = { lat: origin.lat, lon: origin.lon, km: 12 };
   const [dated, weekly, places] = await Promise.all([
-    getEvents(supabase, { search: search || undefined, near, between: range, limit: 1500 }),
-    getEvents(supabase, { search: search || undefined, near, undatedOnly: true, limit: 200 }),
+    showEvents ? getEvents(supabase, { search: search || undefined, near, between: range, limit: 1500 }) : Promise.resolve([]),
+    showEvents ? getEvents(supabase, { search: search || undefined, near, undatedOnly: true, limit: 200 }) : Promise.resolve([]),
     showPlaces ? getPlaces(supabase, undefined, { near, search: search || undefined }) : Promise.resolve([]),
   ]);
   const weeklyThatDay = weekly.filter((e) => [...weekdays].some((w) => plain(e.horario ?? "").includes(plain(w))));
@@ -107,7 +113,7 @@ export default async function MapPage({ searchParams }: { searchParams: Promise<
   // Enlace que cambia un filtro y conserva los demás
   const href = (changes: Record<string, string | null>) => {
     const qs = new URLSearchParams();
-    const current: Record<string, string | null> = { d: picked ?? day, lugares: showPlaces ? "1" : null, q: search || null, ...changes };
+    const current: Record<string, string | null> = { ver: show === "planes" ? null : show, d: picked ?? day, q: search || null, ...changes };
     for (const [k, v] of Object.entries(current)) if (v) qs.set(k, v);
     return `/mapa?${qs}`;
   };
@@ -122,15 +128,16 @@ export default async function MapPage({ searchParams }: { searchParams: Promise<
         originKind={origin.kind}
         search={search}
         searchAction="/mapa"
-        hidden={{ d: picked ?? day, ...(showPlaces ? { lugares: "1" } : {}) }}
+        hidden={{ d: picked ?? day, ...(show !== "planes" ? { ver: show } : {}) }}
       />
 
-      <section aria-label="Mapa de planes" className="relative h-[72dvh] min-h-[440px]">
+      <section aria-label="Mapa de planes y sitios" className="relative h-[72dvh] min-h-[440px]">
         <MapExplorerLazy
           points={points}
           sources={sources}
           origin={origin.kind !== "centro" ? { lat: origin.lat, lon: origin.lon } : null}
           center={{ lat: origin.lat, lon: origin.lon }}
+          legend={show === "todo"}
         />
 
         {/* Controles encima del mapa */}
@@ -138,21 +145,45 @@ export default async function MapPage({ searchParams }: { searchParams: Promise<
           <div className="pointer-events-auto w-fit">
             <ViewToggle current="mapa" search={search} />
           </div>
-          <nav aria-label="Cuándo" className="sin-barra pointer-events-auto -mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
+          <nav aria-label="Qué ver y cuándo" className="sin-barra pointer-events-auto -mx-4 flex items-center gap-2 overflow-x-auto px-4 pb-1">
+            {/* Qué ver: planes (círculos), sitios (cuadrados azules) o los dos */}
+            <div role="group" aria-label="Qué ver" className="flex shrink-0 gap-1 rounded-full bg-white p-1 shadow-sm">
+              {(["planes", "sitios", "todo"] as const).map((v) => (
+                <Link
+                  key={v}
+                  href={href({ ver: v === "planes" ? null : v })}
+                  aria-pressed={show === v}
+                  scroll={false}
+                  className={`flex h-9 items-center gap-1.5 rounded-full px-3 text-base font-medium ${
+                    show === v ? (v === "sitios" ? "bg-blue-700 text-white" : v === "planes" ? "bg-degradado text-white" : "bg-tinta text-white") : "text-tinta"
+                  }`}
+                >
+                  {v === "planes" && <span className="h-3 w-3 rounded-full border-2 border-current" aria-hidden="true" />}
+                  {v === "sitios" && <span className="h-3 w-3 rounded-[3px] bg-current" aria-hidden="true" />}
+                  {v === "planes" ? "Planes" : v === "sitios" ? "Sitios" : "Todo"}
+                </Link>
+              ))}
+            </div>
+            {showEvents && (
+              <>
             <Link href={href({ d: "hoy" })} aria-pressed={day === "hoy"} scroll={false} className={chip(day === "hoy")}>Hoy</Link>
             <Link href={href({ d: "manana" })} aria-pressed={day === "manana"} scroll={false} className={chip(day === "manana")}>Mañana</Link>
             <Link href={href({ d: "semana" })} aria-pressed={day === "semana"} scroll={false} className={chip(day === "semana")}>Esta semana</Link>
             <DatePicker value={picked} min={today} baseHref={href({ d: null })} className={chip(day === "fecha")} icon={<CalendarDays size={18} aria-hidden="true" />} />
-            <Link href={href({ lugares: showPlaces ? null : "1" })} aria-pressed={showPlaces} scroll={false} className={chip(showPlaces)}>
-              <Landmark size={18} aria-hidden="true" /> Lugares
-            </Link>
+              </>
+            )}
           </nav>
         </div>
       </section>
 
       <p className="px-5 py-3 text-sm text-gris">
-        {events.length} {events.length === 1 ? "plan" : "planes"}
-        {showPlaces ? ` y ${places.length} lugares` : ""} a menos de 12 km. Mapa: © colaboradores de OpenStreetMap.
+        {[
+          showEvents ? `${events.length} ${events.length === 1 ? "plan" : "planes"}` : null,
+          showPlaces ? `${places.length} ${places.length === 1 ? "sitio" : "sitios"}` : null,
+        ]
+          .filter(Boolean)
+          .join(" y ")}{" "}
+        a menos de 12 km. Mapa: © colaboradores de OpenStreetMap.
       </p>
     </main>
   );
