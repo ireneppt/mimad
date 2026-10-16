@@ -86,7 +86,7 @@ export default async function NotificationsPage({ searchParams }: { searchParams
       title: `${a.date === today ? "Hoy" : "Mañana"}: ${e.titulo}`,
       detail: [e.lugar, a.time].filter(Boolean).join(" · ") || null,
       at: new Date().toISOString(),
-      unread: true,
+      unread: false, // se calcula cada vez: con punto rojo no se quitaría nunca
       actor: null,
       icon: <CalendarClock size={24} className="text-coral-texto" />,
       actions: [
