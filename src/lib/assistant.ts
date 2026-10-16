@@ -22,6 +22,7 @@ export type Respuesta = {
   texto: string;
   elegidos: Eleccion[];
   motor: "claude" | "reglas";
+  motivo?: string; // por qué no se ha usado Claude (para que el equipo lo vea sin entrar en Vercel)
 };
 
 type Persona = {
@@ -115,15 +116,32 @@ export async function recommend(opts: {
   }
   const cached = opts.persona.id ? cache.get(cacheKey(opts.persona.id, opts.mensaje, opts.historial ?? [], opts.vistos ?? [], candidatos)) : undefined;
   if (cached && cached.expira > Date.now()) return cached.respuesta;
-  if (process.env.ANTHROPIC_API_KEY && opts.persona.id && withinLimit(opts.persona.id)) {
+  let motivo: string;
+  if (!process.env.ANTHROPIC_API_KEY) motivo = "falta la clave de Claude en el servidor";
+  else if (!opts.persona.id) motivo = "la IA solo se usa con la sesión iniciada";
+  else if (!withinLimit(opts.persona.id)) motivo = "has llegado al límite de preguntas de esta hora";
+  else {
     try {
       const r = await askClaude(opts);
       if (r) return r;
+      motivo = "Claude no ha elegido ningún plan de la lista";
     } catch (err) {
       console.error("[asistente] Claude no ha respondido, uso las reglas:", err);
+      motivo = claudeError(err);
     }
   }
-  return byRules(opts);
+  return { ...byRules(opts), motivo };
+}
+
+// El error de Claude dicho en palabras (sin datos de la clave)
+function claudeError(err: unknown): string {
+  if (err instanceof Anthropic.AuthenticationError) return "la clave de Claude no es válida";
+  if (err instanceof Anthropic.PermissionDeniedError) return "la clave de Claude no tiene permiso";
+  if (err instanceof Anthropic.RateLimitError) return "Claude está ocupado, prueba en un minuto";
+  if (err instanceof Anthropic.BadRequestError) return "Claude ha rechazado la petición (revisa el saldo de la cuenta)";
+  if (err instanceof Anthropic.APIConnectionError) return "no se ha podido conectar con Claude";
+  if (err instanceof Anthropic.APIError) return `error de Claude (${err.status ?? "sin código"})`;
+  return "error al preguntar a Claude";
 }
 
 // --- Reglas (sin clave o si Claude falla) ----------------------------------

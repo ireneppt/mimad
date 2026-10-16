@@ -23,7 +23,7 @@ export type PlanTarjeta = {
   apuntada: boolean;
 };
 
-export type RespuestaAsistente = { texto: string; planes: PlanTarjeta[]; motor: "claude" | "reglas" };
+export type RespuestaAsistente = { texto: string; planes: PlanTarjeta[]; motor: "claude" | "reglas"; motivo?: string };
 
 const MAX_MENSAJE = 500;
 
@@ -65,6 +65,7 @@ export async function POST(request: Request) {
   const respuesta: RespuestaAsistente = {
     texto: r.texto,
     motor: r.motor,
+    motivo: r.motivo,
     planes: r.elegidos.map(({ plan, porque }) => {
       const e = plan.evento;
       const f = fuentes[e.fuente];

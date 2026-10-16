@@ -13,7 +13,7 @@ import type { PlanTarjeta, RespuestaAsistente } from "@/app/api/asistente/route"
 
 type Mensaje =
   | { rol: "usuario"; texto: string }
-  | { rol: "asistente"; texto: string; planes?: PlanTarjeta[]; motor?: "claude" | "reglas"; error?: boolean };
+  | { rol: "asistente"; texto: string; planes?: PlanTarjeta[]; motor?: "claude" | "reglas"; motivo?: string; error?: boolean };
 
 const EJEMPLOS: { texto: string; icon: LucideIcon }[] = [
   { texto: "Algo al aire libre", icon: Trees },
@@ -50,7 +50,7 @@ export default function AssistantChat({ saludo, loggedIn }: { saludo: string; lo
       });
       if (!res.ok) throw new Error(String(res.status));
       const r = (await res.json()) as RespuestaAsistente;
-      setMensajes((ms) => [...ms, { rol: "asistente", texto: r.texto, planes: r.planes, motor: r.motor }]);
+      setMensajes((ms) => [...ms, { rol: "asistente", texto: r.texto, planes: r.planes, motor: r.motor, motivo: r.motivo }]);
     } catch {
       setMensajes((ms) => [...ms, { rol: "asistente", texto: "No he podido buscar planes ahora. Prueba otra vez en un momento.", error: true }]);
     } finally {
@@ -95,7 +95,10 @@ export default function AssistantChat({ saludo, loggedIn }: { saludo: string; lo
               {!!m.planes?.length && (
                 <p className="flex items-start gap-1.5 pl-12 text-sm text-gris">
                   <Info size={16} className="mt-0.5 shrink-0" aria-hidden="true" />
-                  {m.motor === "claude" ? "Elegidos con IA (Claude) entre" : "Elegidos entre"} las actividades de los datos abiertos. Revisa siempre la fecha y el lugar.
+                  <span>
+                    {m.motor === "claude" ? "Elegidos con IA (Claude) entre" : "Elegidos entre"} las actividades de los datos abiertos. Revisa siempre la fecha y el lugar.
+                    {m.motivo && <span className="block">Sin IA: {m.motivo}.</span>}
+                  </span>
                 </p>
               )}
             </div>
