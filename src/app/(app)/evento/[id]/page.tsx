@@ -158,13 +158,13 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
             </div>
             <ul className="flex flex-col divide-y divide-slate-200 overflow-hidden rounded-2xl border border-slate-200">
               <RouteLink
-                href={walkingUrl(evento, showFrom ? origin : null)}
+                href={directionsUrl(evento, showFrom ? origin : null, "walking")}
                 icon={<Footprints size={22} />}
                 title="Andando"
-                detail={km != null && showFrom ? `Unos ${walkingMinutes(km)} minutos · ruta en OpenStreetMap` : "Ruta en OpenStreetMap"}
+                detail={km != null && showFrom ? `Unos ${walkingMinutes(km)} minutos · ruta en Google Maps` : "Ruta a pie en Google Maps"}
               />
               <RouteLink
-                href={transitUrl(evento, showFrom ? origin : null)}
+                href={directionsUrl(evento, showFrom ? origin : null, "transit")}
                 icon={<Bus size={22} />}
                 title="En metro o autobús"
                 detail="Líneas y horarios en Google Maps"
@@ -267,16 +267,10 @@ function Description({ evento, label }: { evento: Evento; label: string }) {
 
 type P = { lat: number; lon: number };
 
-// Ruta a pie en OpenStreetMap (si no sabemos desde dónde, solo el punto del plan)
-function walkingUrl(e: Evento, from: P | null): string {
-  if (!from) return `https://www.openstreetmap.org/?mlat=${e.lat}&mlon=${e.lon}#map=17/${e.lat}/${e.lon}`;
-  const route = `${from.lat},${from.lon};${e.lat},${e.lon}`;
-  return `https://www.openstreetmap.org/directions?engine=fossgis_osrm_foot&route=${encodeURIComponent(route)}`;
-}
-
-// OpenStreetMap no calcula rutas en transporte público: Google Maps
-function transitUrl(e: Evento, from: P | null): string {
-  const params = new URLSearchParams({ api: "1", destination: `${e.lat},${e.lon}`, travelmode: "transit" });
+// Ruta en Google Maps (en el móvil abre la app si está instalada). Si no sabemos desde
+// dónde sale la persona, Google Maps usa la ubicación actual del teléfono.
+function directionsUrl(e: Evento, from: P | null, mode: "walking" | "transit"): string {
+  const params = new URLSearchParams({ api: "1", destination: `${e.lat},${e.lon}`, travelmode: mode });
   if (from) params.set("origin", `${from.lat},${from.lon}`);
   return `https://www.google.com/maps/dir/?${params}`;
 }
