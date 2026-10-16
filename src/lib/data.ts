@@ -63,6 +63,11 @@ export type EventFilters = {
   near?: { lat: number; lon: number; km: number };
   startsFrom?: string; // "2026-10-16"
   startedBefore?: string;
+  // Planes que ocurren algún día entre estas dos fechas (incluidas): empiezan antes del final
+  // y terminan después del principio. Excluye los que no tienen fecha.
+  between?: { from: string; to: string };
+  undatedOnly?: boolean; // solo los que no tienen fecha (talleres semanales)
+  columns?: string; // columnas a traer (por defecto todas)
   limit?: number;
 };
 
@@ -91,7 +96,7 @@ export function accessibilityLabels(e: Pick<Evento, "accesibilidad">): string[] 
 }
 
 export async function getEvents(db: SupabaseClient, f: EventFilters = {}): Promise<Evento[]> {
-  let q = db.from("v_eventos").select("*");
+  let q = db.from("v_eventos").select(f.columns ?? "*");
   if (f.search) q = q.ilike("titulo", `%${f.search}%`);
   if (f.free) q = q.eq("gratuito", true);
   if (f.accessible) q = q.filter("accesibilidad", "match", "(^|,)1(,|$)"); // contiene el código 1
@@ -101,6 +106,8 @@ export async function getEvents(db: SupabaseClient, f: EventFilters = {}): Promi
   // Solo los que empiezan desde ese día / solo los ya empezados o sin fecha (talleres semanales)
   if (f.startsFrom) q = q.gte("fecha_inicio", f.startsFrom);
   if (f.startedBefore) q = q.or(`fecha_inicio.lt.${f.startedBefore},fecha_inicio.is.null`);
+  if (f.between) q = q.lte("fecha_inicio", `${f.between.to}T23:59:59`).or(`fecha_fin.gte.${f.between.from},fecha_fin.is.null`);
+  if (f.undatedOnly) q = q.is("fecha_inicio", null);
   if (f.near) {
     // Caja aproximada alrededor del punto (1º de latitud ≈ 111 km)
     const dLat = f.near.km / 111;
@@ -114,7 +121,7 @@ export async function getEvents(db: SupabaseClient, f: EventFilters = {}): Promi
 
   const { data, error } = await q;
   if (error) throw new Error(`No se pudieron cargar los eventos: ${error.message}`);
-  return (data ?? []) as Evento[];
+  return (data ?? []) as unknown as Evento[];
 }
 
 export async function getEvent(db: SupabaseClient, id: string): Promise<Evento | null> {
@@ -130,9 +137,21 @@ export async function getEventsByIds(db: SupabaseClient, ids: string[]): Promise
   return (data ?? []) as Evento[];
 }
 
-export async function getPlaces(db: SupabaseClient, categories?: string[]): Promise<Lugar[]> {
+export async function getPlaces(
+  db: SupabaseClient,
+  categories?: string[],
+  opts: { near?: { lat: number; lon: number; km: number }; search?: string } = {}
+): Promise<Lugar[]> {
   let q = db.from("v_lugares").select("*");
   if (categories?.length) q = q.in("categoria", categories);
+  if (opts.search) q = q.ilike("nombre", `%${opts.search}%`);
+  if (opts.near) {
+    const dLat = opts.near.km / 111;
+    const dLon = opts.near.km / (111 * Math.cos((opts.near.lat * Math.PI) / 180));
+    q = q
+      .gte("lat", opts.near.lat - dLat).lte("lat", opts.near.lat + dLat)
+      .gte("lon", opts.near.lon - dLon).lte("lon", opts.near.lon + dLon);
+  }
   const { data, error } = await q.limit(1000);
   if (error) throw new Error(`No se pudieron cargar los lugares: ${error.message}`);
   return (data ?? []) as Lugar[];
