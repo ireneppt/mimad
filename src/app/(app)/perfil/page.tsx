@@ -89,40 +89,35 @@ export default async function ProfilePage() {
 
   return (
     <main className="flex flex-col bg-fondo">
-      {/* Cabecera con el degradado de la marca, foto e intereses */}
-      <section className="bg-degradado relative overflow-hidden px-5 pb-16 pt-2 text-white">
-        <span className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-white/15" aria-hidden="true" />
-        <span className="pointer-events-none absolute -left-10 bottom-4 h-32 w-32 rounded-full bg-white/10" aria-hidden="true" />
+      <header className="sticky top-0 z-[500] flex items-center gap-1 border-b border-slate-100 bg-white/95 px-2 py-2 backdrop-blur">
+        <BackButton />
+        <h1 className="flex-1 text-2xl font-bold">Mi perfil</h1>
+        <Link href="/notificaciones" aria-label="Notificaciones" className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100">
+          <Bell size={22} aria-hidden="true" />
+        </Link>
+      </header>
 
-        <header className="relative -mx-3 flex items-center gap-1 text-white">
-          <BackButton />
-          <h1 className="flex-1 text-xl font-bold">Mi perfil</h1>
-          <Link href="/notificaciones" aria-label="Notificaciones" className="flex h-12 w-12 items-center justify-center rounded-full bg-white/20">
-            <Bell size={22} aria-hidden="true" />
-          </Link>
-        </header>
-
-        <div className="relative mt-2 flex flex-col items-center gap-2 text-center">
+      <div className="flex flex-col gap-7 px-5 pb-10 pt-6">
+        {/* Foto (con un aro del degradado de la marca), nombre, municipio e intereses */}
+        <section className="flex flex-col items-center gap-2 text-center">
           <AvatarEditor url={perfil.foto_url} name={perfil.nombre} />
-          <p className="mt-1 text-3xl font-bold text-balance drop-shadow-sm">{perfil.nombre}</p>
-          <p className="flex items-center gap-1.5 text-lg text-white/95">
-            <MapPin size={18} aria-hidden="true" /> {place}
+          <p className="mt-1 text-3xl font-bold text-balance">{perfil.nombre}</p>
+          <p className="flex items-center gap-1.5 text-lg text-gris">
+            <MapPin size={18} className="text-coral-texto" aria-hidden="true" /> {place}
           </p>
           {myInterests.length > 0 && (
             <ul className="mt-1 flex flex-wrap justify-center gap-2" aria-label="Tus intereses">
               {myInterests.map(({ id, label, icon: Icon }) => (
-                <li key={id} className="flex items-center gap-1.5 rounded-full bg-white/25 px-3 py-1 text-sm font-semibold backdrop-blur-sm">
+                <li key={id} className="flex items-center gap-1.5 rounded-full bg-coral/10 px-3 py-1 text-sm font-semibold text-coral-texto">
                   <Icon size={15} aria-hidden="true" /> {label}
                 </li>
               ))}
             </ul>
           )}
-        </div>
-      </section>
+        </section>
 
-      <div className="flex flex-col gap-7 px-5 pb-10">
-        {/* Contadores: tarjeta montada sobre la cabecera */}
-        <ul className="-mt-10 grid grid-cols-3 divide-x divide-slate-100 rounded-3xl bg-white py-4 shadow-lg" aria-label="Resumen">
+        {/* Contadores */}
+        <ul className="grid grid-cols-3 divide-x divide-slate-100 rounded-3xl bg-white py-4 shadow-sm ring-1 ring-slate-200" aria-label="Resumen">
           {[
             { n: proximos, label: proximos === 1 ? "plan apuntado" : "planes apuntados", icon: <CalendarCheck size={20} />, tone: "coral" as Tone, href: "/agenda" },
             { n: hechos, label: hechos === 1 ? "plan hecho" : "planes hechos", icon: <History size={20} />, tone: "verde" as Tone, href: null },

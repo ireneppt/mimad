@@ -288,8 +288,8 @@ export function AvatarEditor({ url, name }: { url: string | null; name: string }
         }}
         onRemove={() => startRemoving(async () => setMsg(await removeAvatar()))}
       />
-      {(pending || removing) && <p className="text-sm text-white/90">{pending ? "Subiendo foto…" : "Quitando foto…"}</p>}
-      {shown.error && <p role="alert" className="rounded-lg bg-white px-2 py-1 text-sm text-red-800">{shown.error}</p>}
+      {(pending || removing) && <p className="text-sm text-gris">{pending ? "Subiendo foto…" : "Quitando foto…"}</p>}
+      {shown.error && <p role="alert" className="text-sm text-red-800">{shown.error}</p>}
       <span className="sr-only">{name}</span>
     </form>
   );

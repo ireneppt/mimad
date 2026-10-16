@@ -65,15 +65,20 @@ export default function PhotoPicker({
     <div className="flex flex-col items-center gap-2">
       <label className="relative cursor-pointer" style={{ width: size, height: size }}>
         {preview ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={preview} alt="Tu foto" className="h-full w-full rounded-full object-cover ring-4 ring-white shadow-lg" />
+          <span className="bg-degradado block h-full w-full rounded-full p-1 shadow-lg">
+            {/* Vista previa local de la foto ya reducida: no pasa por el optimizador de imágenes */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={preview} alt="Tu foto" className="h-full w-full rounded-full border-4 border-white object-cover" />
+          </span>
         ) : (
-          <span className="flex h-full w-full flex-col items-center justify-center gap-1 rounded-full border-2 border-dashed border-slate-300 bg-white text-gris">
-            <Camera size={size * 0.28} aria-hidden="true" />
-            <span className="text-sm font-medium">{label}</span>
+          <span className="bg-degradado block h-full w-full rounded-full p-1 shadow-lg">
+            <span className="flex h-full w-full flex-col items-center justify-center gap-1 rounded-full bg-white px-4 text-gris">
+              <Camera size={size * 0.26} aria-hidden="true" />
+              <span className="text-sm font-medium leading-tight">{label}</span>
+            </span>
           </span>
         )}
-        <span className="absolute bottom-0 right-0 flex h-10 w-10 items-center justify-center rounded-full bg-tinta text-white ring-4 ring-white" aria-hidden="true">
+        <span className="absolute -bottom-1 -right-1 flex h-10 w-10 items-center justify-center rounded-full bg-tinta text-white ring-4 ring-white" aria-hidden="true">
           {busy ? <LoaderCircle size={18} className="animate-spin" /> : <Camera size={18} />}
         </span>
         <input type="file" accept="image/*" onChange={pick} className="sr-only" aria-label={preview ? "Cambiar la foto" : "Añadir una foto"} />
