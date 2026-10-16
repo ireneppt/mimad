@@ -1,9 +1,11 @@
 // Planes para la versión simplificada: cerca de casa y pensados para mayores.
 // Se consulta v_eventos (datos abiertos) y se ordena: recomendados por la familia,
-// público "Mayores", talleres "Juntos contra la soledad", gratis y accesibles primero.
+// lo que encaja con sus gustos (intereses del perfil), público "Mayores",
+// talleres "Juntos contra la soledad", gratis y accesibles primero.
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { distanceKm, getEventsByIds, isAccessible, type Evento } from "./data";
 import { formatDay, formatWhenLong } from "./format";
+import { INTERESTS } from "./interests";
 
 export type When = "hoy" | "manana" | "semana";
 
@@ -17,6 +19,7 @@ export type Plan = {
   evento: Evento;
   km: number | null;
   recomendadoPor: string | null; // nombre del familiar que lo recomienda
+  gusto: string | null; // interés del perfil con el que encaja ("Música")
 };
 
 export type Recomendacion = { id: string; evento_id: string; de_nombre: string };
@@ -58,9 +61,16 @@ const plain = (s: string) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").
 // Público para el que el plan no tiene sentido (niños, jóvenes...), salvo que incluya también a mayores
 const NOT_FOR_SENIORS = /niñ|infantil|joven|jóven|bebé|adolescen/i;
 
+// Interés del perfil con el que encaja la categoría del plan (el primero que coincida)
+function matchingInterest(e: Evento, intereses: string[]): string | null {
+  if (!e.categoria) return null;
+  return INTERESTS.find((i) => intereses.includes(i.id) && i.categories.includes(e.categoria!))?.label ?? null;
+}
+
 // Puntuación: más alta = sale antes
-function score(e: Evento, km: number | null): number {
+function score(e: Evento, km: number | null, gusto: string | null): number {
   let s = 0;
+  if (gusto) s += 6; // encaja con lo que eligió al crear la cuenta
   if (/mayores/i.test(e.publico ?? "")) s += 5;
   if (e.fuente === "juntos_contra_soledad") s += 5;
   if (e.gratuito) s += 2;
@@ -80,9 +90,9 @@ export const MAX_PLANS = 10;
 
 export async function getSimplePlans(
   db: SupabaseClient,
-  opts: { home: { lat: number; lon: number }; when: When; recomendaciones: Recomendacion[] }
+  opts: { home: { lat: number; lon: number }; when: When; recomendaciones: Recomendacion[]; intereses: string[] }
 ): Promise<Plan[]> {
-  const { home, when, recomendaciones } = opts;
+  const { home, when, recomendaciones, intereses } = opts;
   const [from, to] = windowFor(when);
   const start = `${from}T00:00:00`;
   const end = `${to}T23:59:59`;
@@ -100,6 +110,7 @@ export async function getSimplePlans(
     .gte("lon", home.lon - dLon).lte("lon", home.lon + dLon)
     // Recurrentes (sin fecha), o que empiezan en la ventana, o que ya han empezado y siguen
     .or(`fecha_inicio.is.null,and(fecha_inicio.gte.${start},fecha_inicio.lte.${end}),and(fecha_inicio.lte.${end},fecha_fin.gte.${start})`)
+    .order("id")
     .limit(400);
   if (error) throw new Error(`No se pudieron cargar los planes: ${error.message}`);
 
@@ -131,6 +142,7 @@ export async function getSimplePlans(
     evento: e,
     km: e.lat != null && e.lon != null ? distanceKm(home, { lat: e.lat, lon: e.lon }) : null,
     recomendadoPor: recBy.get(e.id) ?? null,
+    gusto: matchingInterest(e, intereses),
   });
 
   const recommended = recIds
@@ -140,9 +152,33 @@ export async function getSimplePlans(
   const rest = nearby
     .filter((e) => !recBy.has(e.id))
     .map(toPlan)
-    .sort((a, b) => score(b.evento, b.km) - score(a.evento, a.km));
+    .sort((a, b) => score(b.evento, b.km, b.gusto) - score(a.evento, a.km, a.gusto) || a.evento.id.localeCompare(b.evento.id));
 
-  return [...recommended, ...rest].slice(0, Math.max(MAX_PLANS, recommended.length));
+  return [...recommended, ...mixKinds(rest)].slice(0, Math.max(MAX_PLANS, recommended.length));
+}
+
+// Tipo de plan, para no enseñar seguidos varios casi iguales (p. ej. cinco talleres contra la soledad)
+const kindOf = (p: Plan) => (p.evento.fuente === "agenda_madrid" ? p.evento.categoria ?? "otros" : p.evento.fuente);
+
+// Mantiene el orden por puntuación, pero sin dos seguidos del mismo tipo (si se puede)
+// y con 3 como mucho de cada tipo, para que la lista sea variada
+const MAX_PER_KIND = 3;
+
+function mixKinds(plans: Plan[]): Plan[] {
+  const pool = [...plans];
+  const out: Plan[] = [];
+  const count = new Map<string, number>();
+  const room = (p: Plan) => (count.get(kindOf(p)) ?? 0) < MAX_PER_KIND;
+  while (pool.length) {
+    const prev = out.at(-1);
+    let i = pool.findIndex((p) => room(p) && (!prev || kindOf(p) !== kindOf(prev)));
+    if (i < 0) i = pool.findIndex(room);
+    if (i < 0) break; // solo quedan tipos que ya tienen 3
+    const [p] = pool.splice(i, 1);
+    count.set(kindOf(p), (count.get(kindOf(p)) ?? 0) + 1);
+    out.push(p);
+  }
+  return out;
 }
 
 // Recomendaciones pendientes que me han hecho mis familiares (la más reciente primero)

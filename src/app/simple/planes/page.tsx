@@ -1,17 +1,14 @@
 import Link from "next/link";
-import { Accessibility, ArrowLeft, ArrowRight, Check, Clock, Euro, Heart, Info, MapPin } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check } from "lucide-react";
 import SimpleShell from "@/components/simple/SimpleShell";
-import { PrimarySubmit } from "@/components/simple/ui";
-import SourceTag from "@/components/SourceTag";
 import { createClient } from "@/lib/supabase/server";
 import { getEvent, getSources, isAccessible } from "@/lib/data";
-import { categoryInfo } from "@/lib/categories";
 import { walkingMinutes } from "@/lib/format";
 import { getCurrentProfile, homeLocation } from "@/lib/profile";
 import {
   getMyInscriptionIds, getPendingRecommendations, getSimplePlans, parseWhen, whenInWords, WHEN_LABELS, type When,
 } from "@/lib/simplePlans";
-import { joinPlan } from "./actions";
+import PlanSteps, { type PlanView } from "./PlanSteps";
 
 export const metadata = { title: "Planes · MiMad simplificada" };
 
@@ -31,16 +28,30 @@ export default async function SimplePlansPage({
     perfil ? getMyInscriptionIds(supabase, perfil.id) : Promise.resolve<string[]>([]),
   ]);
   const [plans, done] = await Promise.all([
-    getSimplePlans(supabase, { home: homeLocation(perfil), when, recomendaciones }),
+    getSimplePlans(supabase, { home: homeLocation(perfil), when, recomendaciones, intereses: perfil?.intereses ?? [] }),
     params.hecho ? getEvent(supabase, params.hecho) : null,
   ]);
 
   const total = plans.length;
   const index = Math.min(Math.max(Number(params.n) || 0, 0), Math.max(total - 1, 0));
-  const plan = plans[index];
-  const href = (w: When, n = 0) => `/simple/planes?cuando=${w}${n ? `&n=${n}` : ""}`;
-  const here = href(when, index);
-  const joined = plan ? inscritos.includes(plan.evento.id) : false;
+  const href = (w: When) => `/simple/planes?cuando=${w}`;
+
+  // Textos ya preparados para la tarjeta (la tarjeta cambia de plan sin volver al servidor)
+  const views: PlanView[] = plans.map(({ evento: e, km, recomendadoPor, gusto }) => ({
+    id: e.id,
+    titulo: e.titulo,
+    categoria: e.categoria,
+    cuando: whenInWords(e),
+    lugar: e.lugar ?? e.direccion,
+    minutosAndando: km != null ? walkingMinutes(km) : null,
+    precio: e.gratuito ? "Gratis" : e.precio ? `Cuesta ${e.precio}` : "Consultar el precio",
+    accesible: isAccessible(e),
+    recomendadoPor,
+    gusto,
+    fuente: fuentes[e.fuente] ?? null,
+    fuenteId: e.fuente,
+    apuntada: inscritos.includes(e.id),
+  }));
 
   return (
     <SimpleShell
@@ -62,7 +73,7 @@ export default async function SimplePlansPage({
       help={
         <ol>
           <li>Arriba elige cuándo: <strong>Hoy</strong>, <strong>Mañana</strong> o toda la <strong>Semana</strong>.</li>
-          <li>Lee el plan. Si te gusta, toca <strong>Me apunto</strong>.</li>
+          <li>Primero salen los planes que encajan con tus gustos. Lee el plan y, si te gusta, toca <strong>Me apunto</strong>.</li>
           <li>Para ver otro plan, toca <strong>Ver otro plan</strong>.</li>
         </ol>
       }
@@ -100,14 +111,8 @@ export default async function SimplePlansPage({
         </p>
       )}
 
-      {plan ? (
-        <PlanCard
-          plan={plan}
-          fuente={fuentes[plan.evento.fuente]}
-          joined={joined}
-          back={here}
-          position={`Plan ${index + 1} de ${total}`}
-        />
+      {views.length > 0 ? (
+        <PlanSteps plans={views} initial={index} cuando={when} />
       ) : (
         when !== "semana" && (
           <Link
@@ -119,127 +124,6 @@ export default async function SimplePlansPage({
           </Link>
         )
       )}
-
-      {total > 1 && (
-        <div className="flex flex-col gap-3">
-          {index < total - 1 ? (
-            <Link
-              href={href(when, index + 1)}
-              className="flex h-16 items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-slate-500 text-xl font-bold"
-            >
-              Ver otro plan
-              <ArrowRight size={26} aria-hidden="true" />
-            </Link>
-          ) : (
-            <Link
-              href={href(when)}
-              className="flex h-16 items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-slate-500 text-xl font-bold"
-            >
-              Volver al primer plan
-            </Link>
-          )}
-          {index > 0 && (
-            <Link
-              href={href(when, index - 1)}
-              className="flex h-14 items-center justify-center gap-3 rounded-2xl text-xl font-semibold underline"
-            >
-              <ArrowLeft size={24} aria-hidden="true" />
-              Plan anterior
-            </Link>
-          )}
-        </div>
-      )}
     </SimpleShell>
-  );
-}
-
-function PlanCard({
-  plan, fuente, joined, back, position,
-}: {
-  plan: Awaited<ReturnType<typeof getSimplePlans>>[number];
-  fuente?: Parameters<typeof SourceTag>[0]["fuente"];
-  joined: boolean;
-  back: string;
-  position: string;
-}) {
-  const e = plan.evento;
-  const { label, icon: CategoryIcon } = categoryInfo(e.categoria);
-  const place = e.lugar ?? e.direccion;
-  const walk = plan.km != null ? walkingMinutes(plan.km) : null;
-
-  return (
-    <article className="overflow-hidden rounded-3xl border-2 border-slate-300 bg-white" aria-label={position}>
-      {/* Los datos abiertos no traen imagen: fondo de marca con el icono de la categoría */}
-      <div className="bg-degradado relative flex h-40 items-center justify-center">
-        <CategoryIcon size={72} className="text-white" aria-hidden="true" />
-        {plan.recomendadoPor ? (
-          <span className="absolute left-4 top-4 flex items-center gap-2 rounded-full bg-white px-4 py-1.5 text-lg font-bold text-coral-texto">
-            <Heart size={20} aria-hidden="true" /> Te lo recomienda {plan.recomendadoPor}
-          </span>
-        ) : (
-          <span className="absolute left-4 top-4 rounded-full bg-white px-4 py-1.5 text-lg font-bold text-coral-texto">{label}</span>
-        )}
-        <span className="absolute bottom-3 right-4 rounded-full bg-tinta/80 px-3 py-1 text-base font-semibold text-white">
-          {position}
-        </span>
-      </div>
-
-      <div className="flex flex-col gap-4 p-5">
-        <h2 className="text-[1.75rem] font-bold leading-tight">{e.titulo}</h2>
-
-        <ul className="flex flex-col gap-3 text-xl leading-snug">
-          <li className="flex gap-3">
-            <Clock size={28} className="mt-0.5 shrink-0 text-coral-texto" aria-hidden="true" />
-            <span>{whenInWords(e)}</span>
-          </li>
-          {place && (
-            <li className="flex gap-3">
-              <MapPin size={28} className="mt-0.5 shrink-0 text-coral-texto" aria-hidden="true" />
-              <span>
-                {place}
-                {walk != null && <strong className="block">A {walk} minutos andando</strong>}
-              </span>
-            </li>
-          )}
-          <li className="flex gap-3">
-            <Euro size={28} className="mt-0.5 shrink-0 text-coral-texto" aria-hidden="true" />
-            <span>{e.gratuito ? "Gratis" : e.precio ? `Cuesta ${e.precio}` : "Consultar el precio"}</span>
-          </li>
-          {isAccessible(e) && (
-            <li className="flex gap-3">
-              <Accessibility size={28} className="mt-0.5 shrink-0 text-coral-texto" aria-hidden="true" />
-              <span>Accesible en silla de ruedas</span>
-            </li>
-          )}
-        </ul>
-
-        {joined ? (
-          <p className="flex items-center gap-3 rounded-2xl bg-green-50 p-4 text-xl font-bold text-green-800">
-            <Check size={30} strokeWidth={3} aria-hidden="true" />
-            Ya te has apuntado a este plan.
-          </p>
-        ) : (
-          <form action={joinPlan}>
-            <input type="hidden" name="evento_id" value={e.id} />
-            <input type="hidden" name="back" value={back} />
-            <PrimarySubmit>Me apunto</PrimarySubmit>
-          </form>
-        )}
-
-        <Link
-          href={`/simple/evento/${encodeURIComponent(e.id)}`}
-          className="flex h-16 items-center justify-center gap-3 rounded-2xl border-2 border-slate-500 text-xl font-semibold"
-        >
-          <Info size={26} aria-hidden="true" />
-          Ver más información
-        </Link>
-
-        <SourceTag
-          fuente={fuente}
-          label={fuente ? undefined : e.fuente}
-          className="border-t-2 border-slate-100 pt-4 !text-lg !text-tinta"
-        />
-      </div>
-    </article>
   );
 }
