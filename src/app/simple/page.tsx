@@ -1,10 +1,11 @@
 import Link from "next/link";
-import { ArrowRight, CalendarHeart, Heart, MessageCircleMore, Sparkles, UserRound } from "lucide-react";
+import { ArrowRight, CalendarHeart, Heart, HeartHandshake, MessageCircleMore, Sparkles, UserRound } from "lucide-react";
 import SimpleShell from "@/components/simple/SimpleShell";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/profile";
 import { getPendingRecommendations } from "@/lib/simplePlans";
 import { getMyAgenda, relativeWhen, type AgendaItem } from "@/lib/simpleAgenda";
+import { getMyCompanions } from "@/lib/companion";
 
 export const metadata = { title: "Inicio · MiMad simplificada" };
 
@@ -13,9 +14,10 @@ export const metadata = { title: "Inicio · MiMad simplificada" };
 export default async function SimpleHomePage() {
   const supabase = await createClient();
   const perfil = await getCurrentProfile(supabase);
-  const [recomendaciones, agenda] = await Promise.all([
+  const [recomendaciones, agenda, familiares] = await Promise.all([
     perfil ? getPendingRecommendations(supabase, perfil.id) : Promise.resolve([]),
     perfil ? getMyAgenda(supabase, perfil.id) : Promise.resolve([]),
+    perfil ? getMyCompanions(supabase, perfil.id) : Promise.resolve([]),
   ]);
   const next = nextPlan(agenda);
   const rec = recomendaciones[0];
@@ -30,6 +32,9 @@ export default async function SimpleHomePage() {
           <li>Para buscar algo que hacer cerca de casa, toca <strong>Ver planes</strong>.</li>
           <li>Para ver los planes a los que te has apuntado, toca <strong>Mis planes</strong>.</li>
           {rec && <li>Si un familiar te ha recomendado un plan, toca <strong>Verlo</strong>.</li>}
+          {perfil && familiares.length === 0 && (
+            <li>Si un familiar te ha dado un código, toca <strong>¿Te ha dado un código tu familiar?</strong> y escríbelo.</li>
+          )}
         </ol>
       }
     >
@@ -76,6 +81,18 @@ export default async function SimpleHomePage() {
         </span>
         <ArrowRight size={32} className="shrink-0" aria-hidden="true" />
       </Link>
+
+      {/* Aún no le acompaña nadie: acceso directo para escribir el código de su familiar */}
+      {perfil && familiares.length === 0 && (
+        <Link href="/simple/familia" className="flex items-center gap-4 rounded-3xl border-2 border-dashed border-coral-texto bg-crema p-5">
+          <HeartHandshake size={44} className="shrink-0 text-coral-texto" aria-hidden="true" />
+          <span className="flex-1">
+            <span className="block text-2xl font-bold leading-tight">¿Te ha dado un código tu familiar?</span>
+            <span className="block text-xl leading-snug text-gris">Escríbelo aquí para que te acompañe</span>
+          </span>
+          <ArrowRight size={32} className="shrink-0" aria-hidden="true" />
+        </Link>
+      )}
 
       <div className="grid grid-cols-2 gap-4">
         <Link
