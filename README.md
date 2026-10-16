@@ -25,6 +25,7 @@ Las direcciones de los 8 CEPI se mantienen a mano (el dataset no las incluye) a 
 - **Supabase** (PostgreSQL) en Europa. Las tablas `da_*` guardan cada dataset; las vistas `v_eventos` y `v_lugares` los unifican.
 - **GitHub Actions** ejecuta `scripts/ingest` cada día/semana: descarga cada fuente, la normaliza y la guarda. Si una fuente falla, se conservan los datos anteriores y el error queda en `da_fuentes`.
 - **Distancias:** la casa de cada persona se sitúa con su código postal o con la ubicación del móvil (redondeada a unos 100 m). El centro de cada código postal se calcula con datos abiertos (Registro de centros de atención social, sin centros de acogida, y Agenda del Ayuntamiento) y se guarda en `src/data/codigos-postales.json`; se regenera con `npm run codigos-postales`. «Dónde estoy ahora» solo se guarda en una cookie del móvil durante 3 horas.
+- **Asistente** (`/asistente` y «Pedir consejo»): busca planes reales de los datos abiertos cerca de la persona y, si hay clave de la API de Claude (`ANTHROPIC_API_KEY`, solo en el servidor), Claude elige de esa lista los que mejor encajan y explica por qué; no puede inventar planes. Sin clave, elige con reglas sencillas (gustos, distancia, gratis, accesible).
 
 ## Ejecutarlo en local
 
@@ -32,7 +33,7 @@ Necesitas Node.js 20+ y un proyecto gratuito de [Supabase](https://supabase.com)
 
 1. `npm install`
 2. En Supabase → SQL Editor, ejecuta **en orden** los archivos de `supabase/migrations/`.
-3. Copia `.env.example` como `.env.local` y rellena la URL y las claves (Supabase → Project Settings → API).
+3. Copia `.env.example` como `.env.local` y rellena la URL y las claves (Supabase → Project Settings → API). La clave de Claude (`ANTHROPIC_API_KEY`, de console.anthropic.com) es opcional.
 4. `npm run ingest` — carga los datos abiertos (`npm run ingest -- --prueba` descarga sin guardar).
 5. `npm run comprobar` — verifica datos y permisos.
 6. `npm run dev` y abre http://localhost:3000
