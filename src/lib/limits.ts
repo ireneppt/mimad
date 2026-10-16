@@ -23,10 +23,29 @@ export function nameError(name: string): string | null {
   return null;
 }
 
+// Contraseña de la versión simplificada: solo la longitud (las reglas de símbolos
+// y mayúsculas son una barrera para muchas personas mayores)
 export function passwordError(password: string): string | null {
   if (password.length < LIMITS.passwordMin) return `La contraseña necesita al menos ${LIMITS.passwordMin} caracteres.`;
   if (password.length > LIMITS.passwordMax) return `La contraseña puede tener como máximo ${LIMITS.passwordMax} caracteres.`;
   return null;
+}
+
+// Requisitos de la contraseña segura (versión por defecto). Los usa la lista que se
+// marca mientras se escribe y el servidor al crear la cuenta.
+export const PASSWORD_RULES: { id: string; label: string; test: (p: string) => boolean }[] = [
+  { id: "largo", label: `Al menos ${LIMITS.passwordMin} caracteres`, test: (p) => p.length >= LIMITS.passwordMin },
+  { id: "numero", label: "Un número", test: (p) => /\d/.test(p) },
+  { id: "mayuscula", label: "Una letra mayúscula", test: (p) => /\p{Lu}/u.test(p) },
+  { id: "minuscula", label: "Una letra minúscula", test: (p) => /\p{Ll}/u.test(p) },
+  { id: "simbolo", label: "Un símbolo (por ejemplo ! ? @ # . -)", test: (p) => /[^\p{L}\p{N}\s]/u.test(p) },
+];
+
+export function strongPasswordError(password: string): string | null {
+  const basic = passwordError(password);
+  if (basic) return basic;
+  const missing = PASSWORD_RULES.filter((r) => !r.test(password)).map((r) => r.label.toLowerCase());
+  return missing.length ? `A la contraseña le falta: ${missing.join(", ")}.` : null;
 }
 
 export function emailError(email: string): string | null {

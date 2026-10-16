@@ -84,3 +84,31 @@ body {
   from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: none; }
 }
+
+/* ---------------------------------------------------------------
+   Respuesta al pulsar: cualquier botón o enlace se "hunde" un poco
+   para que se note que se ha tocado (también en la versión simplificada)
+   --------------------------------------------------------------- */
+button, a[href], summary, [role="button"], label:has(> input[type="checkbox"]), label:has(> input[type="radio"]) {
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.12s ease-out, filter 0.12s ease-out, opacity 0.12s ease-out;
+}
+button:not(:disabled):active, a[href]:active, summary:active, [role="button"]:active,
+label:has(> input[type="checkbox"]):active, label:has(> input[type="radio"]):active {
+  transform: scale(0.96);
+  filter: brightness(0.92);
+}
+/* Tarjetas enteras pulsables (el enlace del título cubre la tarjeta) */
+article:has(a[href]:active) { transform: scale(0.985); transition: transform 0.12s ease-out; }
+article:has(a[href]:active) a[href]:active { transform: none; filter: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  button:not(:disabled):active, a[href]:active, summary:active, [role="button"]:active,
+  label:has(> input[type="checkbox"]):active, label:has(> input[type="radio"]):active,
+  article:has(a[href]:active) {
+    transform: none;
+  }
+}
+
+/* Barra de carga de arriba (componente NavigationProgress) */
+@keyframes barra-brillo { from { background-position: 0 0; } to { background-position: 200% 0; } }

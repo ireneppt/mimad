@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import { useActionState, useState } from "react";
-import { Building2, LoaderCircle, LocateFixed, MapPin, User } from "lucide-react";
+import { Building2, Circle, CircleCheck, CircleX, LoaderCircle, LocateFixed, MapPin, User } from "lucide-react";
 import { signup, type AuthState } from "../actions";
 import { Field, FormError, PasswordInput, PhoneInput, SubmitButton, TextInput } from "@/components/forms";
 import { INTERESTS } from "@/lib/interests";
 import { MIN_PASSWORD_LENGTH } from "@/lib/auth";
-import { LIMITS } from "@/lib/limits";
+import { LIMITS, PASSWORD_RULES } from "@/lib/limits";
 import type { Point } from "@/lib/location";
 import { useMyLocation } from "@/components/useMyLocation";
 
@@ -16,6 +16,8 @@ export default function SignupForm({ municipios }: { municipios: string[] }) {
   const [chosen, setChosen] = useState<string[]>(state.fields?.intereses?.split(",").filter(Boolean) ?? []);
 
   const [homePoint, setHomePoint] = useState<Point | null>(null); // "estoy en casa"
+  const [password, setPassword] = useState("");
+  const [password2, setPassword2] = useState("");
   const { locate, asking, error: geoError } = useMyLocation();
 
   const toggle = (id: string) => setChosen((c) => (c.includes(id) ? c.filter((x) => x !== id) : [...c, id]));
@@ -90,12 +92,50 @@ export default function SignupForm({ municipios }: { municipios: string[] }) {
         <TextInput id="email" name="email" type="email" placeholder="tu@email.com" autoComplete="email" maxLength={LIMITS.emailMax} defaultValue={state.fields?.email} />
       </Field>
 
-      <Field label="Contraseña" htmlFor="password" hint={`Entre ${MIN_PASSWORD_LENGTH} y ${LIMITS.passwordMax} caracteres.`}>
-        <PasswordInput id="password" name="password" required minLength={MIN_PASSWORD_LENGTH} autoComplete="new-password" />
+      <Field label="Contraseña" htmlFor="password">
+        <PasswordInput
+          id="password"
+          name="password"
+          required
+          minLength={MIN_PASSWORD_LENGTH}
+          autoComplete="new-password"
+          aria-describedby="requisitos-clave"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        {/* Requisitos que se marcan en verde según se cumplen */}
+        <ul id="requisitos-clave" className="grid grid-cols-1 gap-1 text-sm min-[400px]:grid-cols-2" aria-live="polite">
+          {PASSWORD_RULES.map((r) => {
+            const ok = r.test(password);
+            return (
+              <li key={r.id} className={`flex items-center gap-1.5 ${ok ? "text-green-800" : "text-gris"}`}>
+                {ok ? <CircleCheck size={16} aria-hidden="true" /> : <Circle size={16} aria-hidden="true" />}
+                <span>
+                  {r.label}
+                  <span className="sr-only">{ok ? ": cumplido" : ": falta"}</span>
+                </span>
+              </li>
+            );
+          })}
+        </ul>
       </Field>
 
       <Field label="Repetir contraseña" htmlFor="password2">
-        <PasswordInput id="password2" name="password2" required minLength={MIN_PASSWORD_LENGTH} autoComplete="new-password" />
+        <PasswordInput
+          id="password2"
+          name="password2"
+          required
+          minLength={MIN_PASSWORD_LENGTH}
+          autoComplete="new-password"
+          value={password2}
+          onChange={(e) => setPassword2(e.target.value)}
+        />
+        {password2.length > 0 && (
+          <p className={`flex items-center gap-1.5 text-sm ${password2 === password ? "text-green-800" : "text-red-800"}`} aria-live="polite">
+            {password2 === password ? <CircleCheck size={16} aria-hidden="true" /> : <CircleX size={16} aria-hidden="true" />}
+            {password2 === password ? "Las contraseñas coinciden" : "Las contraseñas no coinciden"}
+          </p>
+        )}
       </Field>
 
       <h2 className="mt-2 text-sm font-semibold uppercase tracking-wider text-gris">Tus intereses</h2>

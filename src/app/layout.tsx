@@ -1,7 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import { Outfit } from "next/font/google";
 import "./globals.css";
+import { Suspense } from "react";
 import RegisterServiceWorker from "@/components/RegisterServiceWorker";
+import NavigationProgress from "@/components/NavigationProgress";
+import PressFeedback from "@/components/PressFeedback";
 import Splash from "@/components/Splash";
 import { SPLASH_KEY } from "@/lib/splash";
 
@@ -40,6 +43,11 @@ export default function RootLayout({
         {/* Mobile first: la app se diseña a 430 px y en escritorio queda centrada */}
         <div className="mx-auto min-h-dvh max-w-[430px] bg-white shadow-sm">{children}</div>
         <RegisterServiceWorker />
+        {/* Barra de carga arriba al cambiar de pantalla y vibración al pulsar */}
+        <Suspense fallback={null}>
+          <NavigationProgress />
+        </Suspense>
+        <PressFeedback />
       </body>
     </html>
   );
