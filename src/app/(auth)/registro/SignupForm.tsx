@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useActionState, useState } from "react";
 import { Building2, Circle, CircleCheck, CircleX, LoaderCircle, LocateFixed, MapPin, User } from "lucide-react";
 import { signup, type AuthState } from "../actions";
+import NifField from "./NifField";
 import { Field, FormError, PasswordInput, PhoneInput, SubmitButton, TextInput } from "@/components/forms";
 import { INTERESTS } from "@/lib/interests";
 import { MIN_PASSWORD_LENGTH } from "@/lib/auth";
@@ -12,7 +13,10 @@ import type { Point } from "@/lib/location";
 import { useMyLocation } from "@/components/useMyLocation";
 import PhotoPicker from "@/components/PhotoPicker";
 
-export default function SignupForm({ municipios }: { municipios: string[] }) {
+// kind = "persona" (/registro) o "entidad" (/registro/entidad): mismo formulario,
+// la entidad añade su nombre y su NIF (que se verifica contra el Registro oficial)
+export default function SignupForm({ municipios, kind = "persona" }: { municipios: string[]; kind?: "persona" | "entidad" }) {
+  const entity = kind === "entidad";
   const [state, action] = useActionState<AuthState, FormData>(signup, {});
   const [chosen, setChosen] = useState<string[]>(state.fields?.intereses?.split(",").filter(Boolean) ?? []);
 
@@ -25,29 +29,47 @@ export default function SignupForm({ municipios }: { municipios: string[] }) {
 
   return (
     <form action={action} className="flex flex-col gap-6">
+      <input type="hidden" name="tipo" value={kind} />
       <h2 className="text-sm font-semibold uppercase tracking-wider text-gris">Tu cuenta</h2>
 
       <fieldset className="flex flex-col gap-2">
         <legend className="mb-2 text-base font-medium">Tipo de cuenta</legend>
         <div className="grid grid-cols-2 gap-3">
-          <span className="flex h-16 items-center gap-2 rounded-2xl border-2 border-coral bg-coral/5 px-4 font-medium" aria-current="true">
-            <User size={20} className="text-coral-texto" aria-hidden="true" /> Persona
-          </span>
-          <Link href="/registro/entidad" className="flex h-16 items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 font-medium leading-tight">
-            <Building2 size={20} aria-hidden="true" /> Entidad u organización
+          <Link
+            href="/registro"
+            aria-current={!entity ? "true" : undefined}
+            className={`flex h-16 items-center gap-2 rounded-2xl px-4 font-medium ${!entity ? "border-2 border-coral bg-coral/5" : "border border-slate-200 bg-white"}`}
+          >
+            <User size={20} className={!entity ? "text-coral-texto" : ""} aria-hidden="true" /> Persona
+          </Link>
+          <Link
+            href="/registro/entidad"
+            aria-current={entity ? "true" : undefined}
+            className={`flex h-16 items-center gap-2 rounded-2xl px-4 font-medium leading-tight ${entity ? "border-2 border-coral bg-coral/5" : "border border-slate-200 bg-white"}`}
+          >
+            <Building2 size={20} className={entity ? "text-coral-texto" : ""} aria-hidden="true" /> Entidad u organización
           </Link>
         </div>
       </fieldset>
 
       {/* Foto opcional: se reduce en el móvil antes de enviarla */}
       <div className="flex flex-col items-center gap-1">
-        <PhotoPicker label="Añadir foto" />
-        <p className="text-sm text-gris">Foto opcional. Puedes ponerla o cambiarla después.</p>
+        <PhotoPicker label={entity ? "Añadir logo" : "Añadir foto"} />
+        <p className="text-sm text-gris">{entity ? "Logo opcional." : "Foto opcional."} Puedes ponerlo o cambiarlo después.</p>
       </div>
 
-      <Field label="Nombre" htmlFor="nombre">
-        <TextInput id="nombre" name="nombre" placeholder="¿Cómo te llamas?" autoComplete="given-name" required minLength={LIMITS.nameMin} maxLength={LIMITS.nameMax} defaultValue={state.fields?.nombre} />
-      </Field>
+      {entity ? (
+        <>
+          <Field label="Nombre de la entidad" htmlFor="nombre">
+            <TextInput id="nombre" name="nombre" placeholder="Asociación, centro, negocio…" autoComplete="organization" required minLength={2} maxLength={120} defaultValue={state.fields?.nombre} />
+          </Field>
+          <NifField defaultValue={state.fields?.nif} />
+        </>
+      ) : (
+        <Field label="Nombre" htmlFor="nombre">
+          <TextInput id="nombre" name="nombre" placeholder="¿Cómo te llamas?" autoComplete="given-name" required minLength={LIMITS.nameMin} maxLength={LIMITS.nameMax} defaultValue={state.fields?.nombre} />
+        </Field>
+      )}
 
       <Field label="Teléfono móvil" htmlFor="telefono" hint="Lo usarás para iniciar sesión.">
         <PhoneInput id="telefono" name="telefono" required defaultValue={state.fields?.telefono} defaultCountry={state.fields?.pais} />

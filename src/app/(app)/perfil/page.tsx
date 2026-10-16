@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import {
-  Bell, CalendarCheck, CalendarDays, ChevronRight, Download, Heart, HeartHandshake, History, Lock, LogOut, MapPin,
+  Bell, Building2, CalendarCheck, CalendarDays, ChevronRight, Download, Heart, HeartHandshake, History, Lock, LogOut, MapPin,
   MessageCircle, Plus, Shield, Smartphone, Sparkles, User, Users,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
@@ -134,6 +134,20 @@ export default async function ProfilePage() {
             return <li key={label}>{href ? <Link href={href} className={cls}>{inner}</Link> : <div className={cls}>{inner}</div>}</li>;
           })}
         </ul>
+
+        {/* Cuentas de entidad: acceso a su panel (verificación y publicar planes) */}
+        {perfil.tipo === "entidad" && (
+          <Link href="/entidad" className="flex items-center gap-3 rounded-2xl bg-tinta p-4 text-white shadow-sm">
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white/15" aria-hidden="true">
+              <Building2 size={24} />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-lg font-semibold">Panel de tu entidad</span>
+              <span className="block text-sm text-white/80">Verificación del NIF y publicar planes</span>
+            </span>
+            <ChevronRight size={22} aria-hidden="true" />
+          </Link>
+        )}
 
         {/* Próximo plan, para entrar rápido a la agenda */}
         {next && (

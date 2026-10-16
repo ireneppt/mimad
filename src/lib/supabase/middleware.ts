@@ -7,7 +7,7 @@ export const GUEST_COOKIE = "mm_invitado";
 const PUBLIC_PATHS = ["/login", "/registro", "/simple/login", "/simple/registro", "/simple/ayuda", "/privacidad"];
 // Un invitado puede curiosear, pero esto necesita cuenta
 const ACCOUNT_ONLY_PATHS = [
-  "/agenda", "/perfil", "/notificaciones", "/crear-evento", "/acompanamiento", "/whatsapp",
+  "/agenda", "/perfil", "/notificaciones", "/crear-evento", "/entidad", "/acompanamiento", "/whatsapp",
   "/simple/agenda", "/simple/perfil", "/simple/familia",
 ];
 
