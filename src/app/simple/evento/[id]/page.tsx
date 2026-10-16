@@ -76,7 +76,13 @@ export default async function SimpleEventPage({
     >
       <BackLink href={volver} />
 
-      {conflicto && <ConflictChoice nuevo={evento} existente={conflicto} back={here} />}
+      {conflicto && (
+        <ConflictChoice
+          nuevo={{ id: evento.id, titulo: evento.titulo, cuando: whenInWords(evento) }}
+          existente={{ id: conflicto.id, titulo: conflicto.titulo, cuando: whenInWords(conflicto) }}
+          back={here}
+        />
+      )}
 
       {query.hecho === evento.id && (
         <p role="status" className="flex items-start gap-3 rounded-2xl border-2 border-green-700 bg-green-50 p-5 text-xl text-green-900">

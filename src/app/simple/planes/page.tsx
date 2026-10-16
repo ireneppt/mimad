@@ -114,7 +114,11 @@ export default async function SimplePlansPage({
       </nav>
 
       {choque && con && (
-        <ConflictChoice nuevo={choque} existente={con} back={`${href(when)}${index ? `&n=${index}` : ""}`} />
+        <ConflictChoice
+          nuevo={{ id: choque.id, titulo: choque.titulo, cuando: whenInWords(choque) }}
+          existente={{ id: con.id, titulo: con.titulo, cuando: whenInWords(con) }}
+          back={`${href(when)}${index ? `&n=${index}` : ""}`}
+        />
       )}
 
       {done && (
