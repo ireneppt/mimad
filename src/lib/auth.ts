@@ -1,6 +1,10 @@
 // Login con móvil sin SMS: por dentro, cada móvil se convierte en un correo
 // interno que nunca recibe mensajes. La persona solo ve "móvil" y "contraseña".
 // Lo usan el login normal y el simplificado: no cambiar el formato.
+//
+// Estas funciones son para móviles de España (las usa la versión simplificada en
+// el navegador). Para móviles de otros países: parseMobile() en lib/phone.ts
+// (solo servidor). Para un móvil español, las dos dan el mismo correo interno.
 
 const INTERNAL_EMAIL_DOMAIN = "movil.mimad.app";
 
@@ -17,8 +21,14 @@ export function isValidMobile(input: string): boolean {
   return /^[67]\d{8}$/.test(normalizePhone(input));
 }
 
+// Móvil en formato internacional (+34612345678) → correo interno (34612345678@movil.mimad.app)
+export function internalEmail(e164: string): string {
+  return `${e164.replace(/\D/g, "")}@${INTERNAL_EMAIL_DOMAIN}`;
+}
+
+// Móvil español → correo interno
 export function phoneToEmail(input: string): string {
-  return `34${normalizePhone(input)}@${INTERNAL_EMAIL_DOMAIN}`;
+  return internalEmail(`+34${normalizePhone(input)}`);
 }
 
 export const MIN_PASSWORD_LENGTH = 8;
