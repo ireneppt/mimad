@@ -8,6 +8,8 @@ import { formatDay, formatWhenLong } from "./format";
 import { INTERESTS } from "./interests";
 
 export type When = "hoy" | "manana" | "semana";
+// Ventanas de días: las pestañas de Planes y, además, "el fin de semana" (Pedir consejo)
+export type PlanWindow = When | "finde";
 
 export const WHEN_LABELS: Record<When, string> = { hoy: "Hoy", manana: "Mañana", semana: "Semana" };
 
@@ -45,10 +47,17 @@ function addDays(iso: string, days: number): string {
 }
 
 // Días que cubre cada pestaña: [primer día, último día]
-function windowFor(when: When): [string, string] {
+export function windowFor(when: PlanWindow): [string, string] {
   const today = todayIso();
   if (when === "hoy") return [today, today];
   if (when === "manana") return [addDays(today, 1), addDays(today, 1)];
+  if (when === "finde") {
+    // Este sábado y domingo (si hoy es domingo, solo hoy)
+    const wd = new Date(`${today}T12:00:00Z`).getUTCDay();
+    if (wd === 0) return [today, today];
+    const sat = addDays(today, wd === 6 ? 0 : 6 - wd);
+    return [sat, addDays(sat, 1)];
+  }
   return [today, addDays(today, 6)];
 }
 
@@ -91,9 +100,15 @@ export const MAX_PLANS = 10;
 
 export async function getSimplePlans(
   db: SupabaseClient,
-  opts: { home: { lat: number; lon: number }; when: When; recomendaciones: Recomendacion[]; intereses: string[] }
+  opts: {
+    home: { lat: number; lon: number };
+    when: PlanWindow;
+    recomendaciones: Recomendacion[];
+    intereses: string[];
+    filter?: (e: Evento) => boolean; // solo un tipo de planes (p. ej. "pasear" en Pedir consejo)
+  }
 ): Promise<Plan[]> {
-  const { home, when, recomendaciones, intereses } = opts;
+  const { home, when, recomendaciones, intereses, filter } = opts;
   const [from, to] = windowFor(when);
   const start = `${from}T00:00:00`;
   const end = `${to}T23:59:59`;
@@ -115,14 +130,16 @@ export async function getSimplePlans(
     .limit(400);
   if (error) throw new Error(`No se pudieron cargar los planes: ${error.message}`);
 
-  const days = when === "semana" ? null : weekdayOf(from);
+  // Días de la semana que cubre la ventana (para los talleres semanales); null = toda la semana
+  const days = when === "semana" ? null : [...new Set([from, to])].map(weekdayOf);
   const now = nowIso();
   const nearby = ((data ?? []) as Evento[]).filter((e) => {
     const publico = e.publico ?? "";
     if (NOT_FOR_SENIORS.test(publico) && !/mayores/i.test(publico)) return false;
+    if (filter && !filter(e)) return false;
     if (!e.fecha_inicio) {
-      // Talleres semanales: en "Hoy" y "Mañana", solo los de ese día de la semana
-      if (days && !plain(e.horario ?? "").includes(plain(days))) return false;
+      // Talleres semanales: en "Hoy", "Mañana" o el fin de semana, solo los de esos días
+      if (days && !days.some((d) => plain(e.horario ?? "").includes(plain(d)))) return false;
       // Hoy: si ya ha empezado ("Cada viernes, 12:00 - 13:30" a las 13:05), no se ofrece
       const start = (e.horario ?? "").match(/(\d{1,2}):(\d{2})/);
       if (when === "hoy" && start && `${from}T${start[1].padStart(2, "0")}:${start[2]}` < now) return false;
