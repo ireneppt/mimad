@@ -86,6 +86,8 @@ export default async function ProfilePage() {
   const place = [perfil.barrio, perfil.municipio].filter(Boolean).join(", ") || "Sin municipio";
   const municipios = (municipiosData ?? []).map((m) => m.nombre as string);
   const next = agenda[0];
+  // Las cuentas de entidad no participan: su perfil no tiene planes, intereses ni acompañamiento
+  const isEntity = perfil.tipo === "entidad";
 
   return (
     <main className="flex flex-col bg-fondo">
@@ -105,7 +107,7 @@ export default async function ProfilePage() {
           <p className="flex items-center gap-1.5 text-lg text-gris">
             <MapPin size={18} className="text-coral-texto" aria-hidden="true" /> {place}
           </p>
-          {myInterests.length > 0 && (
+          {!isEntity && myInterests.length > 0 && (
             <ul className="mt-1 flex flex-wrap justify-center gap-2" aria-label="Tus intereses">
               {myInterests.map(({ id, label, icon: Icon }) => (
                 <li key={id} className="flex items-center gap-1.5 rounded-full bg-coral/10 px-3 py-1 text-sm font-semibold text-coral-texto">
@@ -116,7 +118,9 @@ export default async function ProfilePage() {
           )}
         </section>
 
-        {/* Contadores */}
+        {!isEntity && (
+          <>
+{/* Contadores */}
         <ul className="grid grid-cols-3 divide-x divide-slate-100 rounded-3xl bg-white py-4 shadow-sm ring-1 ring-slate-200" aria-label="Resumen">
           {[
             { n: proximos, label: proximos === 1 ? "plan apuntado" : "planes apuntados", icon: <CalendarCheck size={20} />, tone: "coral" as Tone, href: "/agenda" },
@@ -134,6 +138,8 @@ export default async function ProfilePage() {
             return <li key={label}>{href ? <Link href={href} className={cls}>{inner}</Link> : <div className={cls}>{inner}</div>}</li>;
           })}
         </ul>
+          </>
+        )}
 
         {/* Cuentas de entidad: acceso a su panel (verificación y publicar planes) */}
         {perfil.tipo === "entidad" && (
@@ -149,7 +155,9 @@ export default async function ProfilePage() {
           </Link>
         )}
 
-        {/* Próximo plan, para entrar rápido a la agenda */}
+        {!isEntity && (
+          <>
+{/* Próximo plan, para entrar rápido a la agenda */}
         {next && (
           <Link href="/agenda" className="flex items-center gap-3 rounded-2xl border border-coral/20 bg-white p-4 shadow-sm">
             <span className="bg-degradado flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-white" aria-hidden="true">
@@ -223,14 +231,29 @@ export default async function ProfilePage() {
             </Link>
           </div>
         </section>
+          </>
+        )}
 
         {/* Mi cuenta */}
         <section aria-labelledby="t-cuenta" className="flex flex-col gap-3">
           <SectionTitle id="t-cuenta" icon={<User size={18} />} tone="azul">Mi cuenta</SectionTitle>
           <ul className="divide-y divide-slate-100 overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-slate-200">
-            <EditRow icon={tile("azul", <User size={22} />)} title="Nombre" value={perfil.nombre}>
+            {isEntity ? (
+              <li>
+                <Link href="/entidad" className="flex items-center gap-4 bg-white p-4">
+                  {tile("azul", <Building2 size={22} />)}
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-lg font-semibold">Nombre y NIF de la entidad</span>
+                    <span className="block truncate text-sm text-gris">{perfil.nombre} · se cambian en el panel</span>
+                  </span>
+                  <ChevronRight size={22} className="text-gris" aria-hidden="true" />
+                </Link>
+              </li>
+            ) : (
+              <EditRow icon={tile("azul", <User size={22} />)} title="Nombre" value={perfil.nombre}>
               <NameForm nombre={perfil.nombre} />
             </EditRow>
+            )}
             <li className="flex items-center gap-4 bg-white p-4">
               {tile("azul", <Smartphone size={22} />)}
               <span className="min-w-0 flex-1">
@@ -241,9 +264,11 @@ export default async function ProfilePage() {
             <EditRow icon={tile("azul", <MapPin size={22} />)} title="Municipio y código postal" value={place}>
               <PlaceForm municipio={perfil.municipio ?? ""} municipios={municipios} />
             </EditRow>
-            <EditRow icon={tile("azul", <Sparkles size={22} />)} title="Intereses" value={myInterests.map((i) => i.label).join(", ") || "Sin elegir"}>
+            {!isEntity && (
+              <EditRow icon={tile("azul", <Sparkles size={22} />)} title="Intereses" value={myInterests.map((i) => i.label).join(", ") || "Sin elegir"}>
               <InterestsForm intereses={perfil.intereses} />
             </EditRow>
+            )}
             <EditRow icon={tile("azul", <Lock size={22} />)} title="Cambiar contraseña">
               <PasswordForm />
             </EditRow>
@@ -254,12 +279,14 @@ export default async function ProfilePage() {
         <section aria-labelledby="t-avisos" className="flex flex-col gap-3">
           <SectionTitle id="t-avisos" icon={<Bell size={18} />} tone="verde">Avisos</SectionTitle>
           <ul className="divide-y divide-slate-100 overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-slate-200">
-            <NoticeToggle field="avisos_whatsapp" initial={perfil.avisos_whatsapp} icon={tile("verde", <MessageCircle size={22} />)} title="Avisos por WhatsApp" detail="Recordatorios y planes recomendados" />
-            <NoticeToggle field="avisos_app" initial={perfil.avisos_app ?? true} icon={tile("verde", <Bell size={22} />)} title="Avisos en la app" detail="Novedades cerca de ti" />
+            {!isEntity && <NoticeToggle field="avisos_whatsapp" initial={perfil.avisos_whatsapp} icon={tile("verde", <MessageCircle size={22} />)} title="Avisos por WhatsApp" detail="Recordatorios y planes recomendados" />}
+            <NoticeToggle field="avisos_app" initial={perfil.avisos_app ?? true} icon={tile("verde", <Bell size={22} />)} title="Avisos en la app" detail={isEntity ? "Cambios y novedades de tus planes" : "Novedades cerca de ti"} />
           </ul>
         </section>
 
-        {/* Accesibilidad y acompañamiento */}
+        {!isEntity && (
+          <>
+{/* Accesibilidad y acompañamiento */}
         <section aria-labelledby="t-accesibilidad" className="flex flex-col gap-3">
           <SectionTitle id="t-accesibilidad" icon={<HeartHandshake size={18} />} tone="violeta">Accesibilidad</SectionTitle>
           <ul className="divide-y divide-slate-100 overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-slate-200">
@@ -285,6 +312,8 @@ export default async function ProfilePage() {
             </li>
           </ul>
         </section>
+          </>
+        )}
 
         {/* Privacidad */}
         <section aria-labelledby="t-privacidad" className="flex flex-col gap-3">

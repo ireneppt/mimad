@@ -91,10 +91,19 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
             <span className="text-lg font-bold">{evento.gratuito ? "Gratis" : evento.precio ?? ""}</span>
           </div>
           <h2 className="text-3xl font-bold leading-tight text-balance">{evento.titulo}</h2>
-          {evento.lugar && (
-            <p className="text-base text-gris">
-              En <span className="font-semibold text-tinta">{niceText(evento.lugar)}</span>
+          {evento.organizacion && evento.fuente !== "cepi_actividades" ? (
+            <p className="flex flex-wrap items-center gap-x-1.5 text-base text-gris">
+              Organiza <span className="font-semibold text-tinta">{niceText(evento.organizacion.replace(" · Entidad verificada", ""))}</span>
+              {evento.organizacion.endsWith("· Entidad verificada") && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 text-sm font-semibold text-green-800 ring-1 ring-green-200">✓ Entidad verificada</span>
+              )}
             </p>
+          ) : (
+            evento.lugar && (
+              <p className="text-base text-gris">
+                En <span className="font-semibold text-tinta">{niceText(evento.lugar)}</span>
+              </p>
+            )
           )}
         </div>
 

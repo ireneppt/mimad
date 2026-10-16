@@ -3,9 +3,10 @@ import { Bell, Building2, CalendarPlus, Clock, Database, ExternalLink, PartyPopp
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/profile";
 import { getSources } from "@/lib/data";
-import BackButton from "@/components/BackButton";
 import Avatar from "@/components/Avatar";
 import EntityForm from "./EntityForm";
+import { EventRow } from "./parts";
+import { getEntityEvents, isPast } from "@/lib/entityEvents";
 
 export const metadata = { title: "Panel de tu entidad · MiMad" };
 
@@ -22,12 +23,14 @@ export default async function EntityPage({ searchParams }: { searchParams: Promi
     getSources(supabase),
   ]);
   const registro = fuentes["centros_atencion_social"];
+  const events = entidad ? await getEntityEvents(supabase, entidad.id) : [];
+  const upcoming = events.filter((e) => !isPast(e) && e.estado !== "cancelado");
+  const totalApuntados = upcoming.reduce((n, e) => n + e.apuntados, 0);
 
   return (
     <main className="flex flex-col">
       <header className="sticky top-0 z-[500] flex items-center gap-1 border-b border-slate-100 bg-white/95 px-2 py-2 backdrop-blur">
-        <BackButton />
-        <h1 className="flex-1 text-2xl font-bold">Tu entidad</h1>
+        <h1 className="flex-1 pl-3 text-2xl font-bold">Panel de tu entidad</h1>
         <Link href="/notificaciones" aria-label="Notificaciones" className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100">
           <Bell size={22} aria-hidden="true" />
         </Link>
@@ -94,15 +97,35 @@ export default async function EntityPage({ searchParams }: { searchParams: Promi
               )}
             </section>
 
-            {/* Publicar planes (tarea A10) */}
-            <section className="flex flex-col gap-3 rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
-              <h2 className="flex items-center gap-2 text-xl font-bold">
-                <CalendarPlus size={22} className="text-coral-texto" aria-hidden="true" /> Tus planes
-              </h2>
-              <p className="flex items-center gap-2 text-base text-gris">
-                <Clock size={18} aria-hidden="true" /> Aún no has publicado ningún plan.
-              </p>
-              <Link href="/crear-evento" className="bg-degradado flex h-14 items-center justify-center gap-2 rounded-2xl text-lg font-semibold text-white">
+            {/* Resumen de sus planes */}
+            <ul className="grid grid-cols-3 divide-x divide-slate-100 rounded-3xl bg-white py-4 shadow-sm ring-1 ring-slate-200" aria-label="Resumen">
+              {[
+                [upcoming.length, upcoming.length === 1 ? "plan próximo" : "planes próximos"],
+                [totalApuntados, totalApuntados === 1 ? "persona apuntada" : "personas apuntadas"],
+                [events.filter((e) => e.estado !== "cancelado").length, "planes en total"],
+              ].map(([n, label]) => (
+                <li key={String(label)} className="flex flex-col items-center gap-1 px-1 text-center">
+                  <span className="text-3xl font-bold">{n}</span>
+                  <span className="text-sm leading-tight text-gris">{label}</span>
+                </li>
+              ))}
+            </ul>
+
+            <section className="flex flex-col gap-3" aria-labelledby="proximos">
+              <div className="flex items-baseline justify-between">
+                <h2 id="proximos" className="flex items-center gap-2 text-xl font-bold">
+                  <CalendarPlus size={22} className="text-coral-texto" aria-hidden="true" /> Tus próximos planes
+                </h2>
+                {events.length > 0 && <Link href="/entidad/agenda" className="text-base font-semibold text-coral-texto">Ver agenda</Link>}
+              </div>
+              {upcoming.length === 0 ? (
+                <p className="flex items-center gap-2 rounded-2xl bg-white p-4 text-base text-gris ring-1 ring-slate-200">
+                  <Clock size={18} aria-hidden="true" /> {events.length === 0 ? "Aún no has publicado ningún plan." : "No tienes planes próximos."}
+                </p>
+              ) : (
+                <ul className="flex flex-col gap-3">{upcoming.slice(0, 3).map((e) => <EventRow key={e.id} e={e} />)}</ul>
+              )}
+              <Link href="/entidad/nuevo" className="bg-degradado flex h-14 items-center justify-center gap-2 rounded-2xl text-lg font-semibold text-white shadow-lg shadow-coral/25">
                 <CalendarPlus size={22} aria-hidden="true" /> Publicar un plan
               </Link>
             </section>

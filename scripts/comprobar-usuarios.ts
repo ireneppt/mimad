@@ -12,7 +12,7 @@ const env = () => ({ url: process.env.NEXT_PUBLIC_SUPABASE_URL!, anon: process.e
 const NIF_REGISTRADO = "G28727261";
 const NIF_INVENTADO = "X0000000Z";
 
-async function newUser(admin: SupabaseClient, nombre: string, simplificada = false) {
+async function newUser(admin: SupabaseClient, nombre: string, simplificada = false, extra: Record<string, unknown> = {}) {
   const slug = nombre.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase(); // sin tildes
   const email = `prueba-${slug}-${randomUUID().slice(0, 8)}@prueba.mimad.app`;
   const password = randomUUID();
@@ -20,7 +20,7 @@ async function newUser(admin: SupabaseClient, nombre: string, simplificada = fal
     email,
     password,
     email_confirm: true,
-    user_metadata: { nombre, simplificada },
+    user_metadata: { nombre, simplificada, ...extra },
   });
   if (error || !data.user) throw new Error(`No se pudo crear ${nombre}: ${error?.message}`);
 
@@ -152,6 +152,27 @@ export async function checkUsers(check: Check) {
     const ajena = await otra.db.storage.from("avatares").upload(`${carmen.id}/intruso.png`, png, { contentType: "image/png" });
     check("Nadie puede subir fotos a la carpeta de otra persona", !!ajena.error, ajena.error?.message ?? "¡se pudo!");
     await admin.storage.from("avatares").remove([`${carmen.id}/prueba.png`, `${carmen.id}/intruso.png`]);
+
+    // Cuentas de entidad: publican, no participan
+    const ent = await newUser(admin, "Entidad de prueba", false, { tipo: "entidad" });
+    created.push(ent.id);
+    await ent.db.from("mm_entidades").insert({ nombre: "Asociación de prueba", nif: NIF_REGISTRADO });
+    const entApunta = await ent.db.from("mm_inscripciones").insert({ evento_id: "agenda_madrid:prueba" });
+    check("Una entidad no puede apuntarse a planes", !!entApunta.error, entApunta.error?.message ?? "¡se pudo!");
+    const entVinculo = await ent.db.from("mm_vinculos").insert({});
+    check("Una entidad no puede crear vínculos de acompañamiento", !!entVinculo.error, entVinculo.error?.message ?? "¡se pudo!");
+    const { data: entRow } = await ent.db.from("mm_entidades").select("id").single();
+    const manana = new Date(Date.now() + 86_400_000).toISOString().slice(0, 10);
+    const plan = await ent.db.from("mm_eventos")
+      .insert({ entidad_id: entRow?.id, titulo: "Taller de prueba", fecha_inicio: `${manana}T17:00:00`, direccion: "Calle Bronce 16", lat: 40.389, lon: -3.688 })
+      .select("id, estado").single();
+    const visible = await carmen.db.from("v_eventos").select("id, organizacion").eq("id", `entidad:${plan.data?.id}`);
+    check("El plan de una entidad verificada se publica y lo ven las personas", plan.data?.estado === "publicado" && (visible.data ?? []).length === 1, visible.data ?? plan.error?.message);
+    await carmen.db.from("mm_inscripciones").insert({ evento_id: `entidad:${plan.data?.id}` });
+    await ent.db.from("mm_eventos").update({ estado: "cancelado" }).eq("id", plan.data?.id ?? "");
+    const tras = await carmen.db.from("v_eventos").select("id").eq("id", `entidad:${plan.data?.id}`);
+    const aviso = await carmen.db.from("mm_notificaciones").select("titulo").eq("tipo", "plan_cambio");
+    check("Al cancelarlo desaparece y se avisa a las personas apuntadas", (tras.data ?? []).length === 0 && (aviso.data ?? []).length === 1, aviso.data);
 
     // Perfil: apagar avisos y borrar la propia cuenta
     const avisos = await carmen.db.from("mm_perfiles").update({ avisos_app: false }).eq("id", carmen.id).select("avisos_app");

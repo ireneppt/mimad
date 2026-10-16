@@ -1,6 +1,6 @@
-import UnderConstruction from "@/components/UnderConstruction";
+import { redirect } from "next/navigation";
 
-// Provisional: publicar planes es la tarea A10
-export default function CreateEventPage() {
-  return <UnderConstruction title="Publicar un plan" task="tarea A10" />;
+// Dirección antigua: publicar un plan está ahora en el panel de la entidad
+export default function CreateEventRedirect() {
+  redirect("/entidad/nuevo");
 }

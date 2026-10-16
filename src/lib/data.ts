@@ -24,6 +24,7 @@ export type Evento = {
   accesibilidad: string | null;
   publico: string | null;
   idioma: string | null;
+  organizacion?: string | null; // quién lo organiza (agenda del Ayuntamiento, CEPI, entidades de MiMad)
 };
 
 export type Lugar = {

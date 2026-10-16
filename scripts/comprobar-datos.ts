@@ -24,7 +24,8 @@ async function main() {
 
   console.log("DATOS");
   const { data: fuentes } = await db.from("da_fuentes").select("id, filas, ultima_carga, ultimo_error");
-  for (const f of fuentes ?? []) {
+  // "entidad" son los planes que publican las entidades en MiMad: no se descarga de ningún portal
+  for (const f of (fuentes ?? []).filter((x) => x.id !== "entidad")) {
     check(f.id, !f.ultimo_error && (f.filas ?? 0) > 0, f.ultimo_error ?? `${f.filas} filas, cargado ${f.ultima_carga}`);
   }
   for (const fuente of ["agenda_madrid", "juntos_contra_soledad", "cepi_actividades"]) {
