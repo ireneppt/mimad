@@ -20,6 +20,7 @@ import { whatsappHref } from "@/lib/phoneLinks";
 import { siteUrl } from "@/lib/siteUrl";
 import { fromWhere, getPendingRecommendations, getSimplePlans, whenInWords, whyThisPlan, windowFor } from "@/lib/simplePlans";
 import { CUANDO, QUE, dayLabel, matchesQue, parseCuando, parseQue, type Que } from "@/lib/consejo";
+import { recommend } from "@/lib/assistant";
 import { joinPlan } from "../planes/actions";
 
 export const metadata = { title: "Pedir consejo · MiMad simplificada" };
@@ -135,8 +136,21 @@ export default async function AdvicePage({
     intereses: perfil?.intereses ?? [],
     filter: (e) => matchesQue(que, e),
   }).then((ps) => ps.filter((p) => matchesQue(que, p.evento)));
+
+  // El asistente (Claude si hay clave; si no, reglas) elige el mejor orden y explica por qué.
+  // La respuesta se guarda 30 min, así que "Enséñame otro plan" no vuelve a preguntar.
+  const consejo = await recommend({
+    mensaje: `Quiero ${QUE[que].label.toLowerCase()}, ${CUANDO.find((c) => c.id === cuando)!.label.toLowerCase()}.`,
+    candidatos: plans,
+    persona: { id: perfil?.id ?? null, nombre: perfil?.nombre ?? null, intereses: perfil?.intereses ?? [], simplificada: true },
+    origen: origin.kind,
+  });
+  const elegidos = consejo.elegidos.map((x) => x.plan);
+  const ordered = [...elegidos, ...plans.filter((p) => !elegidos.includes(p))];
+  const porque = new Map(consejo.motor === "claude" ? consejo.elegidos.map((x) => [x.plan.evento.id, x.porque]) : []);
+
   const n = Math.max(0, Number(params.n) || 0);
-  const plan = plans.length ? plans[n % plans.length] : null;
+  const plan = ordered.length ? ordered[n % ordered.length] : null;
   const here = `/simple/consejo?que=${que}&cuando=${cuando}${n ? `&n=${n}` : ""}`;
 
   const [done, nuevo, existente] = await Promise.all([
@@ -216,8 +230,12 @@ export default async function AdvicePage({
         )}
         <p className="rounded-2xl bg-crema p-4 text-xl leading-snug">
           <strong className="text-coral-texto">¿Por qué este?</strong>{" "}
-          {que !== "sorpresa" && `Es para ${QUE[que].label.toLowerCase()}. `}
-          {whyThisPlan(plan, { minutes: minutos, from: origin.kind })}
+          {porque.get(e.id) ?? (
+            <>
+              {que !== "sorpresa" && `Es para ${QUE[que].label.toLowerCase()}. `}
+              {whyThisPlan(plan, { minutes: minutos, from: origin.kind })}
+            </>
+          )}
         </p>
         {apuntada ? (
           <p className="flex items-center gap-3 rounded-2xl bg-green-50 p-4 text-xl font-bold text-green-800">
