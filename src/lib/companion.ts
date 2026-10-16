@@ -121,3 +121,14 @@ export function timeAgo(iso: string): string {
 export function daysLeft(expira: string): number {
   return Math.max(1, Math.ceil((new Date(expira).getTime() - Date.now()) / 86_400_000));
 }
+
+// Familiares que me acompañan (vínculo aceptado en el que yo soy la persona acompañada)
+export type Companion = { id: string; nombre: string; telefono: string | null };
+
+export async function getMyCompanions(db: SupabaseClient, userId: string): Promise<Companion[]> {
+  const { data: vs } = await db.from("mm_vinculos").select("familiar").eq("persona", userId).eq("estado", "aceptado");
+  const ids = (vs ?? []).map((v) => v.familiar as string);
+  if (ids.length === 0) return [];
+  const { data } = await db.from("mm_perfiles").select("id, nombre, telefono").in("id", ids);
+  return (data ?? []) as Companion[];
+}

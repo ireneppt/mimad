@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { displayPhone, telHref } from "@/lib/phoneLinks";
 import type { ReactNode } from "react";
 import {
   ArrowLeft, ArrowRightLeft, ChevronRight, Heart, Lock, MapPin, Phone, Plus, Shield, Smartphone, Sparkles, UserRound,
@@ -8,6 +9,9 @@ import { Hint, PrimarySubmit } from "@/components/simple/ui";
 import { createClient } from "@/lib/supabase/server";
 import { getEvent, getEventsByIds } from "@/lib/data";
 import ConflictChoice from "@/components/simple/ConflictChoice";
+import CompanionAsk from "@/components/simple/CompanionAsk";
+import { siteUrl } from "@/lib/siteUrl";
+
 import { INTERESTS } from "@/lib/interests";
 import { getCurrentProfile } from "@/lib/profile";
 import { getPendingRecommendations, whenInWords } from "@/lib/simplePlans";
@@ -101,6 +105,12 @@ export default async function SimpleProfilePage({
           ¡Hecho! Te has apuntado a «{apuntado.titulo}». Lo tienes en Mis planes.
         </Hint>
       )}
+      {apuntado && (familiares ?? []).length > 0 && (
+        <CompanionAsk
+          companions={familiares ?? []}
+          plan={{ titulo: apuntado.titulo, cuando: whenInWords(apuntado), lugar: apuntado.lugar ?? apuntado.direccion, url: await siteUrl(`/simple/evento/${encodeURIComponent(apuntado.id)}`) }}
+        />
+      )}
       {nuevo && existente && (
         <ConflictChoice
           nuevo={{ id: nuevo.id, titulo: nuevo.titulo, cuando: whenInWords(nuevo) }}
@@ -135,8 +145,8 @@ export default async function SimpleProfilePage({
                   <p className="text-2xl font-bold">{f.nombre}</p>
                 </div>
                 <p className="text-xl leading-snug">{f.nombre} ve tus planes y te puede recomendar planes nuevos.</p>
-                {f.telefono && (
-                  <a href={`tel:+34${f.telefono}`} className="flex h-16 items-center justify-center gap-3 rounded-2xl bg-green-700 text-xl font-bold text-white">
+                {telHref(f.telefono) && (
+                  <a href={telHref(f.telefono)!} className="flex h-16 items-center justify-center gap-3 rounded-2xl bg-green-700 text-xl font-bold text-white">
                     <Phone size={26} aria-hidden="true" />
                     Llamar a {f.nombre}
                   </a>
@@ -181,7 +191,7 @@ export default async function SimpleProfilePage({
         <h2 id="datos" className="text-[1.75rem] font-bold">Mis datos</h2>
         <p className="text-xl text-gris">Toca lo que quieras cambiar.</p>
         <DataRow href="?editar=nombre" icon={<UserRound size={28} />} label="Mi nombre" value={perfil.nombre} />
-        <DataRow icon={<Smartphone size={28} />} label="Mi teléfono" value={perfil.telefono ? perfil.telefono.replace(/(\d{3})(?=\d)/g, "$1 ") : "—"} note="Es con lo que entras en MiMad. Para cambiarlo, pide ayuda." />
+        <DataRow icon={<Smartphone size={28} />} label="Mi teléfono" value={displayPhone(perfil.telefono)} note="Es con lo que entras en MiMad. Para cambiarlo, pide ayuda." />
         <DataRow href="?editar=casa" icon={<MapPin size={28} />} label="Dónde vivo" value={perfil.municipio ?? "Sin elegir"} />
         <DataRow href="?editar=gustos" icon={<Sparkles size={28} />} label="Lo que me gusta" value={gustos.length ? gustos.join(", ") : "Sin elegir"} />
         <DataRow href="?editar=contrasena" icon={<Lock size={28} />} label="Mi contraseña" value="Cambiarla por otra nueva" plain />
