@@ -7,6 +7,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { LIMITS, nameError, strongPasswordError } from "@/lib/limits";
 import { INTERESTS } from "@/lib/interests";
+import { removeAvatars, saveAvatar } from "@/lib/avatar";
 
 export type ProfileState = { ok?: string; error?: string };
 
@@ -100,9 +101,26 @@ export async function deleteAccount(_prev: ProfileState, form: FormData): Promis
   if (String(form.get("confirmacion") ?? "").trim().toUpperCase() !== "BORRAR") {
     return { error: "Escribe BORRAR (en mayúsculas o minúsculas) para confirmar." };
   }
-  const { supabase } = await current();
+  const { supabase, user } = await current();
+  await removeAvatars(supabase, user.id); // las fotos van aparte (Storage): se borran primero
   const { error } = await supabase.rpc("borrar_mi_cuenta");
   if (error) return { error: "No se ha podido borrar la cuenta. Prueba otra vez." };
   await supabase.auth.signOut();
   redirect("/login?borrada=1");
+}
+
+// Foto de perfil: cambiarla (llega ya reducida desde el móvil) o quitarla
+export async function updateAvatar(_prev: ProfileState, form: FormData): Promise<ProfileState> {
+  const foto = form.get("foto");
+  if (!(foto instanceof File) || foto.size === 0) return { error: "Elige una foto." };
+  const { supabase, user } = await current();
+  const err = await saveAvatar(supabase, user.id, foto);
+  return err ? { error: err } : done("Foto guardada.");
+}
+
+export async function removeAvatar(): Promise<ProfileState> {
+  const { supabase, user } = await current();
+  await removeAvatars(supabase, user.id);
+  const { error } = await supabase.from("mm_perfiles").update({ foto_url: null }).eq("id", user.id);
+  return error ? { error: "No se ha podido quitar la foto." } : done("Foto quitada.");
 }

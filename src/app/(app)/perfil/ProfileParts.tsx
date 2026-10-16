@@ -2,14 +2,15 @@
 
 // Piezas del perfil que reaccionan al tocarlas: filas que se abren para editar,
 // interruptores y formularios. Las acciones están en ./actions.ts (servidor).
-import { createContext, useActionState, useCallback, useContext, useEffect, useState, useTransition, type ReactNode } from "react";
+import { createContext, useActionState, useCallback, useContext, useEffect, useRef, useState, useTransition, type ReactNode } from "react";
 import { ChevronDown, ChevronRight, CircleCheck, LoaderCircle } from "lucide-react";
 import { Field, FormError, PasswordInput, TextInput } from "@/components/forms";
 import { INTERESTS } from "@/lib/interests";
 import { LIMITS, PASSWORD_RULES } from "@/lib/limits";
 import { savePostalCode } from "@/lib/locationActions";
+import PhotoPicker from "@/components/PhotoPicker";
 import {
-  acceptCode, changePassword, deleteAccount, setNotices, updateInterests, updateMunicipio, updateName, type ProfileState,
+  acceptCode, changePassword, deleteAccount, removeAvatar, setNotices, updateAvatar, updateInterests, updateMunicipio, updateName, type ProfileState,
 } from "./actions";
 
 // ---------------------------------------------------------------------
@@ -24,7 +25,7 @@ export function EditRow({ icon, title, value, children }: { icon: ReactNode; tit
   return (
     <li>
       <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open} className="flex w-full items-center gap-4 bg-white p-4 text-left">
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-100" aria-hidden="true">{icon}</span>
+        {icon}
         <span className="min-w-0 flex-1">
           <span className="block text-lg font-semibold">{title}</span>
           {value && <span className="block truncate text-sm text-gris">{value}</span>}
@@ -187,7 +188,7 @@ export function NoticeToggle({ field, initial, icon, title, detail }: { field: "
   };
   return (
     <li className="flex items-center gap-4 bg-white p-4">
-      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-100" aria-hidden="true">{icon}</span>
+      {icon}
       <span className="min-w-0 flex-1">
         <span className="block text-lg font-semibold">{title}</span>
         <span className="block text-sm text-gris">{error ?? detail}</span>
@@ -259,6 +260,37 @@ export function DeleteAccount() {
           Cancelar
         </button>
       </div>
+    </form>
+  );
+}
+
+// ---------------------------------------------------------------------
+// Foto del perfil: al elegirla se sube sola; también se puede quitar
+// ---------------------------------------------------------------------
+export function AvatarEditor({ url, name }: { url: string | null; name: string }) {
+  const [state, action, pending] = useActionState(updateAvatar, {});
+  const [removing, startRemoving] = useTransition();
+  const [msg, setMsg] = useState<ProfileState>({});
+  const formRef = useRef<HTMLFormElement>(null);
+  const shown = msg.error || msg.ok ? msg : state;
+
+  return (
+    <form ref={formRef} action={action} className="flex flex-col items-center gap-1">
+      <PhotoPicker
+        key={url ?? "sin-foto"}
+        initialUrl={url}
+        size={120}
+        label="Añadir foto"
+        removable={!!url}
+        onPicked={() => {
+          setMsg({});
+          formRef.current?.requestSubmit();
+        }}
+        onRemove={() => startRemoving(async () => setMsg(await removeAvatar()))}
+      />
+      {(pending || removing) && <p className="text-sm text-white/90">{pending ? "Subiendo foto…" : "Quitando foto…"}</p>}
+      {shown.error && <p role="alert" className="rounded-lg bg-white px-2 py-1 text-sm text-red-800">{shown.error}</p>}
+      <span className="sr-only">{name}</span>
     </form>
   );
 }

@@ -9,6 +9,7 @@ import { INTERESTS } from "@/lib/interests";
 import { GUEST_COOKIE } from "@/lib/supabase/middleware";
 import { isPostalCode, parsePoint } from "@/lib/location";
 import { postalCodeLocation } from "@/lib/postalCodes";
+import { avatarError, saveAvatar } from "@/lib/avatar";
 
 // field: campo con el error (el registro simplificado vuelve al paso de ese campo)
 export type AuthState = { error?: string; field?: string; fields?: Record<string, string> };
@@ -105,8 +106,14 @@ export async function signup(_prev: AuthState, form: FormData): Promise<AuthStat
   }
   if (!fields.municipio && postal) fields.municipio = postal.municipio;
 
+  // Foto opcional (ya llega reducida desde el móvil): se comprueba antes de crear la cuenta
+  const foto = form.get("foto");
+  const photo = foto instanceof File && foto.size > 0 ? foto : null;
+  const fotoError = avatarError(photo);
+  if (fotoError) return fail(fotoError, "foto");
+
   const validInterests = INTERESTS.map((i) => i.id);
-  const { error } = await supabase.auth.signUp({
+  const { data: created, error } = await supabase.auth.signUp({
     email: mobile.email,
     password,
     options: {
@@ -132,6 +139,10 @@ export async function signup(_prev: AuthState, form: FormData): Promise<AuthStat
     }
     return fail(`No se pudo crear la cuenta: ${error.message}`);
   }
+
+  // La cuenta ya existe y tiene sesión: subir la foto. Si falla, la cuenta sigue creada
+  // (se puede poner la foto después desde el perfil).
+  if (photo && created.user) await saveAvatar(supabase, created.user.id, photo);
 
   await clearGuest();
   redirect(simple ? "/simple/registro/listo" : "/?bienvenida=nueva");

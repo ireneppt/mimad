@@ -10,6 +10,7 @@ import { MIN_PASSWORD_LENGTH } from "@/lib/auth";
 import { LIMITS, PASSWORD_RULES } from "@/lib/limits";
 import type { Point } from "@/lib/location";
 import { useMyLocation } from "@/components/useMyLocation";
+import PhotoPicker from "@/components/PhotoPicker";
 
 export default function SignupForm({ municipios }: { municipios: string[] }) {
   const [state, action] = useActionState<AuthState, FormData>(signup, {});
@@ -37,6 +38,12 @@ export default function SignupForm({ municipios }: { municipios: string[] }) {
           </Link>
         </div>
       </fieldset>
+
+      {/* Foto opcional: se reduce en el móvil antes de enviarla */}
+      <div className="flex flex-col items-center gap-1">
+        <PhotoPicker label="Añadir foto" />
+        <p className="text-sm text-gris">Foto opcional. Puedes ponerla o cambiarla después.</p>
+      </div>
 
       <Field label="Nombre" htmlFor="nombre">
         <TextInput id="nombre" name="nombre" placeholder="¿Cómo te llamas?" autoComplete="given-name" required minLength={LIMITS.nameMin} maxLength={LIMITS.nameMax} defaultValue={state.fields?.nombre} />

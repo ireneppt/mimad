@@ -135,6 +135,14 @@ export async function checkUsers(check: Check) {
     const verOtraEntidad = await lucia.db.from("mm_entidades").select("id").eq("usuario", otra.id);
     check("Nadie ve la entidad de otra persona", (verOtraEntidad.data ?? []).length === 0, verOtraEntidad.data);
 
+    // Fotos de perfil: cada persona solo puede subir a su carpeta
+    const png = new Blob([Uint8Array.from(atob("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="), (c) => c.charCodeAt(0))], { type: "image/png" });
+    const mia = await carmen.db.storage.from("avatares").upload(`${carmen.id}/prueba.png`, png, { contentType: "image/png" });
+    check("Cada persona puede subir su foto", !mia.error, mia.error?.message ?? "subida");
+    const ajena = await otra.db.storage.from("avatares").upload(`${carmen.id}/intruso.png`, png, { contentType: "image/png" });
+    check("Nadie puede subir fotos a la carpeta de otra persona", !!ajena.error, ajena.error?.message ?? "¡se pudo!");
+    await admin.storage.from("avatares").remove([`${carmen.id}/prueba.png`, `${carmen.id}/intruso.png`]);
+
     // Perfil: apagar avisos y borrar la propia cuenta
     const avisos = await carmen.db.from("mm_perfiles").update({ avisos_app: false }).eq("id", carmen.id).select("avisos_app");
     check("Cada persona puede apagar sus avisos", avisos.data?.[0]?.avisos_app === false, avisos.data ?? avisos.error?.message);
