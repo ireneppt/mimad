@@ -134,6 +134,17 @@ export async function checkUsers(check: Check) {
 
     const verOtraEntidad = await lucia.db.from("mm_entidades").select("id").eq("usuario", otra.id);
     check("Nadie ve la entidad de otra persona", (verOtraEntidad.data ?? []).length === 0, verOtraEntidad.data);
+
+    // Perfil: apagar avisos y borrar la propia cuenta
+    const avisos = await carmen.db.from("mm_perfiles").update({ avisos_app: false }).eq("id", carmen.id).select("avisos_app");
+    check("Cada persona puede apagar sus avisos", avisos.data?.[0]?.avisos_app === false, avisos.data ?? avisos.error?.message);
+
+    const borrar = await otra.db.rpc("borrar_mi_cuenta");
+    const { data: sigue } = await admin.auth.admin.getUserById(otra.id);
+    const { data: suEntidad } = await admin.from("mm_entidades").select("id").eq("usuario", otra.id);
+    check("«Borrar mi cuenta» borra la cuenta y sus datos", !borrar.error && !sigue.user && (suEntidad ?? []).length === 0, borrar.error?.message ?? "borrada");
+    const { data: luciaSigue } = await admin.auth.admin.getUserById(lucia.id);
+    check("…y solo la suya", !!luciaSigue.user, luciaSigue.user ? "las demás siguen" : "¡borró otra!");
   } catch (e) {
     check("Pruebas con usuarios", false, e instanceof Error ? e.message : String(e));
   } finally {
