@@ -3,7 +3,8 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { isValidMobile, MIN_PASSWORD_LENGTH, normalizePhone, phoneToEmail } from "@/lib/auth";
+import { invalidMobileMessage, parseMobile } from "@/lib/phone";
+import { emailError, LIMITS, nameError, passwordError } from "@/lib/limits";
 import { INTERESTS } from "@/lib/interests";
 import { GUEST_COOKIE } from "@/lib/supabase/middleware";
 import { isPostalCode, parsePoint } from "@/lib/location";
@@ -24,14 +25,16 @@ async function clearGuest() {
 
 export async function login(_prev: AuthState, form: FormData): Promise<AuthState> {
   const phone = String(form.get("telefono") ?? "");
-  const password = String(form.get("password") ?? "");
-  const fields = { telefono: phone };
+  const country = String(form.get("pais") ?? ""); // sin país (versión simplificada) = España
+  const password = String(form.get("password") ?? "").slice(0, LIMITS.passwordMax);
+  const fields = { telefono: phone.slice(0, LIMITS.phoneMax), pais: country };
 
-  if (!isValidMobile(phone)) {
-    return { error: "Escribe un móvil de 9 cifras que empiece por 6 o 7.", fields };
+  const mobile = parseMobile(phone, country);
+  if (!mobile) {
+    return { error: invalidMobileMessage(country), fields };
   }
   const supabase = await createClient();
-  const { data, error } = await supabase.auth.signInWithPassword({ email: phoneToEmail(phone), password });
+  const { data, error } = await supabase.auth.signInWithPassword({ email: mobile.email, password });
   if (error) {
     return { error: "El móvil o la contraseña no son correctos.", fields };
   }
@@ -46,8 +49,9 @@ export async function login(_prev: AuthState, form: FormData): Promise<AuthState
 export async function signup(_prev: AuthState, form: FormData): Promise<AuthState> {
   const get = (k: string) => String(form.get(k) ?? "").trim();
   const fields = {
-    nombre: get("nombre"),
-    telefono: get("telefono"),
+    nombre: get("nombre").replace(/\s+/g, " "),
+    telefono: get("telefono").slice(0, LIMITS.phoneMax),
+    pais: get("pais"),
     municipio: get("municipio"),
     codigo_postal: get("codigo_postal"),
     email: get("email"),
@@ -58,15 +62,20 @@ export async function signup(_prev: AuthState, form: FormData): Promise<AuthStat
   const simple = form.get("simplificada") === "1";
   const fail = (error: string, field?: string): AuthState => ({ error, field, fields });
 
-  if (!fields.nombre) return fail("Escribe tu nombre.", "nombre");
-  if (!isValidMobile(fields.telefono)) return fail("Escribe un móvil de 9 cifras que empiece por 6 o 7.", "telefono");
+  const nombreError = nameError(fields.nombre);
+  if (nombreError) return fail(nombreError, "nombre");
+  const mobile = parseMobile(fields.telefono, fields.pais);
+  if (!mobile) return fail(invalidMobileMessage(fields.pais), "telefono");
+  if (fields.municipio.length > LIMITS.municipioMax) return fail("Elige tu municipio de la lista.", "municipio");
   if (simple && !fields.municipio) return fail("Elige el pueblo o ciudad donde vives.", "municipio");
   if (fields.codigo_postal && !isPostalCode(fields.codigo_postal)) {
     return fail("El código postal tiene 5 cifras y empieza por 28 (por ejemplo, 28012).", "codigo_postal");
   }
-  if (password.length < MIN_PASSWORD_LENGTH) return fail(`La contraseña necesita al menos ${MIN_PASSWORD_LENGTH} caracteres.`, "password");
+  const claveError = passwordError(password);
+  if (claveError) return fail(claveError, "password");
   if (password !== String(form.get("password2") ?? "")) return fail("Las dos contraseñas no coinciden.", "password");
-  if (fields.email && !/^\S+@\S+\.\S+$/.test(fields.email)) return fail("El correo electrónico no parece correcto.", "email");
+  const correoError = emailError(fields.email);
+  if (correoError) return fail(correoError, "email");
   if (form.get("privacidad") !== "on") return fail("Para crear la cuenta tienes que aceptar la política de privacidad.", "privacidad");
 
   const supabase = await createClient();
@@ -76,11 +85,10 @@ export async function signup(_prev: AuthState, form: FormData): Promise<AuthStat
   let lon: number | null = null;
   if (fields.municipio) {
     const { data: m } = await supabase.from("v_municipios").select("nombre, lat, lon").ilike("nombre", fields.municipio).maybeSingle();
-    if (m) {
-      fields.municipio = m.nombre;
-      lat = m.lat;
-      lon = m.lon;
-    }
+    if (!m) return fail("No encontramos ese municipio. Elige uno de la lista de la Comunidad de Madrid.", "municipio");
+    fields.municipio = m.nombre;
+    lat = m.lat;
+    lon = m.lon;
   }
 
   // Casa más precisa que el centro del municipio (redondeada a ~100 m por privacidad):
@@ -98,13 +106,13 @@ export async function signup(_prev: AuthState, form: FormData): Promise<AuthStat
 
   const validInterests = INTERESTS.map((i) => i.id);
   const { error } = await supabase.auth.signUp({
-    email: phoneToEmail(fields.telefono),
+    email: mobile.email,
     password,
     options: {
       // El trigger crear_perfil copia estos datos a mm_perfiles
       data: {
         nombre: fields.nombre,
-        telefono: normalizePhone(fields.telefono),
+        telefono: mobile.e164, // formato internacional: +34612345678
         tipo: "persona",
         simplificada: simple,
         municipio: fields.municipio || "Madrid",

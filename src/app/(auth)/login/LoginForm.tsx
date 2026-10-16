@@ -11,7 +11,7 @@ export default function LoginForm({ next }: { next: string }) {
     <form action={action} className="flex flex-col gap-6">
       <input type="hidden" name="next" value={next} />
       <Field label="Teléfono móvil" htmlFor="telefono">
-        <PhoneInput id="telefono" name="telefono" required defaultValue={state.fields?.telefono} />
+        <PhoneInput id="telefono" name="telefono" required defaultValue={state.fields?.telefono} defaultCountry={state.fields?.pais} />
       </Field>
       <Field label="Contraseña" htmlFor="password">
         <PasswordInput id="password" name="password" required autoComplete="current-password" />

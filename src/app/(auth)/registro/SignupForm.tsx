@@ -7,6 +7,7 @@ import { signup, type AuthState } from "../actions";
 import { Field, FormError, PasswordInput, PhoneInput, SubmitButton, TextInput } from "@/components/forms";
 import { INTERESTS } from "@/lib/interests";
 import { MIN_PASSWORD_LENGTH } from "@/lib/auth";
+import { LIMITS } from "@/lib/limits";
 import type { Point } from "@/lib/location";
 import { useMyLocation } from "@/components/useMyLocation";
 
@@ -36,17 +37,17 @@ export default function SignupForm({ municipios }: { municipios: string[] }) {
       </fieldset>
 
       <Field label="Nombre" htmlFor="nombre">
-        <TextInput id="nombre" name="nombre" placeholder="¿Cómo te llamas?" autoComplete="given-name" required defaultValue={state.fields?.nombre} />
+        <TextInput id="nombre" name="nombre" placeholder="¿Cómo te llamas?" autoComplete="given-name" required minLength={LIMITS.nameMin} maxLength={LIMITS.nameMax} defaultValue={state.fields?.nombre} />
       </Field>
 
       <Field label="Teléfono móvil" htmlFor="telefono" hint="Lo usarás para iniciar sesión.">
-        <PhoneInput id="telefono" name="telefono" required defaultValue={state.fields?.telefono} />
+        <PhoneInput id="telefono" name="telefono" required defaultValue={state.fields?.telefono} defaultCountry={state.fields?.pais} />
       </Field>
 
       <Field label="Municipio" htmlFor="municipio" hint="Te avisaremos de lo que pasa cerca de ti.">
         <div className="relative">
           <MapPin size={22} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gris" aria-hidden="true" />
-          <TextInput id="municipio" name="municipio" list="municipios" placeholder="Escribe tu municipio" className="pl-12" autoComplete="address-level2" defaultValue={state.fields?.municipio} />
+          <TextInput id="municipio" name="municipio" list="municipios" placeholder="Escribe tu municipio" className="pl-12" autoComplete="address-level2" maxLength={LIMITS.municipioMax} defaultValue={state.fields?.municipio} />
           <datalist id="municipios">
             {municipios.map((m) => <option key={m} value={m} />)}
           </datalist>
@@ -86,10 +87,10 @@ export default function SignupForm({ municipios }: { municipios: string[] }) {
       </div>
 
       <Field label="Correo electrónico" htmlFor="email" optional>
-        <TextInput id="email" name="email" type="email" placeholder="tu@email.com" autoComplete="email" defaultValue={state.fields?.email} />
+        <TextInput id="email" name="email" type="email" placeholder="tu@email.com" autoComplete="email" maxLength={LIMITS.emailMax} defaultValue={state.fields?.email} />
       </Field>
 
-      <Field label="Contraseña" htmlFor="password" hint={`Mínimo ${MIN_PASSWORD_LENGTH} caracteres.`}>
+      <Field label="Contraseña" htmlFor="password" hint={`Entre ${MIN_PASSWORD_LENGTH} y ${LIMITS.passwordMax} caracteres.`}>
         <PasswordInput id="password" name="password" required minLength={MIN_PASSWORD_LENGTH} autoComplete="new-password" />
       </Field>
 
