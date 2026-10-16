@@ -27,7 +27,7 @@ export default async function SimpleHomePage() {
       intro={<p>¿Qué quieres hacer hoy?</p>}
       help={
         <ol>
-          <li>Para buscar algo que hacer cerca de casa, toca <strong>Ver planes</strong>.</li>
+          <li>Para buscar algo que hacer cerca de casa, toca <strong>Ver planes sugeridos</strong>.</li>
           <li>Para ver los planes a los que te has apuntado, toca <strong>Mis planes</strong>.</li>
           {rec && <li>Si un familiar te ha recomendado un plan, toca <strong>Verlo</strong>.</li>}
         </ol>
@@ -54,7 +54,7 @@ export default async function SimpleHomePage() {
       >
         <Sparkles size={48} className="shrink-0" aria-hidden="true" />
         <span className="flex-1">
-          <span className="block text-[2rem] font-bold leading-tight">Ver planes</span>
+          <span className="block text-[2rem] font-bold leading-tight">Ver planes sugeridos</span>
           <span className="block text-xl">Actividades cerca de tu casa</span>
         </span>
         <ArrowRight size={32} className="shrink-0" aria-hidden="true" />
