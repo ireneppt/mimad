@@ -2,15 +2,20 @@
 
 import Link from "next/link";
 import { useActionState, useState } from "react";
-import { Building2, MapPin, User } from "lucide-react";
+import { Building2, LoaderCircle, LocateFixed, MapPin, User } from "lucide-react";
 import { signup, type AuthState } from "../actions";
 import { Field, FormError, PasswordInput, PhoneInput, SubmitButton, TextInput } from "@/components/forms";
 import { INTERESTS } from "@/lib/interests";
 import { MIN_PASSWORD_LENGTH } from "@/lib/auth";
+import type { Point } from "@/lib/location";
+import { useMyLocation } from "@/components/useMyLocation";
 
 export default function SignupForm({ municipios }: { municipios: string[] }) {
   const [state, action] = useActionState<AuthState, FormData>(signup, {});
   const [chosen, setChosen] = useState<string[]>(state.fields?.intereses?.split(",").filter(Boolean) ?? []);
+
+  const [homePoint, setHomePoint] = useState<Point | null>(null); // "estoy en casa"
+  const { locate, asking, error: geoError } = useMyLocation();
 
   const toggle = (id: string) => setChosen((c) => (c.includes(id) ? c.filter((x) => x !== id) : [...c, id]));
 
@@ -47,6 +52,38 @@ export default function SignupForm({ municipios }: { municipios: string[] }) {
           </datalist>
         </div>
       </Field>
+
+      {/* Opcional: para calcular mejor las distancias que el centro del municipio */}
+      <Field label="Código postal (opcional)" htmlFor="codigo_postal" hint="Para calcular mejor lo que tardas en llegar a cada plan.">
+        <TextInput
+          id="codigo_postal"
+          name="codigo_postal"
+          inputMode="numeric"
+          maxLength={5}
+          pattern="28[0-9]{3}"
+          placeholder="28012"
+          autoComplete="postal-code"
+          defaultValue={state.fields?.codigo_postal}
+        />
+      </Field>
+      <div className="-mt-3 flex flex-col gap-2">
+        <button
+          type="button"
+          onClick={async () => setHomePoint(await locate())}
+          disabled={asking}
+          className="flex h-12 items-center justify-center gap-2 rounded-2xl border border-slate-300 bg-white px-4 font-medium disabled:opacity-60"
+        >
+          {asking ? <LoaderCircle size={20} className="animate-spin" aria-hidden="true" /> : <LocateFixed size={20} aria-hidden="true" />}
+          {homePoint ? "Ubicación de tu casa guardada" : asking ? "Buscando dónde estás…" : "Estoy en casa: usar mi ubicación"}
+        </button>
+        {geoError && <p role="alert" className="text-sm text-red-800">{geoError}</p>}
+        {homePoint && (
+          <>
+            <input type="hidden" name="lat" value={homePoint.lat} />
+            <input type="hidden" name="lon" value={homePoint.lon} />
+          </>
+        )}
+      </div>
 
       <Field label="Correo electrónico" htmlFor="email" optional>
         <TextInput id="email" name="email" type="email" placeholder="tu@email.com" autoComplete="email" defaultValue={state.fields?.email} />

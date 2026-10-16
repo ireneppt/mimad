@@ -14,8 +14,10 @@ import { createClient } from "@/lib/supabase/server";
 import { accessibilityLabels, getEvent, getSources, isAccessible, type Evento } from "@/lib/data";
 import { categoryInfo } from "@/lib/categories";
 import { walkingMinutes } from "@/lib/format";
-import { getCurrentProfile, homeLocation } from "@/lib/profile";
-import { buildPlan, getMyInscriptionIds, getPendingRecommendations, whenInWords, whyThisPlan } from "@/lib/simplePlans";
+import { getCurrentProfile } from "@/lib/profile";
+import { getOrigin } from "@/lib/origin";
+import LocationPanel from "@/components/simple/LocationPanel";
+import { buildPlan, fromWhere, getMyInscriptionIds, getPendingRecommendations, whenInWords, whyThisPlan } from "@/lib/simplePlans";
 import { joinPlan } from "../../planes/actions";
 
 export const metadata = { title: "Plan · MiMad simplificada" };
@@ -50,8 +52,10 @@ export default async function SimpleEventPage({
     perfil ? getPendingRecommendations(supabase, perfil.id) : Promise.resolve([]),
     perfil ? getMyInscriptionIds(supabase, perfil.id) : Promise.resolve<string[]>([]),
   ]);
-  const home = homeLocation(perfil);
-  const hasHome = perfil?.lat != null && perfil?.lon != null;
+  // Desde dónde se cuentan las distancias: dónde estoy ahora, mi casa o el centro de Madrid
+  const origin = await getOrigin(perfil);
+  const home = { lat: origin.lat, lon: origin.lon };
+  const hasHome = origin.kind !== "centro";
   const plan = buildPlan(evento, { home, intereses: perfil?.intereses ?? [], recomendaciones });
   const minutos = plan.km != null ? walkingMinutes(plan.km) : null;
   const apuntada = inscritos.includes(evento.id);
@@ -121,7 +125,7 @@ export default async function SimpleEventPage({
           {[evento.lugar, niceAddress(evento.direccion)].filter(Boolean).join(". ") || "Consultar el lugar"}
           {minutos != null && (
             <strong className="block">
-              A {minutos} minutos andando{hasHome ? " de tu casa" : ""}
+              A {minutos} minutos andando{fromWhere(origin.kind)}
             </strong>
           )}
         </InfoBox>
@@ -140,7 +144,7 @@ export default async function SimpleEventPage({
         <Sparkles size={30} className="mt-0.5 shrink-0 text-coral-texto" aria-hidden="true" />
         <div>
           <h2 id="porque" className="font-bold">¿Por qué este plan?</h2>
-          <p>{whyThisPlan(plan, { minutes: minutos, hasHome })}</p>
+          <p>{whyThisPlan(plan, { minutes: minutos, from: origin.kind })}</p>
           {plan.mensaje && (
             <p className="mt-2 italic">
               «{plan.mensaje}»<span className="not-italic"> — {plan.recomendadoPor}</span>
@@ -186,10 +190,17 @@ export default async function SimpleEventPage({
         <section className="flex flex-col gap-4" aria-labelledby="llegar">
           <ScrollToHash />
           <h2 id="llegar" className="scroll-mt-4 text-2xl font-bold">Cómo llegar</h2>
+          <LocationPanel
+            kind={origin.kind}
+            cp={origin.cp}
+            here={origin.kind === "aqui" ? home : null}
+            loggedIn={!!perfil}
+            hasHome={perfil?.lat != null && perfil?.lon != null}
+          />
           <RouteMapLazy
             home={hasHome ? home : null}
             place={{ lat: evento.lat, lon: evento.lon }}
-            homeLabel="Tu casa"
+            homeLabel={origin.kind === "aqui" ? "Estás aquí" : origin.kind === "cp" ? `CP ${origin.cp}` : "Tu casa"}
           />
           {minutos != null && hasHome && (
             <p className="flex items-start gap-3 rounded-2xl bg-blue-50 p-5 text-xl leading-snug">

@@ -1,0 +1,1260 @@
+{
+ "descripcion": "Centro aproximado de cada código postal de la Comunidad de Madrid (generado con scripts/generar-codigos-postales.ts)",
+ "fuentes": [
+  "Registro de centros de atención social · Comunidad de Madrid (sin centros de acogida)",
+  "Agenda de actividades y eventos · Ayuntamiento de Madrid"
+ ],
+ "generado": "2026-10-16",
+ "codigos": {
+  "28001": {
+   "municipio": "Madrid",
+   "lat": 40.4249,
+   "lon": -3.6891
+  },
+  "28002": {
+   "municipio": "Madrid",
+   "lat": 40.4466,
+   "lon": -3.6744
+  },
+  "28003": {
+   "municipio": "Madrid",
+   "lat": 40.4418,
+   "lon": -3.7073
+  },
+  "28004": {
+   "municipio": "Madrid",
+   "lat": 40.4254,
+   "lon": -3.7019
+  },
+  "28005": {
+   "municipio": "Madrid",
+   "lat": 40.4117,
+   "lon": -3.71
+  },
+  "28006": {
+   "municipio": "Madrid",
+   "lat": 40.4372,
+   "lon": -3.6847
+  },
+  "28007": {
+   "municipio": "Madrid",
+   "lat": 40.407,
+   "lon": -3.6707
+  },
+  "28008": {
+   "municipio": "Madrid",
+   "lat": 40.4284,
+   "lon": -3.7257
+  },
+  "28009": {
+   "municipio": "Madrid",
+   "lat": 40.4148,
+   "lon": -3.6815
+  },
+  "28010": {
+   "municipio": "Madrid",
+   "lat": 40.433,
+   "lon": -3.6973
+  },
+  "28011": {
+   "municipio": "Madrid",
+   "lat": 40.4138,
+   "lon": -3.7326
+  },
+  "28012": {
+   "municipio": "Madrid",
+   "lat": 40.4119,
+   "lon": -3.7016
+  },
+  "28013": {
+   "municipio": "Madrid",
+   "lat": 40.4183,
+   "lon": -3.7063
+  },
+  "28014": {
+   "municipio": "Madrid",
+   "lat": 40.4169,
+   "lon": -3.6912
+  },
+  "28015": {
+   "municipio": "Madrid",
+   "lat": 40.4298,
+   "lon": -3.7108
+  },
+  "28016": {
+   "municipio": "Madrid",
+   "lat": 40.459,
+   "lon": -3.6724
+  },
+  "28017": {
+   "municipio": "Madrid",
+   "lat": 40.4281,
+   "lon": -3.6434
+  },
+  "28018": {
+   "municipio": "Madrid",
+   "lat": 40.3837,
+   "lon": -3.655
+  },
+  "28019": {
+   "municipio": "Madrid",
+   "lat": 40.3933,
+   "lon": -3.7243
+  },
+  "28020": {
+   "municipio": "Madrid",
+   "lat": 40.4544,
+   "lon": -3.7001
+  },
+  "28021": {
+   "municipio": "Madrid",
+   "lat": 40.3471,
+   "lon": -3.6977
+  },
+  "28022": {
+   "municipio": "Madrid",
+   "lat": 40.4408,
+   "lon": -3.6068
+  },
+  "28023": {
+   "municipio": "Madrid",
+   "lat": 40.4631,
+   "lon": -3.7913
+  },
+  "28024": {
+   "municipio": "Madrid",
+   "lat": 40.3945,
+   "lon": -3.7695
+  },
+  "28025": {
+   "municipio": "Madrid",
+   "lat": 40.3816,
+   "lon": -3.7382
+  },
+  "28026": {
+   "municipio": "Madrid",
+   "lat": 40.3804,
+   "lon": -3.7077
+  },
+  "28027": {
+   "municipio": "Madrid",
+   "lat": 40.4409,
+   "lon": -3.6444
+  },
+  "28028": {
+   "municipio": "Madrid",
+   "lat": 40.4304,
+   "lon": -3.6673
+  },
+  "28029": {
+   "municipio": "Madrid",
+   "lat": 40.474,
+   "lon": -3.701
+  },
+  "28030": {
+   "municipio": "Madrid",
+   "lat": 40.4072,
+   "lon": -3.6469
+  },
+  "28031": {
+   "municipio": "Madrid",
+   "lat": 40.3782,
+   "lon": -3.6198
+  },
+  "28032": {
+   "municipio": "Madrid",
+   "lat": 40.4037,
+   "lon": -3.6139
+  },
+  "28033": {
+   "municipio": "Madrid",
+   "lat": 40.4733,
+   "lon": -3.6533
+  },
+  "28034": {
+   "municipio": "Madrid",
+   "lat": 40.4912,
+   "lon": -3.7015
+  },
+  "28035": {
+   "municipio": "Madrid",
+   "lat": 40.4785,
+   "lon": -3.7228
+  },
+  "28036": {
+   "municipio": "Madrid",
+   "lat": 40.4652,
+   "lon": -3.6824
+  },
+  "28037": {
+   "municipio": "Madrid",
+   "lat": 40.4291,
+   "lon": -3.6272
+  },
+  "28038": {
+   "municipio": "Madrid",
+   "lat": 40.3945,
+   "lon": -3.6517
+  },
+  "28039": {
+   "municipio": "Madrid",
+   "lat": 40.454,
+   "lon": -3.7054
+  },
+  "28040": {
+   "municipio": "Madrid",
+   "lat": 40.4496,
+   "lon": -3.7187
+  },
+  "28041": {
+   "municipio": "Madrid",
+   "lat": 40.3655,
+   "lon": -3.6982
+  },
+  "28042": {
+   "municipio": "Madrid",
+   "lat": 40.4646,
+   "lon": -3.5904
+  },
+  "28043": {
+   "municipio": "Madrid",
+   "lat": 40.4596,
+   "lon": -3.6502
+  },
+  "28044": {
+   "municipio": "Madrid",
+   "lat": 40.3774,
+   "lon": -3.7616
+  },
+  "28045": {
+   "municipio": "Madrid",
+   "lat": 40.3928,
+   "lon": -3.6961
+  },
+  "28046": {
+   "municipio": "Madrid",
+   "lat": 40.464,
+   "lon": -3.6859
+  },
+  "28047": {
+   "municipio": "Madrid",
+   "lat": 40.3939,
+   "lon": -3.7486
+  },
+  "28048": {
+   "municipio": "Madrid",
+   "lat": 40.5192,
+   "lon": -3.7787
+  },
+  "28049": {
+   "municipio": "Madrid",
+   "lat": 40.516,
+   "lon": -3.6917
+  },
+  "28050": {
+   "municipio": "Madrid",
+   "lat": 40.4931,
+   "lon": -3.6616
+  },
+  "28051": {
+   "municipio": "Madrid",
+   "lat": 40.3623,
+   "lon": -3.6043
+  },
+  "28052": {
+   "municipio": "Madrid",
+   "lat": 40.398,
+   "lon": -3.5756
+  },
+  "28053": {
+   "municipio": "Madrid",
+   "lat": 40.385,
+   "lon": -3.6678
+  },
+  "28054": {
+   "municipio": "Madrid",
+   "lat": 40.3693,
+   "lon": -3.7466
+  },
+  "28055": {
+   "municipio": "Madrid",
+   "lat": 40.4939,
+   "lon": -3.6088
+  },
+  "28100": {
+   "municipio": "Alcobendas",
+   "lat": 40.545,
+   "lon": -3.648
+  },
+  "28108": {
+   "municipio": "Alcobendas",
+   "lat": 40.5305,
+   "lon": -3.6364
+  },
+  "28109": {
+   "municipio": "Alcobendas",
+   "lat": 40.526,
+   "lon": -3.6357
+  },
+  "28110": {
+   "municipio": "Algete",
+   "lat": 40.5984,
+   "lon": -3.5017
+  },
+  "28119": {
+   "municipio": "Algete",
+   "lat": 40.593,
+   "lon": -3.5605
+  },
+  "28120": {
+   "municipio": "Algete",
+   "lat": 40.6221,
+   "lon": -3.5796
+  },
+  "28130": {
+   "municipio": "Valdeolmos-Alalpardo",
+   "lat": 40.6258,
+   "lon": -3.4772
+  },
+  "28140": {
+   "municipio": "Fuente el Saz de Jarama",
+   "lat": 40.6354,
+   "lon": -3.5108
+  },
+  "28150": {
+   "municipio": "Valdetorres de Jarama",
+   "lat": 40.6951,
+   "lon": -3.5165
+  },
+  "28160": {
+   "municipio": "Talamanca de Jarama",
+   "lat": 40.7441,
+   "lon": -3.5092
+  },
+  "28180": {
+   "municipio": "Torrelaguna",
+   "lat": 40.8285,
+   "lon": -3.5362
+  },
+  "28189": {
+   "municipio": "Torremocha de Jarama",
+   "lat": 40.8456,
+   "lon": -3.4941
+  },
+  "28190": {
+   "municipio": "Montejo de la Sierra",
+   "lat": 41.0598,
+   "lon": -3.5299
+  },
+  "28192": {
+   "municipio": "Berrueco, El",
+   "lat": 40.8872,
+   "lon": -3.5604
+  },
+  "28194": {
+   "municipio": "Robledillo de la Jara",
+   "lat": 40.9644,
+   "lon": -3.5261
+  },
+  "28200": {
+   "municipio": "San Lorenzo de El Escorial",
+   "lat": 40.5981,
+   "lon": -4.1393
+  },
+  "28210": {
+   "municipio": "Valdemorillo",
+   "lat": 40.5017,
+   "lon": -4.067
+  },
+  "28212": {
+   "municipio": "Navalagamella",
+   "lat": 40.4688,
+   "lon": -4.124
+  },
+  "28213": {
+   "municipio": "Colmenar del Arroyo",
+   "lat": 40.4254,
+   "lon": -4.1993
+  },
+  "28214": {
+   "municipio": "Fresnedillas de la Oliva",
+   "lat": 40.4871,
+   "lon": -4.1709
+  },
+  "28220": {
+   "municipio": "Majadahonda",
+   "lat": 40.4667,
+   "lon": -3.8727
+  },
+  "28221": {
+   "municipio": "Majadahonda",
+   "lat": 40.4793,
+   "lon": -3.8598
+  },
+  "28222": {
+   "municipio": "Majadahonda",
+   "lat": 40.4522,
+   "lon": -3.8844
+  },
+  "28223": {
+   "municipio": "Pozuelo de Alarcón",
+   "lat": 40.4259,
+   "lon": -3.814
+  },
+  "28224": {
+   "municipio": "Pozuelo de Alarcón",
+   "lat": 40.4432,
+   "lon": -3.802
+  },
+  "28229": {
+   "municipio": "Villanueva del Pardillo",
+   "lat": 40.4848,
+   "lon": -3.9662
+  },
+  "28230": {
+   "municipio": "Rozas de Madrid, Las",
+   "lat": 40.5306,
+   "lon": -3.9065
+  },
+  "28231": {
+   "municipio": "Rozas de Madrid, Las",
+   "lat": 40.4921,
+   "lon": -3.8732
+  },
+  "28232": {
+   "municipio": "Rozas de Madrid, Las",
+   "lat": 40.5134,
+   "lon": -3.8847
+  },
+  "28250": {
+   "municipio": "Torrelodones",
+   "lat": 40.5789,
+   "lon": -3.9294
+  },
+  "28260": {
+   "municipio": "Galapagar",
+   "lat": 40.5635,
+   "lon": -3.9903
+  },
+  "28270": {
+   "municipio": "Colmenarejo",
+   "lat": 40.565,
+   "lon": -4.0189
+  },
+  "28280": {
+   "municipio": "Escorial, El",
+   "lat": 40.5847,
+   "lon": -4.1304
+  },
+  "28290": {
+   "municipio": "Rozas de Madrid, Las",
+   "lat": 40.5501,
+   "lon": -3.8991
+  },
+  "28292": {
+   "municipio": "Escorial, El",
+   "lat": 40.604,
+   "lon": -4.0527
+  },
+  "28293": {
+   "municipio": "Zarzalejo",
+   "lat": 40.5431,
+   "lon": -4.1726
+  },
+  "28294": {
+   "municipio": "Robledo de Chavela",
+   "lat": 40.5181,
+   "lon": -4.2488
+  },
+  "28300": {
+   "municipio": "Aranjuez",
+   "lat": 40.0281,
+   "lon": -3.6051
+  },
+  "28320": {
+   "municipio": "Pinto",
+   "lat": 40.2461,
+   "lon": -3.6984
+  },
+  "28330": {
+   "municipio": "San Martín de la Vega",
+   "lat": 40.2076,
+   "lon": -3.5781
+  },
+  "28340": {
+   "municipio": "Valdemoro",
+   "lat": 40.185,
+   "lon": -3.6774
+  },
+  "28341": {
+   "municipio": "Valdemoro",
+   "lat": 40.1864,
+   "lon": -3.6857
+  },
+  "28343": {
+   "municipio": "Valdemoro",
+   "lat": 40.1987,
+   "lon": -3.6632
+  },
+  "28350": {
+   "municipio": "Ciempozuelos",
+   "lat": 40.1588,
+   "lon": -3.6197
+  },
+  "28360": {
+   "municipio": "Villaconejos",
+   "lat": 40.0998,
+   "lon": -3.4854
+  },
+  "28370": {
+   "municipio": "Chinchón",
+   "lat": 40.1388,
+   "lon": -3.4181
+  },
+  "28380": {
+   "municipio": "Colmenar de Oreja",
+   "lat": 40.1064,
+   "lon": -3.3845
+  },
+  "28390": {
+   "municipio": "Belmonte de Tajo",
+   "lat": 40.1339,
+   "lon": -3.3377
+  },
+  "28391": {
+   "municipio": "Valdelaguna",
+   "lat": 40.1588,
+   "lon": -3.3706
+  },
+  "28400": {
+   "municipio": "Collado Villalba",
+   "lat": 40.6307,
+   "lon": -4.0059
+  },
+  "28409": {
+   "municipio": "Alpedrete",
+   "lat": 40.633,
+   "lon": -4.0233
+  },
+  "28410": {
+   "municipio": "Manzanares el Real",
+   "lat": 40.7269,
+   "lon": -3.8642
+  },
+  "28411": {
+   "municipio": "Moralzarzal",
+   "lat": 40.6805,
+   "lon": -3.9681
+  },
+  "28420": {
+   "municipio": "Galapagar",
+   "lat": 40.5965,
+   "lon": -3.9864
+  },
+  "28430": {
+   "municipio": "Guadarrama",
+   "lat": 40.6524,
+   "lon": -4.0405
+  },
+  "28439": {
+   "municipio": "Alpedrete",
+   "lat": 40.6443,
+   "lon": -4.0268
+  },
+  "28440": {
+   "municipio": "Guadarrama",
+   "lat": 40.6734,
+   "lon": -4.0928
+  },
+  "28450": {
+   "municipio": "Collado Mediano",
+   "lat": 40.6943,
+   "lon": -4.0234
+  },
+  "28460": {
+   "municipio": "Molinos, Los",
+   "lat": 40.7117,
+   "lon": -4.077
+  },
+  "28470": {
+   "municipio": "Cercedilla",
+   "lat": 40.7365,
+   "lon": -4.0633
+  },
+  "28480": {
+   "municipio": "Guadarrama",
+   "lat": 40.6863,
+   "lon": -4.1123
+  },
+  "28490": {
+   "municipio": "Becerril de la Sierra",
+   "lat": 40.7129,
+   "lon": -3.9864
+  },
+  "28491": {
+   "municipio": "Navacerrada",
+   "lat": 40.7282,
+   "lon": -4.0161
+  },
+  "28492": {
+   "municipio": "Manzanares el Real",
+   "lat": 40.7265,
+   "lon": -3.9467
+  },
+  "28500": {
+   "municipio": "Arganda del Rey",
+   "lat": 40.308,
+   "lon": -3.4535
+  },
+  "28510": {
+   "municipio": "Campo Real",
+   "lat": 40.3383,
+   "lon": -3.3771
+  },
+  "28512": {
+   "municipio": "Villar del Olmo",
+   "lat": 40.3365,
+   "lon": -3.2363
+  },
+  "28521": {
+   "municipio": "Rivas-Vaciamadrid",
+   "lat": 40.3394,
+   "lon": -3.521
+  },
+  "28522": {
+   "municipio": "Rivas-Vaciamadrid",
+   "lat": 40.3752,
+   "lon": -3.5339
+  },
+  "28523": {
+   "municipio": "Rivas-Vaciamadrid",
+   "lat": 40.3633,
+   "lon": -3.5489
+  },
+  "28529": {
+   "municipio": "Rivas-Vaciamadrid",
+   "lat": 40.3491,
+   "lon": -3.5296
+  },
+  "28530": {
+   "municipio": "Morata de Tajuña",
+   "lat": 40.2272,
+   "lon": -3.4331
+  },
+  "28550": {
+   "municipio": "Tielmes",
+   "lat": 40.2463,
+   "lon": -3.3166
+  },
+  "28560": {
+   "municipio": "Carabaña",
+   "lat": 40.2564,
+   "lon": -3.2364
+  },
+  "28570": {
+   "municipio": "Orusco de Tajuña",
+   "lat": 40.2865,
+   "lon": -3.2067
+  },
+  "28590": {
+   "municipio": "Villarejo de Salvanés",
+   "lat": 40.1665,
+   "lon": -3.271
+  },
+  "28595": {
+   "municipio": "Estremera",
+   "lat": 40.1867,
+   "lon": -3.1081
+  },
+  "28596": {
+   "municipio": "Brea de Tajo",
+   "lat": 40.2282,
+   "lon": -3.1114
+  },
+  "28597": {
+   "municipio": "Fuentidueña de Tajo",
+   "lat": 40.1192,
+   "lon": -3.1613
+  },
+  "28600": {
+   "municipio": "Navalcarnero",
+   "lat": 40.2895,
+   "lon": -4.0097
+  },
+  "28607": {
+   "municipio": "Álamo, El",
+   "lat": 40.231,
+   "lon": -3.9914
+  },
+  "28609": {
+   "municipio": "Sevilla la Nueva",
+   "lat": 40.3445,
+   "lon": -4.0656
+  },
+  "28610": {
+   "municipio": "Villamanta",
+   "lat": 40.298,
+   "lon": -4.1126
+  },
+  "28620": {
+   "municipio": "Aldea del Fresno",
+   "lat": 40.3137,
+   "lon": -4.2245
+  },
+  "28630": {
+   "municipio": "Villa del Prado",
+   "lat": 40.2751,
+   "lon": -4.2991
+  },
+  "28640": {
+   "municipio": "Cadalso de los Vidrios",
+   "lat": 40.3007,
+   "lon": -4.4359
+  },
+  "28650": {
+   "municipio": "Cenicientos",
+   "lat": 40.2596,
+   "lon": -4.4619
+  },
+  "28660": {
+   "municipio": "Boadilla del Monte",
+   "lat": 40.4076,
+   "lon": -3.8821
+  },
+  "28669": {
+   "municipio": "Boadilla del Monte",
+   "lat": 40.4433,
+   "lon": -3.8758
+  },
+  "28670": {
+   "municipio": "Villaviciosa de Odón",
+   "lat": 40.3612,
+   "lon": -3.9045
+  },
+  "28679": {
+   "municipio": "Villaviciosa de Odón",
+   "lat": 40.3748,
+   "lon": -3.9245
+  },
+  "28680": {
+   "municipio": "San Martín de Valdeiglesias",
+   "lat": 40.3623,
+   "lon": -4.3976
+  },
+  "28690": {
+   "municipio": "Brunete",
+   "lat": 40.4022,
+   "lon": -4.002
+  },
+  "28691": {
+   "municipio": "Villanueva de la Cañada",
+   "lat": 40.4539,
+   "lon": -3.9972
+  },
+  "28693": {
+   "municipio": "Quijorna",
+   "lat": 40.4333,
+   "lon": -4.0564
+  },
+  "28694": {
+   "municipio": "Chapinería",
+   "lat": 40.3826,
+   "lon": -4.2084
+  },
+  "28695": {
+   "municipio": "Navas del Rey",
+   "lat": 40.3858,
+   "lon": -4.2515
+  },
+  "28696": {
+   "municipio": "Pelayos de la Presa",
+   "lat": 40.3587,
+   "lon": -4.3349
+  },
+  "28700": {
+   "municipio": "San Sebastián de los Reyes",
+   "lat": 40.5555,
+   "lon": -3.6284
+  },
+  "28701": {
+   "municipio": "San Sebastián de los Reyes",
+   "lat": 40.5505,
+   "lon": -3.6335
+  },
+  "28702": {
+   "municipio": "San Sebastián de los Reyes",
+   "lat": 40.5623,
+   "lon": -3.624
+  },
+  "28703": {
+   "municipio": "San Sebastián de los Reyes",
+   "lat": 40.5548,
+   "lon": -3.6217
+  },
+  "28707": {
+   "municipio": "Colmenar Viejo",
+   "lat": 40.6275,
+   "lon": -3.591
+  },
+  "28709": {
+   "municipio": "San Sebastián de los Reyes",
+   "lat": 40.573,
+   "lon": -3.5824
+  },
+  "28710": {
+   "municipio": "Molar, El",
+   "lat": 40.7333,
+   "lon": -3.5818
+  },
+  "28720": {
+   "municipio": "Bustarviejo",
+   "lat": 40.8587,
+   "lon": -3.7093
+  },
+  "28722": {
+   "municipio": "Vellón, El",
+   "lat": 40.7678,
+   "lon": -3.5828
+  },
+  "28723": {
+   "municipio": "Pedrezuela",
+   "lat": 40.7441,
+   "lon": -3.6019
+  },
+  "28729": {
+   "municipio": "Venturada",
+   "lat": 40.831,
+   "lon": -3.6555
+  },
+  "28730": {
+   "municipio": "Buitrago del Lozoya",
+   "lat": 40.9912,
+   "lon": -3.6356
+  },
+  "28738": {
+   "municipio": "Buitrago del Lozoya",
+   "lat": 40.9958,
+   "lon": -3.634
+  },
+  "28743": {
+   "municipio": "Canencia",
+   "lat": 40.9109,
+   "lon": -3.7358
+  },
+  "28750": {
+   "municipio": "San Agustín del Guadalix",
+   "lat": 40.6762,
+   "lon": -3.6209
+  },
+  "28751": {
+   "municipio": "Cabrera, La",
+   "lat": 40.8679,
+   "lon": -3.6122
+  },
+  "28752": {
+   "municipio": "Lozoyuela-Navas-Sieteiglesias",
+   "lat": 40.9271,
+   "lon": -3.6211
+  },
+  "28754": {
+   "municipio": "Lozoyuela-Navas-Sieteiglesias",
+   "lat": 40.9284,
+   "lon": -3.6174
+  },
+  "28756": {
+   "municipio": "Somosierra",
+   "lat": 41.1299,
+   "lon": -3.5825
+  },
+  "28760": {
+   "municipio": "Tres Cantos",
+   "lat": 40.606,
+   "lon": -3.7131
+  },
+  "28770": {
+   "municipio": "Colmenar Viejo",
+   "lat": 40.6653,
+   "lon": -3.7761
+  },
+  "28791": {
+   "municipio": "Soto del Real",
+   "lat": 40.7539,
+   "lon": -3.7864
+  },
+  "28792": {
+   "municipio": "Miraflores de la Sierra",
+   "lat": 40.8122,
+   "lon": -3.7621
+  },
+  "28794": {
+   "municipio": "Guadalix de la Sierra",
+   "lat": 40.7851,
+   "lon": -3.6934
+  },
+  "28801": {
+   "municipio": "Alcalá de Henares",
+   "lat": 40.4807,
+   "lon": -3.3659
+  },
+  "28802": {
+   "municipio": "Alcalá de Henares",
+   "lat": 40.4779,
+   "lon": -3.3817
+  },
+  "28803": {
+   "municipio": "Alcalá de Henares",
+   "lat": 40.4712,
+   "lon": -3.3675
+  },
+  "28804": {
+   "municipio": "Alcalá de Henares",
+   "lat": 40.4828,
+   "lon": -3.3559
+  },
+  "28805": {
+   "municipio": "Alcalá de Henares",
+   "lat": 40.4958,
+   "lon": -3.3521
+  },
+  "28806": {
+   "municipio": "Alcalá de Henares",
+   "lat": 40.497,
+   "lon": -3.3717
+  },
+  "28807": {
+   "municipio": "Alcalá de Henares",
+   "lat": 40.487,
+   "lon": -3.3652
+  },
+  "28810": {
+   "municipio": "Villalbilla",
+   "lat": 40.4416,
+   "lon": -3.3373
+  },
+  "28811": {
+   "municipio": "Corpa",
+   "lat": 40.4245,
+   "lon": -3.2634
+  },
+  "28812": {
+   "municipio": "Pezuela de las Torres",
+   "lat": 40.4189,
+   "lon": -3.1766
+  },
+  "28813": {
+   "municipio": "Torres de la Alameda",
+   "lat": 40.4009,
+   "lon": -3.3632
+  },
+  "28814": {
+   "municipio": "Daganzo de Arriba",
+   "lat": 40.5465,
+   "lon": -3.4572
+  },
+  "28815": {
+   "municipio": "Ribatejada",
+   "lat": 40.6544,
+   "lon": -3.3931
+  },
+  "28816": {
+   "municipio": "Camarma de Esteruelas",
+   "lat": 40.5504,
+   "lon": -3.379
+  },
+  "28818": {
+   "municipio": "Santorcaz",
+   "lat": 40.4725,
+   "lon": -3.2334
+  },
+  "28820": {
+   "municipio": "Coslada",
+   "lat": 40.4223,
+   "lon": -3.5575
+  },
+  "28821": {
+   "municipio": "Coslada",
+   "lat": 40.4219,
+   "lon": -3.5686
+  },
+  "28822": {
+   "municipio": "Coslada",
+   "lat": 40.4227,
+   "lon": -3.5492
+  },
+  "28823": {
+   "municipio": "Coslada",
+   "lat": 40.4313,
+   "lon": -3.5419
+  },
+  "28830": {
+   "municipio": "San Fernando de Henares",
+   "lat": 40.4227,
+   "lon": -3.5302
+  },
+  "28840": {
+   "municipio": "Mejorada del Campo",
+   "lat": 40.3945,
+   "lon": -3.4855
+  },
+  "28850": {
+   "municipio": "Torrejón de Ardoz",
+   "lat": 40.4575,
+   "lon": -3.4662
+  },
+  "28860": {
+   "municipio": "Paracuellos de Jarama",
+   "lat": 40.5128,
+   "lon": -3.5305
+  },
+  "28863": {
+   "municipio": "Cobeña",
+   "lat": 40.5693,
+   "lon": -3.504
+  },
+  "28864": {
+   "municipio": "Ajalvir",
+   "lat": 40.5049,
+   "lon": -3.4769
+  },
+  "28880": {
+   "municipio": "Meco",
+   "lat": 40.5503,
+   "lon": -3.3267
+  },
+  "28890": {
+   "municipio": "Loeches",
+   "lat": 40.3845,
+   "lon": -3.4121
+  },
+  "28891": {
+   "municipio": "Velilla de San Antonio",
+   "lat": 40.3562,
+   "lon": -3.4768
+  },
+  "28901": {
+   "municipio": "Getafe",
+   "lat": 40.3088,
+   "lon": -3.731
+  },
+  "28903": {
+   "municipio": "Getafe",
+   "lat": 40.3201,
+   "lon": -3.7195
+  },
+  "28904": {
+   "municipio": "Getafe",
+   "lat": 40.3106,
+   "lon": -3.7365
+  },
+  "28905": {
+   "municipio": "Getafe",
+   "lat": 40.295,
+   "lon": -3.7491
+  },
+  "28906": {
+   "municipio": "Getafe",
+   "lat": 40.2745,
+   "lon": -3.7424
+  },
+  "28907": {
+   "municipio": "Getafe",
+   "lat": 40.3195,
+   "lon": -3.738
+  },
+  "28909": {
+   "municipio": "Getafe",
+   "lat": 40.3244,
+   "lon": -3.6591
+  },
+  "28911": {
+   "municipio": "Leganés",
+   "lat": 40.3276,
+   "lon": -3.7694
+  },
+  "28912": {
+   "municipio": "Leganés",
+   "lat": 40.3292,
+   "lon": -3.7618
+  },
+  "28913": {
+   "municipio": "Leganés",
+   "lat": 40.3355,
+   "lon": -3.771
+  },
+  "28914": {
+   "municipio": "Leganés",
+   "lat": 40.3196,
+   "lon": -3.7753
+  },
+  "28915": {
+   "municipio": "Leganés",
+   "lat": 40.3359,
+   "lon": -3.7509
+  },
+  "28917": {
+   "municipio": "Leganés",
+   "lat": 40.3591,
+   "lon": -3.7811
+  },
+  "28918": {
+   "municipio": "Leganés",
+   "lat": 40.3385,
+   "lon": -3.7704
+  },
+  "28919": {
+   "municipio": "Leganés",
+   "lat": 40.345,
+   "lon": -3.7497
+  },
+  "28921": {
+   "municipio": "Alcorcón",
+   "lat": 40.35,
+   "lon": -3.8244
+  },
+  "28922": {
+   "municipio": "Alcorcón",
+   "lat": 40.3481,
+   "lon": -3.8324
+  },
+  "28923": {
+   "municipio": "Alcorcón",
+   "lat": 40.3479,
+   "lon": -3.8196
+  },
+  "28924": {
+   "municipio": "Alcorcón",
+   "lat": 40.3494,
+   "lon": -3.8139
+  },
+  "28925": {
+   "municipio": "Alcorcón",
+   "lat": 40.3534,
+   "lon": -3.8103
+  },
+  "28931": {
+   "municipio": "Móstoles",
+   "lat": 40.3238,
+   "lon": -3.8637
+  },
+  "28932": {
+   "municipio": "Móstoles",
+   "lat": 40.3315,
+   "lon": -3.8572
+  },
+  "28933": {
+   "municipio": "Móstoles",
+   "lat": 40.3337,
+   "lon": -3.8692
+  },
+  "28934": {
+   "municipio": "Móstoles",
+   "lat": 40.3205,
+   "lon": -3.8688
+  },
+  "28935": {
+   "municipio": "Móstoles",
+   "lat": 40.3163,
+   "lon": -3.9068
+  },
+  "28936": {
+   "municipio": "Móstoles",
+   "lat": 40.3194,
+   "lon": -3.8509
+  },
+  "28938": {
+   "municipio": "Móstoles",
+   "lat": 40.3164,
+   "lon": -3.8667
+  },
+  "28939": {
+   "municipio": "Arroyomolinos",
+   "lat": 40.2651,
+   "lon": -3.9238
+  },
+  "28941": {
+   "municipio": "Fuenlabrada",
+   "lat": 40.295,
+   "lon": -3.8038
+  },
+  "28942": {
+   "municipio": "Fuenlabrada",
+   "lat": 40.2949,
+   "lon": -3.8196
+  },
+  "28943": {
+   "municipio": "Fuenlabrada",
+   "lat": 40.2824,
+   "lon": -3.807
+  },
+  "28944": {
+   "municipio": "Fuenlabrada",
+   "lat": 40.2804,
+   "lon": -3.7947
+  },
+  "28945": {
+   "municipio": "Fuenlabrada",
+   "lat": 40.2903,
+   "lon": -3.7877
+  },
+  "28946": {
+   "municipio": "Fuenlabrada",
+   "lat": 40.2831,
+   "lon": -3.7787
+  },
+  "28950": {
+   "municipio": "Moraleja de Enmedio",
+   "lat": 40.2642,
+   "lon": -3.8716
+  },
+  "28970": {
+   "municipio": "Humanes de Madrid",
+   "lat": 40.2499,
+   "lon": -3.8189
+  },
+  "28971": {
+   "municipio": "Griñón",
+   "lat": 40.2166,
+   "lon": -3.8533
+  },
+  "28977": {
+   "municipio": "Casarrubuelos",
+   "lat": 40.1713,
+   "lon": -3.8306
+  },
+  "28978": {
+   "municipio": "Cubas de la Sagra",
+   "lat": 40.1947,
+   "lon": -3.8425
+  },
+  "28979": {
+   "municipio": "Serranillos del Valle",
+   "lat": 40.2098,
+   "lon": -3.8705
+  },
+  "28980": {
+   "municipio": "Parla",
+   "lat": 40.2351,
+   "lon": -3.7682
+  },
+  "28981": {
+   "municipio": "Parla",
+   "lat": 40.2334,
+   "lon": -3.7744
+  },
+  "28982": {
+   "municipio": "Parla",
+   "lat": 40.2362,
+   "lon": -3.766
+  },
+  "28983": {
+   "municipio": "Parla",
+   "lat": 40.232,
+   "lon": -3.7508
+  },
+  "28991": {
+   "municipio": "Torrejón de la Calzada",
+   "lat": 40.2,
+   "lon": -3.7998
+  }
+ }
+}

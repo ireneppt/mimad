@@ -255,14 +255,21 @@ const INTEREST_PHRASES: Record<string, string> = {
 
 // Frase corta que explica por qué se le propone el plan (como mucho 3 motivos)
 // "Te lo proponemos porque te gusta la lectura, está a 9 minutos andando de tu casa y es gratis."
-export function whyThisPlan(p: Plan, opts: { minutes: number | null; hasHome: boolean }): string {
+type From = "aqui" | "cp" | "casa" | "centro";
+
+// " de tu casa" / " de donde estás" / " de tu código postal" / "" (si no sabemos dónde vive)
+export function fromWhere(kind: From): string {
+  return { casa: " de tu casa", aqui: " de donde estás", cp: " de tu código postal", centro: "" }[kind];
+}
+
+export function whyThisPlan(p: Plan, opts: { minutes: number | null; from: From }): string {
   const e = p.evento;
   const reasons: string[] = [];
   if (p.gusto) reasons.push(INTEREST_PHRASES[p.gusto] ?? `encaja con tus gustos (${p.gusto.toLowerCase()})`);
   if (e.fuente === "juntos_contra_soledad") reasons.push("es un taller para conocer gente nueva");
   else if (/mayores/i.test(e.publico ?? "")) reasons.push("está pensado para personas mayores");
   if (opts.minutes != null && opts.minutes <= 20) {
-    reasons.push(`está a ${opts.minutes} minutos andando${opts.hasHome ? " de tu casa" : ""}`);
+    reasons.push(`está a ${opts.minutes} minutos andando${fromWhere(opts.from)}`);
   }
   if (e.gratuito) reasons.push("es gratis");
   if (isAccessible(e)) reasons.push("se puede ir en silla de ruedas");

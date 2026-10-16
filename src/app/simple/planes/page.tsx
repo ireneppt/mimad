@@ -4,7 +4,9 @@ import SimpleShell from "@/components/simple/SimpleShell";
 import { createClient } from "@/lib/supabase/server";
 import { getEvent, getSources, isAccessible } from "@/lib/data";
 import { walkingMinutes } from "@/lib/format";
-import { getCurrentProfile, homeLocation } from "@/lib/profile";
+import { getCurrentProfile } from "@/lib/profile";
+import { getOrigin } from "@/lib/origin";
+import LocationPanel from "@/components/simple/LocationPanel";
 import {
   getMyInscriptionIds, getPendingRecommendations, getSimplePlans, parseWhen, whenInWords, whyThisPlan, WHEN_LABELS, type When,
 } from "@/lib/simplePlans";
@@ -23,13 +25,14 @@ export default async function SimplePlansPage({
   const when = parseWhen(params.cuando);
   const supabase = await createClient();
   const perfil = await getCurrentProfile(supabase);
+  const origin = await getOrigin(perfil); // casa, dónde estoy ahora o el centro
   const [fuentes, recomendaciones, inscritos] = await Promise.all([
     getSources(supabase),
     perfil ? getPendingRecommendations(supabase, perfil.id) : Promise.resolve([]),
     perfil ? getMyInscriptionIds(supabase, perfil.id) : Promise.resolve<string[]>([]),
   ]);
   const [plans, done] = await Promise.all([
-    getSimplePlans(supabase, { home: homeLocation(perfil), when, recomendaciones, intereses: perfil?.intereses ?? [] }),
+    getSimplePlans(supabase, { home: origin, when, recomendaciones, intereses: perfil?.intereses ?? [] }),
     params.hecho ? getEvent(supabase, params.hecho) : null,
   ]);
   // "Me apunto" a un plan que coincide con otro: se pregunta qué prefiere
@@ -43,7 +46,6 @@ export default async function SimplePlansPage({
   const href = (w: When) => `/simple/planes?cuando=${w}`;
 
   // Textos ya preparados para la tarjeta (la tarjeta cambia de plan sin volver al servidor)
-  const hasHome = perfil?.lat != null && perfil?.lon != null;
   const views: PlanView[] = plans.map((plan) => {
     const { evento: e, km, recomendadoPor, mensaje } = plan;
     const minutos = km != null ? walkingMinutes(km) : null;
@@ -58,7 +60,7 @@ export default async function SimplePlansPage({
     accesible: isAccessible(e),
     recomendadoPor,
     mensaje,
-    porque: whyThisPlan(plan, { minutes: minutos, hasHome }),
+    porque: whyThisPlan(plan, { minutes: minutos, from: origin.kind }),
     fuente: fuentes[e.fuente] ?? null,
     fuenteId: e.fuente,
     apuntada: inscritos.includes(e.id),
@@ -112,6 +114,14 @@ export default async function SimplePlansPage({
           </Link>
         ))}
       </nav>
+
+      <LocationPanel
+        kind={origin.kind}
+        cp={origin.cp}
+        here={origin.kind === "aqui" ? { lat: origin.lat, lon: origin.lon } : null}
+        loggedIn={!!perfil}
+        hasHome={perfil?.lat != null && perfil?.lon != null}
+      />
 
       {choque && con && (
         <ConflictChoice

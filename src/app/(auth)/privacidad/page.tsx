@@ -12,6 +12,11 @@ export default function PrivacyPage() {
       </p>
       <h2 className="text-xl font-semibold">Qué guardamos</h2>
       <p>Tu nombre, tu móvil (para iniciar sesión), tu municipio o barrio, tus intereses y los planes a los que te apuntas.</p>
+      <p>
+        Si nos das tu código postal o la ubicación de tu casa, guardamos solo un punto aproximado (con un margen de unos 100
+        metros) para calcular cuánto tardas en llegar a cada plan. Si usas «dónde estoy ahora», esa ubicación no se guarda en
+        nuestra base de datos: se queda en tu móvil durante 3 horas.
+      </p>
       <h2 className="text-xl font-semibold">Quién lo ve</h2>
       <p>
         Solo tú. Si aceptas un vínculo de acompañamiento con un familiar, esa persona puede ver tu perfil y tu agenda para
