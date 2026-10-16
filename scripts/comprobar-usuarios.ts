@@ -120,6 +120,16 @@ export async function checkUsers(check: Check) {
     const responde = await carmen.db.from("mm_recomendaciones").update({ estado: "aceptada" }).eq("id", rec.data?.id ?? "").select("estado");
     check("Carmen acepta la recomendación", responde.data?.[0]?.estado === "aceptada", responde.data ?? responde.error?.message);
 
+    // Notificaciones: las crea la base de datos y nadie puede falsificarlas
+    const avisosCarmen = await carmen.db.from("mm_notificaciones").select("tipo, titulo");
+    check("Carmen recibe el aviso de la recomendación", (avisosCarmen.data ?? []).some((n) => n.tipo === "recomendacion"), avisosCarmen.data?.map((n) => n.titulo));
+    const avisosLucia = await lucia.db.from("mm_notificaciones").select("tipo, titulo");
+    check("Lucía recibe que Carmen aceptó la invitación y el plan", ["vinculo", "recomendacion_aceptada"].every((t) => (avisosLucia.data ?? []).some((n) => n.tipo === t)), avisosLucia.data?.map((n) => n.titulo));
+    const falso = await otra.db.from("mm_notificaciones").insert({ usuario: carmen.id, tipo: "recomendacion", titulo: "Falso" });
+    check("Nadie puede crear avisos a mano", !!falso.error, falso.error?.message ?? "¡se pudo!");
+    const ajenos = await otra.db.from("mm_notificaciones").select("id");
+    check("Nadie ve los avisos de otra persona", (ajenos.data ?? []).length === 0, ajenos.data);
+
     // Entidades: la verificación no se puede falsear
     const falsa = await otra.db.from("mm_entidades").insert({ nombre: "Falsa", nif: NIF_INVENTADO, verificada: true }).select("verificada").single();
     check("Una entidad con NIF inventado no puede marcarse verificada", falsa.data?.verificada === false, falsa.data ?? falsa.error?.message);
