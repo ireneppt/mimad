@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { BellOff, CalendarClock, Heart, HeartCrack, Hourglass, Settings, UserPlus, Users } from "lucide-react";
+import { BellOff, CalendarClock, CalendarX2, Heart, Megaphone, HeartCrack, Hourglass, Settings, UserPlus, Users } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/profile";
 import { getEventsByIds } from "@/lib/data";
@@ -135,6 +135,8 @@ export default async function NotificationsPage({ searchParams }: { searchParams
       actor: who,
       icon:
         n.tipo === "recomendacion" ? <Heart size={24} className="text-coral-texto" />
+        : n.tipo === "mensaje" ? <Megaphone size={24} className="text-coral-texto" />
+        : n.tipo === "plan_cambio" ? <CalendarX2 size={24} className="text-amber-700" />
         : n.tipo === "recomendacion_descartada" || n.tipo === "vinculo_fin" ? <HeartCrack size={24} className="text-slate-600" />
         : n.tipo === "vinculo" ? <UserPlus size={24} className="text-violet-700" />
         : <Users size={24} className="text-violet-700" />,

@@ -127,3 +127,30 @@ export async function cancelEvent(form: FormData) {
   revalidatePath("/", "layout");
   redirect(`/entidad/eventos/${id}?cancelado=1`);
 }
+
+// ---------------------------------------------------------------------
+// Mensajes a las personas apuntadas (solo escribe la entidad)
+// ---------------------------------------------------------------------
+export type MessageState = { error?: string; ok?: string; sent?: number };
+
+export async function sendMessage(prev: MessageState, form: FormData): Promise<MessageState> {
+  const id = String(form.get("evento_id") ?? "");
+  const texto = String(form.get("texto") ?? "").trim().replace(/\n{3,}/g, "\n\n");
+  if (texto.length < 1) return { error: "Escribe el mensaje." };
+  if (texto.length > 1000) return { error: "El mensaje puede tener como máximo 1.000 caracteres." };
+  const { supabase, entidad } = await myEntity();
+  if (!entidad) return { error: "No encontramos tu entidad." };
+  // La base de datos solo deja escribir en planes de tu entidad (y avisa a las personas apuntadas)
+  const { error } = await supabase.from("mm_mensajes_evento").insert({ evento_id: id, texto });
+  if (error) return { error: "No se ha podido enviar. Prueba otra vez." };
+  revalidatePath(`/entidad/eventos/${id}`);
+  return { ok: "Mensaje enviado a las personas apuntadas.", sent: (prev.sent ?? 0) + 1 };
+}
+
+export async function deleteMessage(form: FormData) {
+  const id = String(form.get("id") ?? "");
+  const eventoId = String(form.get("evento_id") ?? "");
+  const { supabase } = await myEntity();
+  await supabase.from("mm_mensajes_evento").delete().eq("id", id);
+  revalidatePath(`/entidad/eventos/${eventoId}`);
+}

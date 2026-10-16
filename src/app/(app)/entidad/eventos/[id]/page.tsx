@@ -10,6 +10,7 @@ import BackButton from "@/components/BackButton";
 import RouteMapLazy from "@/components/simple/RouteMapLazy";
 import EventForm from "../../EventForm";
 import CancelEvent from "./CancelEvent";
+import EventMessages from "./EventMessages";
 import { Attendance, StatusPill } from "../../parts";
 import type { Evento } from "@/lib/data";
 
@@ -31,9 +32,10 @@ export default async function EntityEventPage({
   if (!perfil) return null;
   const entidad = await getMyEntity(supabase, perfil.id);
   if (!entidad) notFound();
-  const [e, { data: municipios }] = await Promise.all([
+  const [e, { data: municipios }, { data: mensajes }] = await Promise.all([
     getEntityEvent(supabase, entidad.id, id),
     supabase.from("v_municipios").select("nombre").order("nombre"),
+    supabase.from("mm_mensajes_evento").select("id, texto, created_at").eq("evento_id", id).order("created_at", { ascending: false }),
   ]);
   if (!e) notFound();
 
@@ -120,6 +122,11 @@ export default async function EntityEventPage({
             {entidad.verificada ? " y la marca «Entidad verificada»." : "."}
           </p>
         </section>
+
+        {/* Mensajes a las personas apuntadas (solo escribe la entidad) */}
+        {e.estado !== "rechazado" && (
+          <EventMessages eventoId={e.id} mensajes={mensajes ?? []} apuntados={e.apuntados} active={editable && e.estado === "publicado"} />
+        )}
 
         {editable && (
           <details className="group rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-200" open={false}>

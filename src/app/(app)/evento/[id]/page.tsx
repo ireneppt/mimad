@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import {
-  Accessibility, Bell, Bus, CalendarDays, CalendarPlus, ChevronRight, ExternalLink, Footprints, Languages, MapPin, Ticket, Users,
+  Accessibility, Bell, Bus, Megaphone, CalendarDays, CalendarPlus, ChevronRight, ExternalLink, Footprints, Languages, MapPin, Ticket, Users,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { accessibilityLabels, distanceKm, getEvent, getSources, isAccessible, type Evento } from "@/lib/data";
@@ -16,6 +16,7 @@ import BackButton from "@/components/BackButton";
 import RecommendSlot from "@/components/RecommendSlot";
 import RouteMapLazy from "@/components/simple/RouteMapLazy";
 import JoinButton from "./JoinButton";
+import { timeAgo } from "@/lib/companion";
 
 const LANGUAGES: Record<string, string> = {
   es: "español", en: "inglés", fr: "francés", ar: "árabe", zh: "chino", ro: "rumano", pt: "portugués",
@@ -57,6 +58,12 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
     ? await supabase.from("mm_inscripciones").select("id").eq("usuario", perfil.id).eq("evento_id", id).maybeSingle()
     : { data: null };
   const joined = !!mine;
+
+  // Planes de entidades: mensajes de la organización (solo los ven las personas apuntadas)
+  const entityEventId = evento.fuente === "entidad" ? evento.id.replace(/^entidad:/, "") : null;
+  const { data: mensajes } = entityEventId && joined
+    ? await supabase.from("mm_mensajes_evento").select("id, texto, created_at").eq("evento_id", entityEventId).order("created_at", { ascending: false })
+    : { data: [] };
 
   const { label, icon: CategoryIcon } = categoryInfo(evento.categoria);
   const hasPlace = evento.lat != null && evento.lon != null;
@@ -150,6 +157,23 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
             </a>
           )}
         </div>
+
+        {(mensajes ?? []).length > 0 && (
+          <section aria-labelledby="mensajes-org" className="flex flex-col gap-3 rounded-3xl bg-crema p-5">
+            <h2 id="mensajes-org" className="flex items-center gap-2 text-xl font-bold">
+              <Megaphone size={22} className="text-coral-texto" aria-hidden="true" /> Mensajes de la organización
+            </h2>
+            <ul className="flex flex-col gap-3">
+              {(mensajes ?? []).map((m) => (
+                <li key={m.id} className="rounded-2xl bg-white p-4 text-base">
+                  <p className="whitespace-pre-line">{m.texto}</p>
+                  <p className="mt-1 text-sm text-gris">{timeAgo(m.created_at)}</p>
+                </li>
+              ))}
+            </ul>
+            <p className="text-sm text-gris">Solo la entidad que organiza el plan puede escribir aquí.</p>
+          </section>
+        )}
 
         {hasPlace && (
           <section className="flex flex-col gap-3" aria-labelledby="llegar">

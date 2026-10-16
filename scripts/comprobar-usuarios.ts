@@ -169,6 +169,17 @@ export async function checkUsers(check: Check) {
     const visible = await carmen.db.from("v_eventos").select("id, organizacion").eq("id", `entidad:${plan.data?.id}`);
     check("El plan de una entidad verificada se publica y lo ven las personas", plan.data?.estado === "publicado" && (visible.data ?? []).length === 1, visible.data ?? plan.error?.message);
     await carmen.db.from("mm_inscripciones").insert({ evento_id: `entidad:${plan.data?.id}` });
+
+    // Mensajes de la entidad: solo escribe la entidad; solo leen las personas apuntadas
+    const msg = await ent.db.from("mm_mensajes_evento").insert({ evento_id: plan.data?.id, texto: "Cambiamos a la sala 2" });
+    const leeCarmen = await carmen.db.from("mm_mensajes_evento").select("texto");
+    const avisoMsg = await carmen.db.from("mm_notificaciones").select("titulo").eq("tipo", "mensaje");
+    check("La entidad escribe y la persona apuntada lo lee y recibe el aviso", !msg.error && (leeCarmen.data ?? []).length === 1 && (avisoMsg.data ?? []).length === 1, msg.error?.message ?? avisoMsg.data);
+    const leeOtra = await otra.db.from("mm_mensajes_evento").select("texto");
+    check("Quien no está apuntada no ve los mensajes", (leeOtra.data ?? []).length === 0, leeOtra.data);
+    const escribeCarmen = await carmen.db.from("mm_mensajes_evento").insert({ evento_id: plan.data?.id, texto: "Hola" });
+    check("Las personas no pueden escribir mensajes", !!escribeCarmen.error, escribeCarmen.error?.message ?? "¡se pudo!");
+
     await ent.db.from("mm_eventos").update({ estado: "cancelado" }).eq("id", plan.data?.id ?? "");
     const tras = await carmen.db.from("v_eventos").select("id").eq("id", `entidad:${plan.data?.id}`);
     const aviso = await carmen.db.from("mm_notificaciones").select("titulo").eq("tipo", "plan_cambio");
