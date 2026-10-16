@@ -40,3 +40,16 @@ const CATEGORIES: Record<string, CategoryInfo> = {
 export function categoryInfo(categoria: string | null): CategoryInfo {
   return (categoria && CATEGORIES[categoria]) || { label: "Actividad", icon: Sparkles };
 }
+
+// Lugares de v_lugares (mapa): icono propio para distinguirlos de los planes
+const PLACE_ICONS: Record<string, LucideIcon> = {
+  "Hogar de mayores": HeartHandshake,
+  "Centro municipal de mayores": Users,
+  "Centro de día": Landmark,
+  Talleres: Hammer,
+  "Centro de integración (CEPI)": Globe,
+};
+
+export function placeIcon(categoria: string): LucideIcon {
+  return PLACE_ICONS[categoria] ?? Landmark;
+}

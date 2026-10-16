@@ -1,6 +1,5 @@
-import Image from "next/image";
 import Link from "next/link";
-import { Accessibility, Bell, Database, Search } from "lucide-react";
+import { Accessibility, Database } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { distanceKm, getEvents, getSources, sortByNext, type EventFilters, type Evento } from "@/lib/data";
 import { getCurrentProfile } from "@/lib/profile";
@@ -8,8 +7,8 @@ import { getOrigin } from "@/lib/origin";
 import { categoriesForInterests } from "@/lib/interests";
 import EventCard from "@/components/EventCard";
 import Welcome from "@/components/Welcome";
-import LocationChip from "@/components/LocationChip";
-import { switchToSimple } from "./actions";
+import HomeHeader from "@/components/HomeHeader";
+import ViewToggle from "@/components/ViewToggle";
 
 export const metadata = { title: "Inicio · MiMad" };
 
@@ -54,11 +53,6 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
   if (active.has("cerca")) events = [...events].sort((a, b) => (withKm(a) ?? 99) - (withKm(b) ?? 99));
   const shown = events.slice(0, limit);
 
-  const { count: unread } = perfil
-    ? await supabase.from("mm_notificaciones").select("*", { count: "exact", head: true }).eq("leida", false)
-    : { count: 0 };
-
-  const place = [perfil?.municipio ?? "Madrid", perfil?.barrio].filter(Boolean).join(", ");
   const usedSources = [...new Set(shown.map((e) => e.fuente))].map((id) => fuentes[id]).filter(Boolean);
 
   // Enlace que activa/desactiva un filtro manteniendo los demás y la búsqueda
@@ -88,45 +82,11 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
     <main className="flex flex-col">
       <Welcome mode={params.bienvenida} nombre={perfil?.nombre} />
 
-      <div className="flex flex-col gap-4 border-b border-slate-200 bg-white px-5 pb-5 pt-6">
-        <header className="relative flex items-center gap-3">
-          <Link href="/" aria-label="MiMad, inicio" className="shrink-0">
-            <Image src="/icono.svg" alt="" width={56} height={56} priority />
-          </Link>
-          <LocationChip place={place} kind={origin.kind} loggedIn={!!perfil} />
-          <Link href="/notificaciones" aria-label={unread ? `Notificaciones: ${unread} sin leer` : "Notificaciones"} className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-slate-100">
-            <Bell size={26} aria-hidden="true" />
-            {!!unread && <span className="absolute right-3.5 top-3 h-3 w-3 rounded-full border-2 border-slate-100 bg-coral" aria-hidden="true" />}
-          </Link>
-        </header>
-
-        <form action={switchToSimple}>
-          <button type="submit" role="switch" aria-checked="false" className="flex w-full items-center gap-3 rounded-2xl border border-coral/30 bg-coral/5 p-3 text-left">
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-lg font-bold text-coral-texto" aria-hidden="true">Aa</span>
-            <span className="flex-1 text-lg font-semibold">Versión simplificada</span>
-            <span className="relative h-8 w-14 rounded-full bg-slate-300" aria-hidden="true">
-              <span className="absolute left-1 top-1 h-6 w-6 rounded-full bg-white shadow" />
-            </span>
-          </button>
-        </form>
-
-        <form action="/" role="search" className="relative">
-          <input type="hidden" name="f" value={[...active].join(",")} />
-          <label htmlFor="buscar" className="sr-only">Buscar actividades</label>
-          <Search size={24} className="pointer-events-none absolute left-5 top-1/2 -translate-y-1/2 text-gris" aria-hidden="true" />
-          <input
-            id="buscar"
-            name="q"
-            type="search"
-            defaultValue={search}
-            maxLength={60}
-            placeholder="Buscar actividades, talleres…"
-            className="h-14 w-full rounded-2xl bg-slate-100 pl-14 pr-4 text-lg placeholder:text-gris focus:outline-none focus:ring-2 focus:ring-tinta"
-          />
-        </form>
-      </div>
+      <HomeHeader db={supabase} perfil={perfil} originKind={origin.kind} search={search} searchAction="/" hidden={{ f: [...active].join(",") }} />
 
       <div className="flex flex-col gap-5 bg-fondo px-5 pb-8 pt-5">
+        <ViewToggle current="lista" search={search} />
+
         <nav aria-label="Filtros" className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1">
           {chips.filter((c) => !c.hidden).map((c) => {
             const on = active.has(c.id);
