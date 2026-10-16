@@ -107,3 +107,75 @@ export function dateTile(item: AgendaItem) {
     month: `${MONTHS[mo - 1].slice(0, 3)}.`,
   };
 }
+
+// ---------------------------------------------------------------------
+// Planes que coinciden en día y hora (para avisar antes de apuntarse)
+// ---------------------------------------------------------------------
+
+// Cuándo ocupa un plan: un día concreto o un día de cada semana, de tal hora a tal hora (en minutos)
+type Slot =
+  | { kind: "date"; date: string; start: number; end: number }
+  | { kind: "weekly"; weekday: number; start: number; end: number };
+
+const DEFAULT_MINUTES = 120; // si no se sabe cuándo acaba, se cuentan 2 horas
+const toMinutes = (h: string, m: string) => Number(h) * 60 + Number(m);
+
+// null = no ocupa una hora concreta (exposiciones, planes de varios días, sin hora): no choca con nada
+function slotOf(e: Evento): Slot | null {
+  if (!e.fecha_inicio) {
+    const horario = plain(e.horario ?? "");
+    const weekday = WEEKDAYS.findIndex((d) => horario.includes(plain(d)));
+    const times = [...horario.matchAll(/(\d{1,2}):(\d{2})/g)];
+    if (weekday < 0 || times.length === 0) return null;
+    const start = toMinutes(times[0][1], times[0][2]);
+    const end = times[1] ? toMinutes(times[1][1], times[1][2]) : start + DEFAULT_MINUTES;
+    return { kind: "weekly", weekday, start, end: end > start ? end : start + DEFAULT_MINUTES };
+  }
+  const date = e.fecha_inicio.slice(0, 10);
+  const [sh, sm] = e.fecha_inicio.slice(11, 16).split(":");
+  if (!sh || (sh === "00" && sm === "00")) return null;
+  const endDay = e.fecha_fin?.slice(0, 10) ?? date;
+  if (endDay !== date) return null; // dura varios días
+  const start = toMinutes(sh, sm);
+  const endTime = e.fecha_fin?.slice(11, 16);
+  // En la agenda del Ayuntamiento, "23:59" significa "sin hora de fin"
+  const end = endTime && endTime !== "23:59" ? toMinutes(endTime.slice(0, 2), endTime.slice(3, 5)) : start + DEFAULT_MINUTES;
+  return { kind: "date", date, start, end: end > start ? end : start + DEFAULT_MINUTES };
+}
+
+// ¿Caen el mismo día? (un taller de los jueves cae en cualquier jueves)
+function sameDay(a: Slot, b: Slot): boolean {
+  if (a.kind === "date" && b.kind === "date") return a.date === b.date;
+  if (a.kind === "weekly" && b.kind === "weekly") return a.weekday === b.weekday;
+  const dated = a.kind === "date" ? a : (b as Extract<Slot, { kind: "date" }>);
+  const weekly = a.kind === "weekly" ? a : (b as Extract<Slot, { kind: "weekly" }>);
+  return weekdayIndex(dated.date) === weekly.weekday;
+}
+
+function slotsOverlap(a: Slot, b: Slot): boolean {
+  return sameDay(a, b) && a.start < b.end && b.start < a.end;
+}
+
+export function plansOverlap(a: Evento, b: Evento): boolean {
+  if (a.id === b.id) return false;
+  const sa = slotOf(a);
+  const sb = slotOf(b);
+  return !!sa && !!sb && slotsOverlap(sa, sb);
+}
+
+// Plan de mi agenda que coincide con este (o null). Lo usa "Me apunto" antes de apuntar.
+export async function findConflict(db: SupabaseClient, userId: string, evento: Evento): Promise<Evento | null> {
+  const agenda = await getMyAgenda(db, userId);
+  return agenda.find((item) => plansOverlap(item.evento, evento))?.evento ?? null;
+}
+
+// Ids de los planes de la agenda que coinciden con algún otro (para marcarlos con un aviso)
+export function overlappingIds(agenda: AgendaItem[]): Set<string> {
+  const ids = new Set<string>();
+  agenda.forEach((a, i) =>
+    agenda.slice(i + 1).forEach((b) => {
+      if (plansOverlap(a.evento, b.evento)) ids.add(a.evento.id).add(b.evento.id);
+    })
+  );
+  return ids;
+}

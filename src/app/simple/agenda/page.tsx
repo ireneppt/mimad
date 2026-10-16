@@ -1,11 +1,11 @@
 import Link from "next/link";
-import { ArrowLeft, ChevronRight, Clock, Info, MapPin, Plus, Route } from "lucide-react";
+import { ArrowLeft, ChevronRight, Clock, Info, MapPin, Plus, Route, TriangleAlert } from "lucide-react";
 import SimpleShell from "@/components/simple/SimpleShell";
 import LeaveConfirm from "@/components/simple/LeaveConfirm";
 import { createClient } from "@/lib/supabase/server";
 import { categoryInfo } from "@/lib/categories";
 import { getCurrentProfile } from "@/lib/profile";
-import { dateTile, fullDate, getMyAgenda, relativeDay, relativeWhen, type AgendaItem } from "@/lib/simpleAgenda";
+import { dateTile, fullDate, getMyAgenda, overlappingIds, relativeDay, relativeWhen, type AgendaItem } from "@/lib/simpleAgenda";
 
 export const metadata = { title: "Mis planes · MiMad simplificada" };
 
@@ -20,6 +20,7 @@ export default async function SimpleAgendaPage({ searchParams }: { searchParams:
   const perfil = await getCurrentProfile(supabase);
   const items = perfil ? await getMyAgenda(supabase, perfil.id) : [];
   const [next, ...later] = items;
+  const overlaps = overlappingIds(items);
 
   return (
     <SimpleShell
@@ -50,7 +51,16 @@ export default async function SimpleAgendaPage({ searchParams }: { searchParams:
         </p>
       )}
 
-      {next ? <NextPlan item={next} /> : <SearchPlans primary />}
+      {overlaps.size > 0 && (
+        <p role="status" className="flex items-start gap-3 rounded-2xl border-2 border-amber-600 bg-amber-50 p-5 text-xl leading-snug">
+          <TriangleAlert size={30} className="mt-0.5 shrink-0 text-amber-700" aria-hidden="true" />
+          <span>
+            Tienes <strong>planes que coinciden</strong> el mismo día a la misma hora. Están marcados abajo: elige a cuál vas a ir.
+          </span>
+        </p>
+      )}
+
+      {next ? <NextPlan item={next} overlaps={overlaps.has(next.evento.id)} /> : <SearchPlans primary />}
 
       {later.length > 0 && (
         <section className="flex flex-col gap-3" aria-labelledby="despues">
@@ -59,7 +69,7 @@ export default async function SimpleAgendaPage({ searchParams }: { searchParams:
           <ul className="flex flex-col gap-3">
             {later.map((item) => (
               <li key={item.evento.id}>
-                <LaterPlan item={item} />
+                <LaterPlan item={item} overlaps={overlaps.has(item.evento.id)} />
               </li>
             ))}
           </ul>
@@ -72,7 +82,15 @@ export default async function SimpleAgendaPage({ searchParams }: { searchParams:
   );
 }
 
-function NextPlan({ item }: { item: AgendaItem }) {
+function OverlapBadge() {
+  return (
+    <span className="flex w-fit items-center gap-2 whitespace-nowrap rounded-full bg-amber-100 px-3 py-1 text-base font-bold text-amber-900">
+      <TriangleAlert size={20} aria-hidden="true" /> Coincide con otro plan
+    </span>
+  );
+}
+
+function NextPlan({ item, overlaps }: { item: AgendaItem; overlaps: boolean }) {
   const e = item.evento;
   const { icon: CategoryIcon } = categoryInfo(e.categoria);
   const place = e.lugar ?? e.direccion;
@@ -88,6 +106,7 @@ function NextPlan({ item }: { item: AgendaItem }) {
         <div className="flex h-28 items-center justify-center rounded-2xl bg-white/15" aria-hidden="true">
           <CategoryIcon size={60} />
         </div>
+        {overlaps && <OverlapBadge />}
         <h2 className="text-[1.75rem] font-bold leading-tight">{e.titulo}</h2>
         <ul className="flex flex-col gap-2 text-xl leading-snug">
           <li className="flex gap-3">
@@ -124,7 +143,7 @@ function NextPlan({ item }: { item: AgendaItem }) {
   );
 }
 
-function LaterPlan({ item }: { item: AgendaItem }) {
+function LaterPlan({ item, overlaps }: { item: AgendaItem; overlaps: boolean }) {
   const tile = dateTile(item);
   return (
     <Link
@@ -139,6 +158,11 @@ function LaterPlan({ item }: { item: AgendaItem }) {
       <span className="flex-1">
         <span className="block text-xl font-bold leading-snug">{item.evento.titulo}</span>
         <span className="block text-lg leading-snug text-gris">{relativeWhen(item)}</span>
+        {overlaps && (
+          <span className="mt-1 block">
+            <OverlapBadge />
+          </span>
+        )}
       </span>
       <ChevronRight size={28} className="shrink-0" aria-hidden="true" />
     </Link>

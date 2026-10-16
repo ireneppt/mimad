@@ -8,6 +8,7 @@ import { PrimarySubmit } from "@/components/simple/ui";
 import RouteMapLazy from "@/components/simple/RouteMapLazy";
 import LeaveConfirm from "@/components/simple/LeaveConfirm";
 import ScrollToHash from "@/components/simple/ScrollToHash";
+import ConflictChoice from "@/components/simple/ConflictChoice";
 import SourceTag from "@/components/SourceTag";
 import { createClient } from "@/lib/supabase/server";
 import { accessibilityLabels, getEvent, getSources, isAccessible, type Evento } from "@/lib/data";
@@ -26,7 +27,7 @@ export default async function SimpleEventPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ volver?: string; hecho?: string; quitado?: string }>;
+  searchParams: Promise<{ volver?: string; hecho?: string; quitado?: string; con?: string }>;
 }) {
   const { id: rawId } = await params;
   const query = await searchParams;
@@ -56,6 +57,8 @@ export default async function SimpleEventPage({
   const apuntada = inscritos.includes(evento.id);
   const { label, icon: CategoryIcon } = categoryInfo(evento.categoria);
   const here = `/simple/evento/${encodeURIComponent(evento.id)}?volver=${encodeURIComponent(volver)}`;
+  // "Me apunto" a un plan que coincide con otro de su agenda: se pregunta qué prefiere
+  const conflicto = query.con && !apuntada ? await getEvent(supabase, query.con) : null;
   const duration = durationText(evento);
   const extras = accessibilityLabels(evento).filter((l) => !/^Instalación|Sin información|Parcialmente/.test(l));
 
@@ -72,6 +75,8 @@ export default async function SimpleEventPage({
       }
     >
       <BackLink href={volver} />
+
+      {conflicto && <ConflictChoice nuevo={evento} existente={conflicto} back={here} />}
 
       {query.hecho === evento.id && (
         <p role="status" className="flex items-start gap-3 rounded-2xl border-2 border-green-700 bg-green-50 p-5 text-xl text-green-900">
