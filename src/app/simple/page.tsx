@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, CalendarHeart, Heart, HeartHandshake, MessageCircleMore, Sparkles, UserRound } from "lucide-react";
+import { ArrowRight, CalendarHeart, Heart, HeartHandshake, Map, MessageCircleMore, Sparkles, UserRound } from "lucide-react";
 import SimpleShell from "@/components/simple/SimpleShell";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/profile";
@@ -31,6 +31,7 @@ export default async function SimpleHomePage() {
         <ol>
           <li>Para buscar algo que hacer cerca de casa, toca <strong>Ver planes sugeridos</strong>.</li>
           <li>Para ver los planes a los que te has apuntado, toca <strong>Mis planes</strong>.</li>
+          <li>Para ver en un mapa los planes y los sitios para mayores que hay cerca, toca <strong>Ver en el mapa</strong>.</li>
           {rec && <li>Si un familiar te ha recomendado un plan, toca <strong>Verlo</strong>.</li>}
           {perfil && familiares.length === 0 && (
             <li>Si un familiar te ha dado un código, toca <strong>¿Te ha dado un código tu familiar?</strong> y escríbelo.</li>
@@ -78,6 +79,15 @@ export default async function SimpleHomePage() {
               "Todavía no te has apuntado a ningún plan"
             )}
           </span>
+        </span>
+        <ArrowRight size={32} className="shrink-0" aria-hidden="true" />
+      </Link>
+
+      <Link href="/simple/mapa" className="flex items-center gap-4 rounded-3xl border-2 border-slate-300 bg-slate-100 p-6">
+        <Map size={48} className="shrink-0 text-coral-texto" aria-hidden="true" />
+        <span className="flex-1">
+          <span className="block text-[2rem] font-bold leading-tight">Ver en el mapa</span>
+          <span className="block text-xl leading-snug text-gris">Planes y sitios para mayores cerca de tu casa</span>
         </span>
         <ArrowRight size={32} className="shrink-0" aria-hidden="true" />
       </Link>

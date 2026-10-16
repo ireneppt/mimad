@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, Check } from "lucide-react";
+import { Map as MapIcon } from "lucide-react";
 import SimpleShell from "@/components/simple/SimpleShell";
 import { createClient } from "@/lib/supabase/server";
 import { getEvent, getSources, isAccessible } from "@/lib/data";
@@ -166,6 +167,13 @@ export default async function SimplePlansPage({
           </Link>
         )
       )}
+
+      <Link
+        href={when === "semana" ? "/simple/mapa" : `/simple/mapa?ver=${when}`}
+        className="flex h-16 items-center justify-center gap-3 rounded-2xl border-2 border-slate-400 bg-white text-xl font-bold"
+      >
+        <MapIcon size={26} className="text-coral-texto" aria-hidden="true" /> Verlos en el mapa
+      </Link>
     </SimpleShell>
   );
 }
