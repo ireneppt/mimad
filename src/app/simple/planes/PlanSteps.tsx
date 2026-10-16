@@ -137,7 +137,7 @@ export default function PlanSteps({ plans, initial, cuando }: { plans: PlanView[
           )}
 
           <Link
-            href={`/simple/evento/${encodeURIComponent(plan.id)}`}
+            href={`/simple/evento/${encodeURIComponent(plan.id)}?volver=${encodeURIComponent(back)}`}
             className="flex h-16 items-center justify-center gap-3 rounded-2xl border-2 border-slate-500 text-xl font-semibold"
           >
             <Info size={26} aria-hidden="true" />

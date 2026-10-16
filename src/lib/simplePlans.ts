@@ -137,15 +137,9 @@ export async function getSimplePlans(
   // Los recomendados por la familia van siempre primero, aunque sean de otro día
   const recIds = [...new Set(recomendaciones.map((r) => r.evento_id))];
   const recEvents = await getEventsByIds(db, recIds);
-  const recBy = new Map(recomendaciones.map((r) => [r.evento_id, r]));
+  const recBy = new Set(recomendaciones.map((r) => r.evento_id));
 
-  const toPlan = (e: Evento): Plan => ({
-    evento: e,
-    km: e.lat != null && e.lon != null ? distanceKm(home, { lat: e.lat, lon: e.lon }) : null,
-    recomendadoPor: recBy.get(e.id)?.de_nombre ?? null,
-    mensaje: recBy.get(e.id)?.mensaje ?? null,
-    gusto: matchingInterest(e, intereses),
-  });
+  const toPlan = (e: Evento) => buildPlan(e, { home, intereses, recomendaciones });
 
   const recommended = recIds
     .map((id) => recEvents.find((e) => e.id === id))
@@ -181,6 +175,21 @@ function mixKinds(plans: Plan[]): Plan[] {
     out.push(p);
   }
   return out;
+}
+
+// Un evento con lo que hace falta para enseñarlo como plan: distancia, quién lo recomienda y gustos
+export function buildPlan(
+  e: Evento,
+  opts: { home: { lat: number; lon: number }; intereses: string[]; recomendaciones: Recomendacion[] }
+): Plan {
+  const rec = opts.recomendaciones.find((r) => r.evento_id === e.id);
+  return {
+    evento: e,
+    km: e.lat != null && e.lon != null ? distanceKm(opts.home, { lat: e.lat, lon: e.lon }) : null,
+    recomendadoPor: rec?.de_nombre ?? null,
+    mensaje: rec?.mensaje ?? null,
+    gusto: matchingInterest(e, opts.intereses),
+  };
 }
 
 // Recomendaciones pendientes que me han hecho mis familiares (la más reciente primero)
