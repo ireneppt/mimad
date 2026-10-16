@@ -5,6 +5,7 @@ import { isAccessible, type Evento, type Fuente } from "@/lib/data";
 import { categoryInfo } from "@/lib/categories";
 import { formatDistance, formatWhen } from "@/lib/format";
 import SourceTag from "./SourceTag";
+import EventImage, { photoCredit } from "./EventImage";
 
 export function eventHref(id: string) {
   return `/evento/${encodeURIComponent(id)}`;
@@ -17,19 +18,18 @@ export default function EventCard({
   fuente?: Fuente;
   distanceKm?: number;
 }) {
-  const { label, icon: Icon } = categoryInfo(evento.categoria);
+  const { label } = categoryInfo(evento.categoria);
   const when = formatWhen(evento);
   const accessible = isAccessible(evento);
 
   return (
     <article className="relative overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-      {/* Los datos abiertos no traen imagen: fondo de marca con el icono de la categoría */}
-      <div className="bg-degradado relative flex h-36 items-center justify-center">
-        <Icon size={56} className="text-white/90" aria-hidden="true" />
-        <span className="absolute left-4 top-4 rounded-full bg-white px-3 py-1 text-sm font-semibold text-coral-texto">
+      {/* Foto del plan o, si no tiene, el icono de su tipo sobre el degradado de la marca */}
+      <EventImage src={evento.imagen} categoria={evento.categoria} className="h-40" credit={photoCredit(evento.fuente)}>
+        <span className="absolute left-4 top-4 rounded-full bg-white px-3 py-1 text-sm font-semibold text-coral-texto shadow-sm">
           {label}
         </span>
-      </div>
+      </EventImage>
 
       <div className="flex flex-col gap-3 p-5">
         <div className="flex items-start justify-between gap-3">

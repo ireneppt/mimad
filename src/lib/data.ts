@@ -25,6 +25,7 @@ export type Evento = {
   publico: string | null;
   idioma: string | null;
   organizacion?: string | null; // quién lo organiza (agenda del Ayuntamiento, CEPI, entidades de MiMad)
+  imagen?: string | null; // foto (Agenda turística o la que sube la entidad); sin foto, se dibuja el icono
 };
 
 export type Lugar = {

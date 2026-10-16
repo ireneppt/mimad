@@ -7,6 +7,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { nifError, normalizeNif } from "@/lib/nif";
 import { geocode } from "@/lib/geocode";
+import { planPhotoError, removePlanPhoto, uploadPlanPhoto } from "@/lib/avatar";
 import { ENTITY_AUDIENCES, ENTITY_CATEGORIES } from "@/lib/entityEvents";
 
 export type EntityState = { ok?: string; error?: string };
@@ -46,8 +47,14 @@ async function myEntity() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login?next=/entidad");
   const { data: entidad } = await supabase.from("mm_entidades").select("id").eq("usuario", user.id).maybeSingle();
-  return { supabase, entidad };
+  return { supabase, entidad, userId: user.id };
 }
+
+// Foto del plan que llega en el formulario (ya reducida en el móvil)
+const photoOf = (form: FormData) => {
+  const f = form.get("foto");
+  return f instanceof File && f.size > 0 ? f : null;
+};
 
 // Lee y comprueba el formulario; devuelve los datos para mm_eventos o un error
 async function readEventForm(form: FormData): Promise<{ data?: Record<string, unknown>; error?: string; values: Record<string, string> }> {
@@ -96,10 +103,18 @@ async function readEventForm(form: FormData): Promise<{ data?: Record<string, un
 }
 
 export async function createEvent(_prev: EventFormState, form: FormData): Promise<EventFormState> {
-  const { supabase, entidad } = await myEntity();
+  const { supabase, entidad, userId } = await myEntity();
   if (!entidad) return { error: "Primero completa los datos de tu entidad en el panel." };
   const { data, error, values } = await readEventForm(form);
   if (error || !data) return { error, values };
+  const photo = photoOf(form);
+  const photoErr = planPhotoError(photo);
+  if (photoErr) return { error: photoErr, values };
+  if (photo) {
+    const up = await uploadPlanPhoto(supabase, userId, photo);
+    if (up.error) return { error: up.error, values };
+    data.foto_url = up.url;
+  }
   // El estado (publicado / pendiente) lo decide la base de datos según la verificación
   const { data: created, error: e } = await supabase.from("mm_eventos").insert({ ...data, entidad_id: entidad.id }).select("id").single();
   if (e) return { error: "No se ha podido publicar. Prueba otra vez.", values };
@@ -109,10 +124,24 @@ export async function createEvent(_prev: EventFormState, form: FormData): Promis
 
 export async function updateEvent(_prev: EventFormState, form: FormData): Promise<EventFormState> {
   const id = String(form.get("id") ?? "");
-  const { supabase, entidad } = await myEntity();
+  const { supabase, entidad, userId } = await myEntity();
   if (!entidad) return { error: "No encontramos tu entidad." };
   const { data, error, values } = await readEventForm(form);
   if (error || !data) return { error, values };
+  // Foto: nueva (sustituye a la anterior) o quitarla
+  const photo = photoOf(form);
+  const photoErr = planPhotoError(photo);
+  if (photoErr) return { error: photoErr, values };
+  const { data: before } = await supabase.from("mm_eventos").select("foto_url").eq("id", id).eq("entidad_id", entidad.id).maybeSingle();
+  if (photo) {
+    const up = await uploadPlanPhoto(supabase, userId, photo);
+    if (up.error) return { error: up.error, values };
+    data.foto_url = up.url;
+    await removePlanPhoto(supabase, before?.foto_url);
+  } else if (form.get("quitar_foto") === "1") {
+    data.foto_url = null;
+    await removePlanPhoto(supabase, before?.foto_url);
+  }
   const { error: e } = await supabase.from("mm_eventos").update(data).eq("id", id).eq("entidad_id", entidad.id);
   if (e) return { error: "No se ha podido guardar. Prueba otra vez.", values };
   revalidatePath("/", "layout");

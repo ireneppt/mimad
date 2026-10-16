@@ -16,6 +16,7 @@ import BackButton from "@/components/BackButton";
 import RecommendSlot from "@/components/RecommendSlot";
 import RouteMapLazy from "@/components/simple/RouteMapLazy";
 import JoinButton from "./JoinButton";
+import EventImage, { photoCredit } from "@/components/EventImage";
 import { timeAgo } from "@/lib/companion";
 
 const LANGUAGES: Record<string, string> = {
@@ -65,7 +66,7 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
     ? await supabase.from("mm_mensajes_evento").select("id, texto, created_at").eq("evento_id", entityEventId).order("created_at", { ascending: false })
     : { data: [] };
 
-  const { label, icon: CategoryIcon } = categoryInfo(evento.categoria);
+  const { label } = categoryInfo(evento.categoria);
   const hasPlace = evento.lat != null && evento.lon != null;
   const km = hasPlace ? distanceKm(origin, { lat: evento.lat!, lon: evento.lon! }) : null;
   const dateRow = describeDate(evento);
@@ -88,9 +89,7 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
 
       <div className="flex flex-col gap-6 px-5 pb-6 pt-4">
         {/* Los datos abiertos no traen imagen: fondo de marca con el icono de la categoría */}
-        <div className="bg-degradado flex h-48 items-center justify-center rounded-3xl">
-          <CategoryIcon size={80} className="text-white/90" aria-hidden="true" />
-        </div>
+        <EventImage src={evento.imagen} categoria={evento.categoria} className="h-56 rounded-3xl" iconSize={80} credit={photoCredit(evento.fuente)} />
 
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between gap-3">

@@ -89,7 +89,8 @@ export async function replaceTable(
   table: string,
   key: string,
   rows: Record<string, unknown>[],
-  loadedAt: string
+  loadedAt: string,
+  scope?: { column: string; value: string } // p. ej. idioma = "es": solo se reemplazan esas filas
 ) {
   if (rows.length === 0) throw new Error("La fuente no ha devuelto filas: no se toca la tabla");
 
@@ -99,6 +100,43 @@ export async function replaceTable(
     if (error) throw new Error(`Error guardando en ${table}: ${error.message}`);
   }
 
-  const { error } = await db.from(table).delete().lt("fecha_carga", loadedAt);
+  let del = db.from(table).delete().lt("fecha_carga", loadedAt);
+  if (scope) del = del.eq(scope.column, scope.value);
+  const { error } = await del;
   if (error) throw new Error(`Error borrando filas antiguas de ${table}: ${error.message}`);
+}
+
+// Entidades HTML (&aacute;, &#243;, &nbsp;…) → caracteres
+const NAMED: Record<string, string> = {
+  aacute: "á", eacute: "é", iacute: "í", oacute: "ó", uacute: "ú", Aacute: "Á", Eacute: "É", Iacute: "Í", Oacute: "Ó", Uacute: "Ú",
+  ntilde: "ñ", Ntilde: "Ñ", uuml: "ü", Uuml: "Ü", ccedil: "ç", amp: "&", quot: '"', apos: "'", lt: "<", gt: ">", nbsp: " ",
+  laquo: "«", raquo: "»", iexcl: "¡", iquest: "¿", euro: "€", ordf: "ª", ordm: "º", hellip: "…", ndash: "–", mdash: "—",
+  rsquo: "’", lsquo: "‘", rdquo: "”", ldquo: "“", agrave: "à", egrave: "è", ograve: "ò",
+};
+export function decodeEntities(s: string): string {
+  return s
+    .replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(Number(n)))
+    .replace(/&#x([0-9a-f]+);/gi, (_, n) => String.fromCodePoint(parseInt(n, 16)))
+    .replace(/&([a-z]+);/gi, (m, e) => NAMED[e] ?? m);
+}
+
+// HTML → texto plano (párrafos separados por saltos de línea)
+export function htmlToText(html: string | null | undefined): string | null {
+  if (!html) return null;
+  const text = decodeEntities(
+    html
+      .replace(/<\s*(br|\/p|\/li|\/h\d)\s*\/?>/gi, "\n")
+      .replace(/<[^>]+>/g, "")
+  )
+    .replace(/[ \t]+/g, " ")
+    .replace(/\n\s*\n\s*/g, "\n\n")
+    .trim();
+  return text || null;
+}
+
+// Clave para reconocer el mismo plan en dos fuentes: sin tildes, mayúsculas ni signos
+export function titleKey(title: string | null | undefined): string | null {
+  if (!title) return null;
+  const k = decodeEntities(title).normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+  return k || null;
 }
