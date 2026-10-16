@@ -19,6 +19,7 @@ import type { MapPoint, MapSource } from "./types";
 
 type P = { lat: number; lon: number };
 const CLUSTER_PX = 52; // dos marcadores más cerca que esto (en pantalla) se agrupan
+const MARKER_OPACITY = 0.88; // algo de transparencia para que se vea el mapa debajo (el elegido va opaco)
 const PLACE_COLOR = "#1d4ed8"; // lugares en azul; planes en coral
 const EVENT_COLOR = "#d6334a";
 
@@ -151,7 +152,7 @@ export default function MapExplorer({
             className: "",
             iconSize: [44, 44],
             iconAnchor: [22, 22],
-            html: `<span style="position:relative;display:block;width:44px;height:44px">${stack}<span style="position:relative;display:flex;width:44px;height:44px;align-items:center;justify-content:center;${shape};box-shadow:0 2px 6px rgba(0,0,0,.25)"><svg width="22" height="22"><use href="#mi-${iconKey(top)}"/></svg></span>${badge}</span>`,
+            html: `<span style="position:relative;display:block;width:44px;height:44px;opacity:${MARKER_OPACITY}">${stack}<span style="position:relative;display:flex;width:44px;height:44px;align-items:center;justify-content:center;${shape};box-shadow:0 2px 6px rgba(0,0,0,.25)"><svg width="22" height="22"><use href="#mi-${iconKey(top)}"/></svg></span>${badge}</span>`,
           }),
         })
           .on("click", () => {
