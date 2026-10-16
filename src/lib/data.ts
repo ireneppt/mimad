@@ -61,6 +61,8 @@ export type EventFilters = {
   sources?: string[];
   language?: string;
   near?: { lat: number; lon: number; km: number };
+  startsFrom?: string; // "2026-10-16"
+  startedBefore?: string;
   limit?: number;
 };
 
@@ -96,6 +98,9 @@ export async function getEvents(db: SupabaseClient, f: EventFilters = {}): Promi
   if (f.categories?.length) q = q.in("categoria", f.categories);
   if (f.sources?.length) q = q.in("fuente", f.sources);
   if (f.language) q = q.eq("idioma", f.language);
+  // Solo los que empiezan desde ese día / solo los ya empezados o sin fecha (talleres semanales)
+  if (f.startsFrom) q = q.gte("fecha_inicio", f.startsFrom);
+  if (f.startedBefore) q = q.or(`fecha_inicio.lt.${f.startedBefore},fecha_inicio.is.null`);
   if (f.near) {
     // Caja aproximada alrededor del punto (1º de latitud ≈ 111 km)
     const dLat = f.near.km / 111;
@@ -147,4 +152,43 @@ export function distanceKm(a: { lat: number; lon: number }, b: { lat: number; lo
   const dLon = toRad(b.lon - a.lon);
   const h = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * Math.sin(dLon / 2) ** 2;
   return 2 * R * Math.asin(Math.sqrt(h));
+}
+
+// Orden para el Inicio: por la próxima vez que ocurre. Lo que ya ha empezado y dura
+// semanas (exposiciones) cuenta como "hoy", pero detrás de los planes de un solo día.
+// Los talleres semanales sin fecha van al final.
+export function sortByNext(events: Evento[]): Evento[] {
+  const today = nowInMadrid().slice(0, 10);
+  const key = (e: Evento) => {
+    if (!e.fecha_inicio) return `9|${e.titulo}`;
+    const start = e.fecha_inicio.slice(0, 10);
+    const ongoing = start < today;
+    const day = ongoing ? today : start;
+    const multiDay = !!e.fecha_fin && e.fecha_fin.slice(0, 10) !== start;
+    const time = e.fecha_inicio.slice(11, 16);
+    // 00:00 = sin hora concreta: detrás de los que sí la tienen
+    return `1|${day}|${ongoing || multiDay ? 1 : 0}|${time === "00:00" ? "99:99" : time}`;
+  };
+  return [...events].filter((e) => !hasEnded(e)).sort((a, b) => key(a).localeCompare(key(b)));
+}
+
+// "2026-10-16T18:05" en hora de Madrid
+function nowInMadrid(): string {
+  return new Date().toLocaleString("sv-SE", { timeZone: "Europe/Madrid" }).replace(" ", "T").slice(0, 16);
+}
+
+// La vista guarda los eventos hasta el final de su último día; aquí se quitan los de
+// hoy que ya han terminado (o que empezaron hace más de 2 horas si no tienen hora de fin)
+export function hasEnded(e: Evento): boolean {
+  if (!e.fecha_inicio) return false;
+  const now = nowInMadrid();
+  const start = e.fecha_inicio.replace(" ", "T").slice(0, 16);
+  const end = (e.fecha_fin ?? e.fecha_inicio).replace(" ", "T").slice(0, 16);
+  if (end.slice(0, 10) !== now.slice(0, 10)) return end < now; // otro día
+  const noRealEnd = end.endsWith("23:59") || end === start;
+  if (!noRealEnd) return end < now;
+  if (start.endsWith("00:00") || start.slice(0, 10) !== now.slice(0, 10)) return false; // sin hora o empezó otro día
+  const [h, m] = start.slice(11).split(":").map(Number);
+  const startPlus2h = `${start.slice(0, 10)}T${String(Math.min(h + 2, 23)).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+  return startPlus2h < now;
 }

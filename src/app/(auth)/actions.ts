@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { invalidMobileMessage, parseMobile } from "@/lib/phone";
-import { emailError, LIMITS, nameError, passwordError } from "@/lib/limits";
+import { emailError, LIMITS, nameError, passwordError, strongPasswordError } from "@/lib/limits";
 import { INTERESTS } from "@/lib/interests";
 import { GUEST_COOKIE } from "@/lib/supabase/middleware";
 import { isPostalCode, parsePoint } from "@/lib/location";
@@ -71,7 +71,8 @@ export async function signup(_prev: AuthState, form: FormData): Promise<AuthStat
   if (fields.codigo_postal && !isPostalCode(fields.codigo_postal)) {
     return fail("El código postal tiene 5 cifras y empieza por 28 (por ejemplo, 28012).", "codigo_postal");
   }
-  const claveError = passwordError(password);
+  // Versión por defecto: contraseña segura. Simplificada: solo la longitud (lo decide la persona B)
+  const claveError = simple ? passwordError(password) : strongPasswordError(password);
   if (claveError) return fail(claveError, "password");
   if (password !== String(form.get("password2") ?? "")) return fail("Las dos contraseñas no coinciden.", "password");
   const correoError = emailError(fields.email);

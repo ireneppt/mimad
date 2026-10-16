@@ -48,7 +48,9 @@ export function formatWhen(e: Evento): { day: string; time: string | null } {
   const start = parseLocal(e.fecha_inicio);
   const end = e.fecha_fin ? parseLocal(e.fecha_fin) : null;
   const today = todayInMadrid();
-  const time = e.horario ?? (start.getHours() || start.getMinutes() ? hhmm(start) : null);
+  // "00:00" en la agenda = sin hora concreta
+  const horario = e.horario && e.horario !== "00:00" ? e.horario : null;
+  const time = horario ?? (start.getHours() || start.getMinutes() ? hhmm(start) : null);
 
   // Evento que dura varios días y ya ha empezado: "Hasta el 30 nov."
   if (end && dayDiff(end, start) > 0 && dayDiff(start, today) <= 0) {
@@ -83,4 +85,38 @@ export function formatDistance(km: number): string {
 // Para la versión simplificada: minutos andando (unos 4,5 km/h)
 export function walkingMinutes(km: number): number {
   return Math.max(1, Math.round((km / 4.5) * 60));
+}
+
+// "CALLE BRONCE 16" → "Calle Bronce 16" (algunas fuentes vienen en mayúsculas)
+export function niceText(s: string | null): string | null {
+  if (!s) return null;
+  if (s !== s.toUpperCase()) return s;
+  const small = new Set(["de", "del", "la", "las", "el", "los", "y", "en"]);
+  return s
+    .toLowerCase()
+    .split(" ")
+    .map((w, i) => (i > 0 && small.has(w) ? w : w.charAt(0).toUpperCase() + w.slice(1)))
+    .join(" ");
+}
+
+// "Duración: 2 horas" (solo si la hora de fin es real: en la agenda, 23:59 = "sin hora de fin")
+export function formatDuration(e: Evento): string | null {
+  if (!e.fecha_inicio || !e.fecha_fin) return null;
+  if (e.fecha_inicio.slice(0, 10) !== e.fecha_fin.slice(0, 10) || e.fecha_fin.slice(11, 16) === "23:59") return null;
+  const mins = (parseLocal(e.fecha_fin).getTime() - parseLocal(e.fecha_inicio).getTime()) / 60_000;
+  if (!(mins > 0) || mins > 10 * 60) return null;
+  const h = Math.floor(mins / 60);
+  const m = Math.round(mins % 60);
+  if (h === 0) return `${m} minutos`;
+  const hours = h === 1 ? "1 hora" : `${h} horas`;
+  return m ? `${hours} y ${m} min` : hours;
+}
+
+// "Jueves 23 de octubre · 17:00" para el detalle
+export function formatLongDate(e: Evento): string | null {
+  if (!e.fecha_inicio) return null;
+  const d = parseLocal(e.fecha_inicio);
+  const wd = WEEKDAYS[d.getDay()];
+  const day = `${wd[0].toUpperCase()}${wd.slice(1)} ${d.getDate()} de ${MONTHS[d.getMonth()]}`;
+  return d.getHours() || d.getMinutes() ? `${day} · ${hhmm(d)}` : day;
 }
