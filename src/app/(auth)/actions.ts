@@ -9,6 +9,8 @@ import { INTERESTS } from "@/lib/interests";
 import { GUEST_COOKIE } from "@/lib/supabase/middleware";
 import { isPostalCode, parsePoint } from "@/lib/location";
 import { postalCodeLocation } from "@/lib/postalCodes";
+import { avatarError, saveAvatar } from "@/lib/avatar";
+import { nifError, normalizeNif } from "@/lib/nif";
 
 // field: campo con el error (el registro simplificado vuelve al paso de ese campo)
 export type AuthState = { error?: string; field?: string; fields?: Record<string, string> };
@@ -56,14 +58,24 @@ export async function signup(_prev: AuthState, form: FormData): Promise<AuthStat
     codigo_postal: get("codigo_postal"),
     email: get("email"),
     intereses: form.getAll("intereses").map(String).join(","),
+    nif: normalizeNif(get("nif")),
   };
   const password = String(form.get("password") ?? "");
   // Registro de la versión simplificada (/simple/registro): mismo proceso, otro destino
   const simple = form.get("simplificada") === "1";
+  // Registro de entidades (/registro/entidad): además, nombre de la entidad y NIF
+  const entity = form.get("tipo") === "entidad" && !simple;
   const fail = (error: string, field?: string): AuthState => ({ error, field, fields });
 
-  const nombreError = nameError(fields.nombre);
-  if (nombreError) return fail(nombreError, "nombre");
+  if (entity) {
+    const n = fields.nombre;
+    if (n.length < 2 || n.length > 120 || /[<>]/.test(n)) return fail("Escribe el nombre de la entidad (entre 2 y 120 caracteres).", "nombre");
+    const nifErr = nifError(fields.nif);
+    if (nifErr) return fail(nifErr, "nif");
+  } else {
+    const nombreError = nameError(fields.nombre);
+    if (nombreError) return fail(nombreError, "nombre");
+  }
   const mobile = parseMobile(fields.telefono, fields.pais);
   if (!mobile) return fail(invalidMobileMessage(fields.pais), "telefono");
   if (fields.municipio.length > LIMITS.municipioMax) return fail("Elige tu municipio de la lista.", "municipio");
@@ -105,8 +117,14 @@ export async function signup(_prev: AuthState, form: FormData): Promise<AuthStat
   }
   if (!fields.municipio && postal) fields.municipio = postal.municipio;
 
+  // Foto opcional (ya llega reducida desde el móvil): se comprueba antes de crear la cuenta
+  const foto = form.get("foto");
+  const photo = foto instanceof File && foto.size > 0 ? foto : null;
+  const fotoError = avatarError(photo);
+  if (fotoError) return fail(fotoError, "foto");
+
   const validInterests = INTERESTS.map((i) => i.id);
-  const { error } = await supabase.auth.signUp({
+  const { data: created, error } = await supabase.auth.signUp({
     email: mobile.email,
     password,
     options: {
@@ -114,7 +132,7 @@ export async function signup(_prev: AuthState, form: FormData): Promise<AuthStat
       data: {
         nombre: fields.nombre,
         telefono: mobile.e164, // formato internacional: +34612345678
-        tipo: "persona",
+        tipo: entity ? "entidad" : "persona",
         simplificada: simple,
         municipio: fields.municipio || "Madrid",
         lat,
@@ -133,8 +151,18 @@ export async function signup(_prev: AuthState, form: FormData): Promise<AuthStat
     return fail(`No se pudo crear la cuenta: ${error.message}`);
   }
 
+  // La cuenta ya existe y tiene sesión: subir la foto. Si falla, la cuenta sigue creada
+  // (se puede poner la foto después desde el perfil).
+  if (photo && created.user) await saveAvatar(supabase, created.user.id, photo);
+
+  // Entidad: se guarda con su NIF; la base de datos la verifica contra el Registro al guardarla
+  if (entity && created.user) {
+    const { error: e } = await supabase.from("mm_entidades").insert({ nombre: fields.nombre, nif: fields.nif });
+    if (e) return fail("La cuenta se ha creado, pero no hemos podido guardar la entidad. Entra y vuelve a intentarlo desde tu panel.");
+  }
+
   await clearGuest();
-  redirect(simple ? "/simple/registro/listo" : "/?bienvenida=nueva");
+  redirect(simple ? "/simple/registro/listo" : entity ? "/entidad?nueva=1" : "/?bienvenida=nueva");
 }
 
 export async function enterAsGuest() {
@@ -146,4 +174,16 @@ export async function logout() {
   const supabase = await createClient();
   await supabase.auth.signOut();
   redirect("/login");
+}
+
+// Adelanto de la verificación del NIF mientras se rellena el formulario (la de verdad
+// la hace la base de datos al guardar la entidad). Los datos del Registro son públicos.
+export async function checkNif(nif: string): Promise<{ error?: string; verificada?: boolean; nombre?: string | null }> {
+  const err = nifError(nif);
+  if (err) return { error: err };
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("verificar_nif", { nif: normalizeNif(nif) });
+  if (error) return { error: "No hemos podido comprobarlo ahora. Puedes seguir: lo comprobaremos al crear la cuenta." };
+  const r = (data as { verificada: boolean; entidad_denominacion: string | null }[] | null)?.[0];
+  return { verificada: !!r?.verificada, nombre: r?.entidad_denominacion ?? null };
 }

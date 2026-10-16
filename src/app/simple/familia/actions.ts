@@ -14,9 +14,12 @@ export async function acceptInvite(_prev: AcceptState, form: FormData): Promise<
 
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("aceptar_vinculo", { p_codigo: codigo });
-  // La base de datos explica el problema en español (caducado, ya vinculados…)
+  // La base de datos explica el problema en español (ya vinculados, demasiados intentos…)
   if (error) return { error: error.message || "No se ha podido usar el código. Prueba otra vez." };
-  const nombre = (data as { familiar_nombre: string }[] | null)?.[0]?.familiar_nombre ?? "tu familiar";
+  // Código equivocado o caducado: llega como respuesta con "error" (así cuenta como intento fallido)
+  const row = (data as { familiar_nombre: string | null; error: string | null }[] | null)?.[0];
+  if (row?.error) return { error: row.error };
+  const nombre = row?.familiar_nombre ?? "tu familiar";
   revalidatePath("/", "layout");
   redirect(`/simple/familia?unida=${encodeURIComponent(nombre)}`);
 }

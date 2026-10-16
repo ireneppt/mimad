@@ -14,6 +14,8 @@ export type Perfil = {
   intereses: string[];
   email_contacto: string | null;
   avisos_whatsapp: boolean;
+  avisos_app: boolean;
+  foto_url: string | null;
 };
 
 export async function getCurrentProfile(db: SupabaseClient): Promise<Perfil | null> {

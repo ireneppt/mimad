@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import {
-  Accessibility, Bell, Bus, CalendarDays, CalendarPlus, ChevronRight, ExternalLink, Footprints, Languages, MapPin, Ticket, Users,
+  Accessibility, Bell, Bus, Megaphone, CalendarDays, CalendarPlus, ChevronRight, ExternalLink, Footprints, Languages, MapPin, Ticket, Users,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { accessibilityLabels, distanceKm, getEvent, getSources, isAccessible, type Evento } from "@/lib/data";
@@ -16,6 +16,7 @@ import BackButton from "@/components/BackButton";
 import RecommendSlot from "@/components/RecommendSlot";
 import RouteMapLazy from "@/components/simple/RouteMapLazy";
 import JoinButton from "./JoinButton";
+import { timeAgo } from "@/lib/companion";
 
 const LANGUAGES: Record<string, string> = {
   es: "español", en: "inglés", fr: "francés", ar: "árabe", zh: "chino", ro: "rumano", pt: "portugués",
@@ -58,6 +59,12 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
     : { data: null };
   const joined = !!mine;
 
+  // Planes de entidades: mensajes de la organización (solo los ven las personas apuntadas)
+  const entityEventId = evento.fuente === "entidad" ? evento.id.replace(/^entidad:/, "") : null;
+  const { data: mensajes } = entityEventId && joined
+    ? await supabase.from("mm_mensajes_evento").select("id, texto, created_at").eq("evento_id", entityEventId).order("created_at", { ascending: false })
+    : { data: [] };
+
   const { label, icon: CategoryIcon } = categoryInfo(evento.categoria);
   const hasPlace = evento.lat != null && evento.lon != null;
   const km = hasPlace ? distanceKm(origin, { lat: evento.lat!, lon: evento.lon! }) : null;
@@ -91,10 +98,19 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
             <span className="text-lg font-bold">{evento.gratuito ? "Gratis" : evento.precio ?? ""}</span>
           </div>
           <h2 className="text-3xl font-bold leading-tight text-balance">{evento.titulo}</h2>
-          {evento.lugar && (
-            <p className="text-base text-gris">
-              En <span className="font-semibold text-tinta">{niceText(evento.lugar)}</span>
+          {evento.organizacion && evento.fuente !== "cepi_actividades" ? (
+            <p className="flex flex-wrap items-center gap-x-1.5 text-base text-gris">
+              Organiza <span className="font-semibold text-tinta">{niceText(evento.organizacion.replace(" · Entidad verificada", ""))}</span>
+              {evento.organizacion.endsWith("· Entidad verificada") && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 text-sm font-semibold text-green-800 ring-1 ring-green-200">✓ Entidad verificada</span>
+              )}
             </p>
+          ) : (
+            evento.lugar && (
+              <p className="text-base text-gris">
+                En <span className="font-semibold text-tinta">{niceText(evento.lugar)}</span>
+              </p>
+            )
           )}
         </div>
 
@@ -141,6 +157,23 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
             </a>
           )}
         </div>
+
+        {(mensajes ?? []).length > 0 && (
+          <section aria-labelledby="mensajes-org" className="flex flex-col gap-3 rounded-3xl bg-crema p-5">
+            <h2 id="mensajes-org" className="flex items-center gap-2 text-xl font-bold">
+              <Megaphone size={22} className="text-coral-texto" aria-hidden="true" /> Mensajes de la organización
+            </h2>
+            <ul className="flex flex-col gap-3">
+              {(mensajes ?? []).map((m) => (
+                <li key={m.id} className="rounded-2xl bg-white p-4 text-base">
+                  <p className="whitespace-pre-line">{m.texto}</p>
+                  <p className="mt-1 text-sm text-gris">{timeAgo(m.created_at)}</p>
+                </li>
+              ))}
+            </ul>
+            <p className="text-sm text-gris">Solo la entidad que organiza el plan puede escribir aquí.</p>
+          </section>
+        )}
 
         {hasPlace && (
           <section className="flex flex-col gap-3" aria-labelledby="llegar">

@@ -1,14 +1,17 @@
-import Link from "next/link";
-import { Building2 } from "lucide-react";
+import AuthShell from "@/components/AuthShell";
+import { createClient } from "@/lib/supabase/server";
+import SignupForm from "../SignupForm";
 
-// Provisional: el registro de entidades con verificación del NIF es la tarea A9
-export default function EntitySignupPlaceholder() {
+export const metadata = { title: "Crear cuenta de entidad · MiMad" };
+
+// Registro de entidades (diseño crear-cuenta-entidad.png): el mismo formulario que el de
+// persona, con el nombre de la entidad y su NIF verificado contra el Registro oficial.
+export default async function EntitySignupPage() {
+  const supabase = await createClient();
+  const { data } = await supabase.from("v_municipios").select("nombre").order("nombre");
   return (
-    <main className="flex min-h-dvh flex-col items-center justify-center gap-5 px-6 text-center">
-      <Building2 size={56} className="text-coral-texto" aria-hidden="true" />
-      <h1 className="text-2xl font-bold">Registro de entidades</h1>
-      <p className="text-lg text-gris">Muy pronto podrás registrar tu organización y verificarla con su NIF.</p>
-      <Link href="/registro" className="text-lg font-medium text-coral-texto">← Volver a crear cuenta</Link>
-    </main>
+    <AuthShell tab="registro">
+      <SignupForm municipios={(data ?? []).map((m) => m.nombre as string)} kind="entidad" />
+    </AuthShell>
   );
 }
