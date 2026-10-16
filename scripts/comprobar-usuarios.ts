@@ -13,7 +13,8 @@ const NIF_REGISTRADO = "G28727261";
 const NIF_INVENTADO = "X0000000Z";
 
 async function newUser(admin: SupabaseClient, nombre: string, simplificada = false, extra: Record<string, unknown> = {}) {
-  const slug = nombre.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase(); // sin tildes
+  // Para el correo de prueba: sin tildes ni espacios, solo letras y números
+  const slug = nombre.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-");
   const email = `prueba-${slug}-${randomUUID().slice(0, 8)}@prueba.mimad.app`;
   const password = randomUUID();
   const { data, error } = await admin.auth.admin.createUser({
