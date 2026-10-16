@@ -9,6 +9,7 @@ import {
   getMyInscriptionIds, getPendingRecommendations, getSimplePlans, parseWhen, whenInWords, whyThisPlan, WHEN_LABELS, type When,
 } from "@/lib/simplePlans";
 import PlanSteps, { type PlanView } from "./PlanSteps";
+import ConflictChoice from "@/components/simple/ConflictChoice";
 
 export const metadata = { title: "Planes · MiMad simplificada" };
 
@@ -16,7 +17,7 @@ export const metadata = { title: "Planes · MiMad simplificada" };
 export default async function SimplePlansPage({
   searchParams,
 }: {
-  searchParams: Promise<{ cuando?: string; n?: string; hecho?: string }>;
+  searchParams: Promise<{ cuando?: string; n?: string; hecho?: string; choque?: string; con?: string }>;
 }) {
   const params = await searchParams;
   const when = parseWhen(params.cuando);
@@ -31,6 +32,11 @@ export default async function SimplePlansPage({
     getSimplePlans(supabase, { home: homeLocation(perfil), when, recomendaciones, intereses: perfil?.intereses ?? [] }),
     params.hecho ? getEvent(supabase, params.hecho) : null,
   ]);
+  // "Me apunto" a un plan que coincide con otro: se pregunta qué prefiere
+  const [choque, con] =
+    params.choque && params.con
+      ? await Promise.all([getEvent(supabase, params.choque), getEvent(supabase, params.con)])
+      : [null, null];
 
   const total = plans.length;
   const index = Math.min(Math.max(Number(params.n) || 0, 0), Math.max(total - 1, 0));
@@ -106,6 +112,14 @@ export default async function SimplePlansPage({
           </Link>
         ))}
       </nav>
+
+      {choque && con && (
+        <ConflictChoice
+          nuevo={{ id: choque.id, titulo: choque.titulo, cuando: whenInWords(choque) }}
+          existente={{ id: con.id, titulo: con.titulo, cuando: whenInWords(con) }}
+          back={`${href(when)}${index ? `&n=${index}` : ""}`}
+        />
+      )}
 
       {done && (
         <p role="status" className="flex items-start gap-3 rounded-2xl border-2 border-green-700 bg-green-50 p-5 text-xl text-green-900">

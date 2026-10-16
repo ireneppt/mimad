@@ -1,11 +1,14 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import {
-  Accessibility, ArrowLeft, Check, Clock, Euro, ExternalLink, Footprints, Heart, MapPin, Navigation, Sparkles, X,
+  Accessibility, ArrowLeft, Check, Clock, Euro, ExternalLink, Footprints, Heart, MapPin, Navigation, Sparkles,
 } from "lucide-react";
 import SimpleShell from "@/components/simple/SimpleShell";
 import { PrimarySubmit } from "@/components/simple/ui";
 import RouteMapLazy from "@/components/simple/RouteMapLazy";
+import LeaveConfirm from "@/components/simple/LeaveConfirm";
+import ScrollToHash from "@/components/simple/ScrollToHash";
+import ConflictChoice from "@/components/simple/ConflictChoice";
 import SourceTag from "@/components/SourceTag";
 import { createClient } from "@/lib/supabase/server";
 import { accessibilityLabels, getEvent, getSources, isAccessible, type Evento } from "@/lib/data";
@@ -13,7 +16,7 @@ import { categoryInfo } from "@/lib/categories";
 import { walkingMinutes } from "@/lib/format";
 import { getCurrentProfile, homeLocation } from "@/lib/profile";
 import { buildPlan, getMyInscriptionIds, getPendingRecommendations, whenInWords, whyThisPlan } from "@/lib/simplePlans";
-import { joinPlan, leavePlan } from "../../planes/actions";
+import { joinPlan } from "../../planes/actions";
 
 export const metadata = { title: "Plan · MiMad simplificada" };
 
@@ -24,7 +27,7 @@ export default async function SimpleEventPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ volver?: string; hecho?: string; quitado?: string }>;
+  searchParams: Promise<{ volver?: string; hecho?: string; quitado?: string; con?: string }>;
 }) {
   const { id: rawId } = await params;
   const query = await searchParams;
@@ -54,6 +57,8 @@ export default async function SimpleEventPage({
   const apuntada = inscritos.includes(evento.id);
   const { label, icon: CategoryIcon } = categoryInfo(evento.categoria);
   const here = `/simple/evento/${encodeURIComponent(evento.id)}?volver=${encodeURIComponent(volver)}`;
+  // "Me apunto" a un plan que coincide con otro de su agenda: se pregunta qué prefiere
+  const conflicto = query.con && !apuntada ? await getEvent(supabase, query.con) : null;
   const duration = durationText(evento);
   const extras = accessibilityLabels(evento).filter((l) => !/^Instalación|Sin información|Parcialmente/.test(l));
 
@@ -70,6 +75,14 @@ export default async function SimpleEventPage({
       }
     >
       <BackLink href={volver} />
+
+      {conflicto && (
+        <ConflictChoice
+          nuevo={{ id: evento.id, titulo: evento.titulo, cuando: whenInWords(evento) }}
+          existente={{ id: conflicto.id, titulo: conflicto.titulo, cuando: whenInWords(conflicto) }}
+          back={here}
+        />
+      )}
 
       {query.hecho === evento.id && (
         <p role="status" className="flex items-start gap-3 rounded-2xl border-2 border-green-700 bg-green-50 p-5 text-xl text-green-900">
@@ -159,17 +172,7 @@ export default async function SimpleEventPage({
             <Check size={32} strokeWidth={3} aria-hidden="true" />
             Ya te has apuntado a este plan.
           </p>
-          <form action={leavePlan}>
-            <input type="hidden" name="evento_id" value={evento.id} />
-            <input type="hidden" name="back" value={here} />
-            <button
-              type="submit"
-              className="flex h-14 w-full items-center justify-center gap-3 rounded-2xl border-2 border-slate-500 bg-white text-xl font-semibold"
-            >
-              <X size={24} aria-hidden="true" />
-              Ya no puedo ir
-            </button>
-          </form>
+          <LeaveConfirm eventoId={evento.id} titulo={evento.titulo} back={here} />
         </div>
       ) : (
         <form action={joinPlan}>
@@ -181,7 +184,8 @@ export default async function SimpleEventPage({
 
       {evento.lat != null && evento.lon != null && (
         <section className="flex flex-col gap-4" aria-labelledby="llegar">
-          <h2 id="llegar" className="text-2xl font-bold">Cómo llegar</h2>
+          <ScrollToHash />
+          <h2 id="llegar" className="scroll-mt-4 text-2xl font-bold">Cómo llegar</h2>
           <RouteMapLazy
             home={hasHome ? home : null}
             place={{ lat: evento.lat, lon: evento.lon }}

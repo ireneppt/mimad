@@ -2,9 +2,9 @@ import Link from "next/link";
 import { ArrowRight, CalendarHeart, Heart, MessageCircleMore, Sparkles, UserRound } from "lucide-react";
 import SimpleShell from "@/components/simple/SimpleShell";
 import { createClient } from "@/lib/supabase/server";
-import { getEventsByIds, type Evento } from "@/lib/data";
 import { getCurrentProfile } from "@/lib/profile";
-import { getMyInscriptionIds, getPendingRecommendations, whenInWords } from "@/lib/simplePlans";
+import { getPendingRecommendations } from "@/lib/simplePlans";
+import { getMyAgenda, relativeWhen, type AgendaItem } from "@/lib/simpleAgenda";
 
 export const metadata = { title: "Inicio · MiMad simplificada" };
 
@@ -13,10 +13,11 @@ export const metadata = { title: "Inicio · MiMad simplificada" };
 export default async function SimpleHomePage() {
   const supabase = await createClient();
   const perfil = await getCurrentProfile(supabase);
-  const [recomendaciones, inscritos] = perfil
-    ? await Promise.all([getPendingRecommendations(supabase, perfil.id), getMyInscriptionIds(supabase, perfil.id)])
-    : [[], []];
-  const next = nextPlan(await getEventsByIds(supabase, inscritos));
+  const [recomendaciones, agenda] = await Promise.all([
+    perfil ? getPendingRecommendations(supabase, perfil.id) : Promise.resolve([]),
+    perfil ? getMyAgenda(supabase, perfil.id) : Promise.resolve([]),
+  ]);
+  const next = nextPlan(agenda);
   const rec = recomendaciones[0];
 
   return (
@@ -96,10 +97,9 @@ export default async function SimpleHomePage() {
   );
 }
 
-// Planes apuntados que aún no han pasado (v_eventos ya quita los terminados) y el más próximo en palabras
-function nextPlan(eventos: Evento[]): { count: number; text: string } | null {
-  if (eventos.length === 0) return null;
-  const sorted = [...eventos].sort((a, b) => (a.fecha_inicio ?? "9999").localeCompare(b.fecha_inicio ?? "9999"));
-  const when = whenInWords(sorted[0]); // "Mañana, jueves 23 de octubre, a las 5 de la tarde"
-  return { count: eventos.length, text: when[0].toLowerCase() + when.slice(1) };
+// Cuántos planes tiene y el más próximo en palabras ("mañana, a las 5 de la tarde")
+function nextPlan(agenda: AgendaItem[]): { count: number; text: string } | null {
+  if (agenda.length === 0) return null;
+  const when = relativeWhen(agenda[0]);
+  return { count: agenda.length, text: when[0].toLowerCase() + when.slice(1) };
 }
