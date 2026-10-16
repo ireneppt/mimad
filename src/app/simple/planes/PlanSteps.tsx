@@ -4,7 +4,7 @@
 // cambia al instante (sin esperar al servidor), sube a la tarjeta y avisa al lector de pantalla.
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { Accessibility, ArrowLeft, ArrowRight, Check, Clock, Euro, Heart, Info, MapPin, RotateCcw, Star } from "lucide-react";
+import { Accessibility, ArrowLeft, ArrowRight, Check, Clock, Euro, Heart, Info, MapPin, RotateCcw, Sparkles } from "lucide-react";
 import { PrimarySubmit } from "@/components/simple/ui";
 import SourceTag from "@/components/SourceTag";
 import { categoryInfo } from "@/lib/categories";
@@ -22,7 +22,8 @@ export type PlanView = {
   precio: string;
   accesible: boolean;
   recomendadoPor: string | null;
-  gusto: string | null; // "Música": encaja con sus intereses
+  mensaje: string | null; // mensaje del familiar que lo recomienda
+  porque: string; // "Te lo proponemos porque te gusta la música y es gratis."
   fuente: Fuente | null;
   fuenteId: string;
   apuntada: boolean;
@@ -78,15 +79,23 @@ export default function PlanSteps({ plans, initial, cuando }: { plans: PlanView[
         </div>
 
         <div className="flex flex-col gap-4 p-5">
-          {plan.gusto && (
-            <p className="flex w-fit items-center gap-2 rounded-full bg-crema px-4 py-1.5 text-lg font-semibold">
-              <Star size={20} className="text-coral-texto" aria-hidden="true" />
-              Encaja con tus gustos: {plan.gusto}
-            </p>
-          )}
           <h2 ref={headingRef} tabIndex={-1} className="text-[1.75rem] font-bold leading-tight focus:outline-none">
             {plan.titulo}
           </h2>
+
+          {/* Por qué se le propone: gustos, cercanía, recomendación de la familia... */}
+          <div className="flex gap-3 rounded-2xl bg-crema p-4 text-xl leading-snug">
+            <Sparkles size={28} className="mt-0.5 shrink-0 text-coral-texto" aria-hidden="true" />
+            <div>
+              <p className="font-bold">¿Por qué este plan?</p>
+              <p>{plan.porque}</p>
+              {plan.mensaje && (
+                <p className="mt-2 italic">
+                  «{plan.mensaje}»<span className="not-italic"> — {plan.recomendadoPor}</span>
+                </p>
+              )}
+            </div>
+          </div>
 
           <ul className="flex flex-col gap-3 text-xl leading-snug">
             <li className="flex gap-3">

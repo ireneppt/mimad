@@ -19,10 +19,11 @@ export type Plan = {
   evento: Evento;
   km: number | null;
   recomendadoPor: string | null; // nombre del familiar que lo recomienda
+  mensaje: string | null; // lo que escribió el familiar al recomendarlo
   gusto: string | null; // interés del perfil con el que encaja ("Música")
 };
 
-export type Recomendacion = { id: string; evento_id: string; de_nombre: string };
+export type Recomendacion = { id: string; evento_id: string; de_nombre: string; mensaje: string | null };
 
 const WEEKDAYS = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
 const MONTHS = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
@@ -136,12 +137,13 @@ export async function getSimplePlans(
   // Los recomendados por la familia van siempre primero, aunque sean de otro día
   const recIds = [...new Set(recomendaciones.map((r) => r.evento_id))];
   const recEvents = await getEventsByIds(db, recIds);
-  const recBy = new Map(recomendaciones.map((r) => [r.evento_id, r.de_nombre]));
+  const recBy = new Map(recomendaciones.map((r) => [r.evento_id, r]));
 
   const toPlan = (e: Evento): Plan => ({
     evento: e,
     km: e.lat != null && e.lon != null ? distanceKm(home, { lat: e.lat, lon: e.lon }) : null,
-    recomendadoPor: recBy.get(e.id) ?? null,
+    recomendadoPor: recBy.get(e.id)?.de_nombre ?? null,
+    mensaje: recBy.get(e.id)?.mensaje ?? null,
     gusto: matchingInterest(e, intereses),
   });
 
@@ -185,7 +187,7 @@ function mixKinds(plans: Plan[]): Plan[] {
 export async function getPendingRecommendations(db: SupabaseClient, userId: string): Promise<Recomendacion[]> {
   const { data, error } = await db
     .from("mm_recomendaciones")
-    .select("id, evento_id, de")
+    .select("id, evento_id, de, mensaje")
     .eq("para", userId)
     .eq("estado", "pendiente")
     .order("created_at", { ascending: false })
@@ -195,7 +197,12 @@ export async function getPendingRecommendations(db: SupabaseClient, userId: stri
   // Nombre de quien recomienda (las reglas de seguridad dejan ver el perfil de un vínculo aceptado)
   const { data: perfiles } = await db.from("mm_perfiles").select("id, nombre").in("id", [...new Set(data.map((r) => r.de))]);
   const names = new Map((perfiles ?? []).map((p) => [p.id as string, p.nombre as string]));
-  return data.map((r) => ({ id: r.id, evento_id: r.evento_id, de_nombre: names.get(r.de) || "Tu familiar" }));
+  return data.map((r) => ({
+    id: r.id,
+    evento_id: r.evento_id,
+    de_nombre: names.get(r.de) || "Tu familiar",
+    mensaje: r.mensaje?.trim() || null,
+  }));
 }
 
 // Ids de los planes a los que ya me he apuntado
@@ -219,4 +226,43 @@ export function whenInWords(e: Evento): string {
   const long = formatWhenLong(e);
   const rel = formatDay(e.fecha_inicio);
   return rel === "Hoy" || rel === "Mañana" ? `${rel}, ${long[0].toLowerCase()}${long.slice(1)}` : long;
+}
+
+// "te gusta la música": cómo se dice cada interés en la frase de "¿Por qué este plan?"
+const INTEREST_PHRASES: Record<string, string> = {
+  Cultura: "te gusta la cultura",
+  Música: "te gusta la música",
+  "Teatro y cine": "te gustan el teatro y el cine",
+  Talleres: "te gustan los talleres",
+  Deporte: "te gusta el deporte",
+  Naturaleza: "te gusta la naturaleza",
+  Lectura: "te gusta la lectura",
+  Gastronomía: "te gusta la gastronomía",
+  Idiomas: "te gustan los idiomas",
+  Tecnología: "te gusta la tecnología",
+  Voluntariado: "te gusta ayudar a los demás",
+  Baile: "te gusta el baile",
+};
+
+// Frase corta que explica por qué se le propone el plan (como mucho 3 motivos)
+// "Te lo proponemos porque te gusta la lectura, está a 9 minutos andando de tu casa y es gratis."
+export function whyThisPlan(p: Plan, opts: { minutes: number | null; hasHome: boolean }): string {
+  const e = p.evento;
+  const reasons: string[] = [];
+  if (p.gusto) reasons.push(INTEREST_PHRASES[p.gusto] ?? `encaja con tus gustos (${p.gusto.toLowerCase()})`);
+  if (e.fuente === "juntos_contra_soledad") reasons.push("es un taller para conocer gente nueva");
+  else if (/mayores/i.test(e.publico ?? "")) reasons.push("está pensado para personas mayores");
+  if (opts.minutes != null && opts.minutes <= 20) {
+    reasons.push(`está a ${opts.minutes} minutos andando${opts.hasHome ? " de tu casa" : ""}`);
+  }
+  if (e.gratuito) reasons.push("es gratis");
+  if (isAccessible(e)) reasons.push("se puede ir en silla de ruedas");
+
+  const list = (r: string[]) => (r.length > 1 ? `${r.slice(0, -1).join(", ")} y ${r.at(-1)}` : r[0]);
+  if (p.recomendadoPor) {
+    const extra = reasons.slice(0, 2);
+    return `${p.recomendadoPor} te lo ha recomendado${extra.length ? `. Además, ${list(extra)}` : ""}.`;
+  }
+  if (reasons.length === 0) return "Es uno de los planes más cercanos a tu casa para estos días.";
+  return `Te lo proponemos porque ${list(reasons.slice(0, 3))}.`;
 }

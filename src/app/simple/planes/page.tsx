@@ -6,7 +6,7 @@ import { getEvent, getSources, isAccessible } from "@/lib/data";
 import { walkingMinutes } from "@/lib/format";
 import { getCurrentProfile, homeLocation } from "@/lib/profile";
 import {
-  getMyInscriptionIds, getPendingRecommendations, getSimplePlans, parseWhen, whenInWords, WHEN_LABELS, type When,
+  getMyInscriptionIds, getPendingRecommendations, getSimplePlans, parseWhen, whenInWords, whyThisPlan, WHEN_LABELS, type When,
 } from "@/lib/simplePlans";
 import PlanSteps, { type PlanView } from "./PlanSteps";
 
@@ -37,21 +37,27 @@ export default async function SimplePlansPage({
   const href = (w: When) => `/simple/planes?cuando=${w}`;
 
   // Textos ya preparados para la tarjeta (la tarjeta cambia de plan sin volver al servidor)
-  const views: PlanView[] = plans.map(({ evento: e, km, recomendadoPor, gusto }) => ({
+  const hasHome = perfil?.lat != null && perfil?.lon != null;
+  const views: PlanView[] = plans.map((plan) => {
+    const { evento: e, km, recomendadoPor, mensaje } = plan;
+    const minutos = km != null ? walkingMinutes(km) : null;
+    return {
     id: e.id,
     titulo: e.titulo,
     categoria: e.categoria,
     cuando: whenInWords(e),
     lugar: e.lugar ?? e.direccion,
-    minutosAndando: km != null ? walkingMinutes(km) : null,
+    minutosAndando: minutos,
     precio: e.gratuito ? "Gratis" : e.precio ? `Cuesta ${e.precio}` : "Consultar el precio",
     accesible: isAccessible(e),
     recomendadoPor,
-    gusto,
+    mensaje,
+    porque: whyThisPlan(plan, { minutes: minutos, hasHome }),
     fuente: fuentes[e.fuente] ?? null,
     fuenteId: e.fuente,
     apuntada: inscritos.includes(e.id),
-  }));
+    };
+  });
 
   return (
     <SimpleShell
