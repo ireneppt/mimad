@@ -1,11 +1,13 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import {
-  Accessibility, ArrowLeft, Check, Clock, Euro, ExternalLink, Footprints, Heart, MapPin, Navigation, Sparkles, X,
+  Accessibility, ArrowLeft, Check, Clock, Euro, ExternalLink, Footprints, Heart, MapPin, Navigation, Sparkles,
 } from "lucide-react";
 import SimpleShell from "@/components/simple/SimpleShell";
 import { PrimarySubmit } from "@/components/simple/ui";
 import RouteMapLazy from "@/components/simple/RouteMapLazy";
+import LeaveConfirm from "@/components/simple/LeaveConfirm";
+import ScrollToHash from "@/components/simple/ScrollToHash";
 import SourceTag from "@/components/SourceTag";
 import { createClient } from "@/lib/supabase/server";
 import { accessibilityLabels, getEvent, getSources, isAccessible, type Evento } from "@/lib/data";
@@ -13,7 +15,7 @@ import { categoryInfo } from "@/lib/categories";
 import { walkingMinutes } from "@/lib/format";
 import { getCurrentProfile, homeLocation } from "@/lib/profile";
 import { buildPlan, getMyInscriptionIds, getPendingRecommendations, whenInWords, whyThisPlan } from "@/lib/simplePlans";
-import { joinPlan, leavePlan } from "../../planes/actions";
+import { joinPlan } from "../../planes/actions";
 
 export const metadata = { title: "Plan · MiMad simplificada" };
 
@@ -159,17 +161,7 @@ export default async function SimpleEventPage({
             <Check size={32} strokeWidth={3} aria-hidden="true" />
             Ya te has apuntado a este plan.
           </p>
-          <form action={leavePlan}>
-            <input type="hidden" name="evento_id" value={evento.id} />
-            <input type="hidden" name="back" value={here} />
-            <button
-              type="submit"
-              className="flex h-14 w-full items-center justify-center gap-3 rounded-2xl border-2 border-slate-500 bg-white text-xl font-semibold"
-            >
-              <X size={24} aria-hidden="true" />
-              Ya no puedo ir
-            </button>
-          </form>
+          <LeaveConfirm eventoId={evento.id} titulo={evento.titulo} back={here} />
         </div>
       ) : (
         <form action={joinPlan}>
@@ -181,7 +173,8 @@ export default async function SimpleEventPage({
 
       {evento.lat != null && evento.lon != null && (
         <section className="flex flex-col gap-4" aria-labelledby="llegar">
-          <h2 id="llegar" className="text-2xl font-bold">Cómo llegar</h2>
+          <ScrollToHash />
+          <h2 id="llegar" className="scroll-mt-4 text-2xl font-bold">Cómo llegar</h2>
           <RouteMapLazy
             home={hasHome ? home : null}
             place={{ lat: evento.lat, lon: evento.lon }}

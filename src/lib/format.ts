@@ -63,12 +63,16 @@ export function formatWhenLong(e: Evento): string {
   const d = parseLocal(e.fecha_inicio);
   const wd = WEEKDAYS[d.getDay()];
   const day = `${wd[0].toUpperCase()}${wd.slice(1)} ${d.getDate()} de ${MONTHS[d.getMonth()]}`;
-  const h = d.getHours();
-  if (!h && !d.getMinutes()) return day;
+  if (!d.getHours() && !d.getMinutes()) return day;
+  return `${day}, ${hourInWords(d.getHours(), d.getMinutes())}`;
+}
+
+// 17, 30 → "a las 5 y 30 de la tarde"; 13, 0 → "a la 1 del mediodía"
+export function hourInWords(h: number, m: number): string {
   const h12 = h % 12 === 0 ? 12 : h % 12;
   const part = h < 6 ? "de la madrugada" : h < 12 ? "de la mañana" : h < 14 ? "del mediodía" : h < 21 ? "de la tarde" : "de la noche";
-  const min = d.getMinutes() ? ` y ${d.getMinutes()}` : "";
-  return `${day}, a las ${h12}${min} ${part}`;
+  const min = m ? ` y ${m}` : "";
+  return `${h12 === 1 ? "a la" : "a las"} ${h12}${min} ${part}`;
 }
 
 export function formatDistance(km: number): string {
