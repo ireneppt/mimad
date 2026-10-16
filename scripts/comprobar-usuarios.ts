@@ -71,7 +71,17 @@ export async function checkUsers(check: Check) {
     check("Nadie puede crear un vínculo ya aceptado sin código", !!trampa.error, trampa.error?.message ?? "¡se pudo!");
 
     const codigoMalo = await carmen.db.rpc("aceptar_vinculo", { p_codigo: "ZZZZZZ" });
-    check("Un código inventado no vincula", !!codigoMalo.error, codigoMalo.error?.message ?? "¡se pudo!");
+    const maloError = codigoMalo.data?.[0]?.error ?? codigoMalo.error?.message;
+    check("Un código inventado no vincula", !!maloError && !codigoMalo.data?.[0]?.vinculo_id, maloError ?? "¡se pudo!");
+
+    // Probar códigos a lo loco: a los 10 fallos en una hora, se bloquea
+    for (let i = 0; i < 10; i++) await otra.db.rpc("aceptar_vinculo", { p_codigo: `QQQQ${String(i).padStart(2, "2")}` });
+    const bloqueo = await otra.db.rpc("aceptar_vinculo", { p_codigo: inv.data?.codigo ?? "" });
+    check("Tras 10 códigos equivocados, se bloquea (aunque el siguiente sea bueno)", !!bloqueo.error && !bloqueo.data, bloqueo.error?.message ?? "¡no se bloqueó!");
+
+    // Dos invitaciones seguidas tienen códigos distintos
+    const otraInv = await lucia.db.from("mm_vinculos").insert({}).select("codigo").single();
+    check("Cada invitación tiene un código distinto", !!otraInv.data && otraInv.data.codigo !== inv.data?.codigo, otraInv.data?.codigo ?? otraInv.error?.message);
 
     // Carmen acepta con el código correcto
     const acepta = await carmen.db.rpc("aceptar_vinculo", { p_codigo: inv.data?.codigo ?? "" });
