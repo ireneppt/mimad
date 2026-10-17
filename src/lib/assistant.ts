@@ -32,8 +32,11 @@ type Persona = {
   simplificada: boolean;
 };
 
-// Modelo de Claude: se puede cambiar con la variable ANTHROPIC_MODEL (p. ej. uno más barato)
-const MODEL = process.env.ANTHROPIC_MODEL || "claude-opus-5-5";
+// Modelo de Claude: Haiku (rápido y barato; para elegir 3 planes de una lista basta).
+// Se puede cambiar con la variable ANTHROPIC_MODEL, pero solo a un Haiku o un Sonnet:
+// si pone otro (Opus, Fable…), se ignora y se usa Haiku.
+const DEFAULT_MODEL = "claude-haiku-5-5";
+const MODEL = /^claude-(haiku|sonnet)-/.test(process.env.ANTHROPIC_MODEL ?? "") ? process.env.ANTHROPIC_MODEL! : DEFAULT_MODEL;
 const MAX_CANDIDATOS = 30;
 const MAX_ELEGIDOS = 3;
 
@@ -266,9 +269,8 @@ async function askClaude({ mensaje, historial = [], vistos = [], candidatos, per
         },
       },
     },
-    // Si los filtros de seguridad rechazan la petición, la repite otro modelo de Claude
-    betas: ["server-side-fallback-2026-07-01"],
-    fallbacks: "default",
+    // Sin "fallbacks": no queremos que la repita otro modelo (podría ser Opus o Fable).
+    // Si Claude no responde bien, se usan las reglas (ver recommend).
   });
 
   // Para vigilar el gasto en los registros de Vercel (sin datos personales)
