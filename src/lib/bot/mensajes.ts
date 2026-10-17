@@ -27,7 +27,8 @@ const hello = (nombre: string) => (nombre ? `Hola, ${nombre}` : "Hola");
 // Recordatorio del próximo plan: "Te recordamos que *mañana, a las 5 de la tarde* tienes…"
 export function reminderMessage(item: AgendaItem, nombre: string): BotMessage {
   const e = item.evento;
-  const place = e.lugar ?? e.direccion;
+  // Sin repetir el sitio si ya va en el título ("Talleres Soledad en Centro … Ouka Leele")
+  const place = [e.lugar ?? e.direccion].find((p) => p && !e.titulo.toLowerCase().includes(p.toLowerCase()));
   return {
     id: `recordatorio:${e.id}`,
     text:

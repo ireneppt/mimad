@@ -6,7 +6,29 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { handleBotButton } from "@/lib/bot/botones";
+import { getBotMessages } from "@/lib/bot/mensajes";
 import type { BotMessage } from "@/lib/bot/tipos";
+import { getCurrentProfile } from "@/lib/profile";
+
+// Vista previa para la notificación simulada (como la que enseñaría el móvil al llegar
+// un WhatsApp). null si no hay sesión, si no quiere avisos por WhatsApp o si no hay nada.
+export type WhatsappNotice = { title: string; body: string; more: number; signature: string };
+
+export async function getWhatsappNotice(): Promise<WhatsappNotice | null> {
+  const supabase = await createClient();
+  const perfil = await getCurrentProfile(supabase);
+  if (!perfil || !perfil.avisos_whatsapp) return null;
+  const messages = (await getBotMessages(supabase, perfil.id, perfil.nombre ?? "")).filter((m) => m.id !== "nada");
+  if (messages.length === 0) return null;
+  const plain = (s: string) => s.replace(/\*/g, "").replace(/\s*\n\s*/g, " ").trim();
+  return {
+    title: "MiMad",
+    body: plain(messages[0].text),
+    more: messages.length - 1,
+    // Cambia si llega un aviso nuevo: así la notificación vuelve a salir
+    signature: messages.map((m) => m.id).join("|"),
+  };
+}
 
 export async function pressButton(buttonId: string): Promise<BotMessage[]> {
   const supabase = await createClient();
