@@ -1,7 +1,9 @@
 import Link from "next/link";
-import { Accessibility, ChevronDown, Database, Sparkles } from "lucide-react";
+import { Accessibility, CalendarDays, ChevronDown, Database, Sparkles } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import { distanceKm, getEvents, getSources, sortByRelevance, type EventFilters, type Evento } from "@/lib/data";
+import { distanceKm, getEvents, getSources, hasEnded, sortByRelevance, type EventFilters, type Evento } from "@/lib/data";
+import { formatDayLong, isPickableDay } from "@/lib/format";
+import DayPicker from "@/components/DayPicker";
 import { getCurrentProfile } from "@/lib/profile";
 import { getOrigin } from "@/lib/origin";
 import { categoriesForInterests, INTERESTS } from "@/lib/interests";
@@ -16,8 +18,18 @@ export const metadata = { title: "Inicio · MiMad" };
 type Filter = "para-ti" | "cerca" | "gratis" | "accesible";
 const PAGE = 20;
 
-// i = intereses elegidos a mano ("musica,baile"); t = 1 si la fila de intereses está abierta
-type Search = { bienvenida?: string; q?: string; f?: string; n?: string; i?: string; t?: string };
+// i = intereses elegidos a mano ("musica,baile"); t = 1 si la fila de intereses está abierta;
+// d = cuándo: "hoy", "manana", "semana" o un día elegido en el calendario ("2026-11-07")
+type Search = { bienvenida?: string; q?: string; f?: string; n?: string; i?: string; t?: string; d?: string };
+type Day = "hoy" | "manana" | "semana";
+const DAY_CHIPS: { id: Day; label: string; title: string }[] = [
+  { id: "hoy", label: "Hoy", title: "Planes de hoy" },
+  { id: "manana", label: "Mañana", title: "Planes de mañana" },
+  { id: "semana", label: "Esta semana", title: "Planes de esta semana" },
+];
+const WEEKDAYS = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
+const plain = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+const addDays = (iso: string, n: number) => new Date(Date.parse(`${iso}T12:00:00Z`) + n * 86_400_000).toISOString().slice(0, 10);
 
 // Inicio de la versión por defecto (diseño inicio.png). Los filtros van en la dirección
 // (?f=gratis,cerca&q=taller) para que se puedan compartir y volver atrás sin perderlos.
@@ -50,10 +62,31 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
         ? categoriesForInterests(intereses)
         : undefined,
   };
+  // Cuándo: un día del calendario, hoy, mañana o esta semana (sin elegir: las dos próximas semanas)
+  const pickedDay = isPickableDay(params.d, today) ? params.d : null;
+  const day: Day | null = pickedDay ? null : DAY_CHIPS.find((c) => c.id === params.d)?.id ?? null;
+  const range = pickedDay
+    ? { from: pickedDay, to: pickedDay }
+    : day === "hoy" ? { from: today, to: today }
+    : day === "manana" ? { from: addDays(today, 1), to: addDays(today, 1) }
+    : day === "semana" ? { from: today, to: addDays(today, 6) }
+    : null;
+  const dayParam = pickedDay ?? day; // lo que va en ?d=
+  // Días de la semana de ese rango (para los talleres semanales, que no tienen fecha)
+  const weekdays = range ? new Set(Array.from({ length: day === "semana" ? 7 : 1 }, (_, i) => WEEKDAYS[new Date(`${addDays(range.from, i)}T12:00:00Z`).getUTCDay()])) : null;
+
   // Dos consultas: lo que empieza en las dos próximas semanas y lo que ya está en marcha o es semanal
   const in14 = new Date(Date.now() + 14 * 86_400_000).toLocaleString("sv-SE", { timeZone: "Europe/Madrid" }).slice(0, 10);
   const fetchWithin = async (km: number | null) => {
     const near = km ? { lat: origin.lat, lon: origin.lon, km } : undefined;
+    if (range && weekdays) {
+      // Con días elegidos: lo que ocurre esos días y los talleres semanales de esos días
+      const [dated, weekly] = await Promise.all([
+        getEvents(supabase, { ...base, near, between: range, limit: 1000 }),
+        getEvents(supabase, { ...base, near, undatedOnly: true, limit: 200 }),
+      ]);
+      return [...dated.filter((e) => !hasEnded(e)), ...weekly.filter((e) => [...weekdays].some((w) => plain(e.horario ?? "").includes(plain(w))))];
+    }
     const [up, on] = await Promise.all([
       getEvents(supabase, { ...base, near, startsFrom: today, between: { from: today, to: in14 }, limit: 1000 }),
       getEvents(supabase, { ...base, near, startedBefore: today, limit: 300 }),
@@ -78,19 +111,27 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
   // Orden: lo que te interesa y está cerca, en los próximos días ("Cerca de mí": solo por distancia)
   let events = sortByRelevance(found, { origin, categories: categoriesForInterests(picked.length ? picked : intereses) });
   if (active.has("cerca")) events = [...events].sort((a, b) => (withKm(a) ?? 99) - (withKm(b) ?? 99));
+  // Con días elegidos: primero lo que empieza esos días, luego los talleres semanales y al
+  // final lo que dura semanas (exposiciones…). Dentro de cada grupo, el orden de antes.
+  if (range) {
+    const group = (e: Evento) => (!e.fecha_inicio ? 1 : e.fecha_inicio.slice(0, 10) >= range.from ? 0 : 2);
+    events = events.map((e, i) => ({ e, i })).sort((a, b) => group(a.e) - group(b.e) || a.i - b.i).map(({ e }) => e);
+  }
   const shown = events.slice(0, limit);
   const photos = listPhotos(shown);
 
   const usedSources = [...new Set(shown.map((e) => e.fuente))].map((id) => fuentes[id]).filter(Boolean);
 
   // Enlaces que cambian un filtro y conservan los demás (y la búsqueda)
-  const href = (changes: { f?: Set<Filter>; i?: string[]; t?: boolean; n?: number }) => {
+  const href = (changes: { f?: Set<Filter>; i?: string[]; t?: boolean; n?: number; d?: string | null }) => {
     const qs = new URLSearchParams();
     qs.set("f", [...(changes.f ?? active)].join(","));
     const i = changes.i ?? picked;
     if (i.length) qs.set("i", i.join(","));
     if (changes.t ?? interestsOpen) qs.set("t", "1");
     if (changes.n) qs.set("n", String(changes.n));
+    const d = changes.d === undefined ? dayParam : changes.d;
+    if (d) qs.set("d", d);
     if (search) qs.set("q", search);
     return `/?${qs}`;
   };
@@ -102,6 +143,11 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
   };
   const toggleInterest = (id: string) => href({ i: picked.includes(id) ? picked.filter((x) => x !== id) : [...picked, id] });
   const moreHref = () => href({ n: limit + PAGE });
+
+  // "Planes del viernes 7 de noviembre", "Planes de hoy"…
+  const dayTitle = pickedDay ? `Planes del ${formatDayLong(pickedDay)}` : DAY_CHIPS.find((c) => c.id === day)?.title ?? null;
+  const dayChip = (on: boolean) =>
+    `flex h-11 shrink-0 items-center gap-1.5 rounded-full px-4 text-base font-medium ${on ? "bg-tinta text-white" : "border border-slate-200 bg-white"}`;
 
   const chips: { id: Filter; label: string; hidden?: boolean }[] = [
     { id: "para-ti", label: "Para ti", hidden: !perfil },
@@ -115,7 +161,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
       <Welcome mode={params.bienvenida} nombre={perfil?.nombre} />
 
       <HomeHeader db={supabase} perfil={perfil} originKind={origin.kind}
-        zone={origin.zone} search={search} searchAction="/" hidden={{ f: [...active].join(","), ...(picked.length ? { i: picked.join(",") } : {}) }} />
+        zone={origin.zone} search={search} searchAction="/" hidden={{ f: [...active].join(","), ...(picked.length ? { i: picked.join(",") } : {}), ...(dayParam ? { d: dayParam } : {}) }} />
 
       <div className="flex flex-col gap-5 bg-fondo px-5 pb-8 pt-5">
         <ViewToggle current="lista" search={search} />
@@ -151,6 +197,22 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
             Intereses{picked.length ? ` · ${picked.length}` : ""}
             <ChevronDown size={18} className={interestsOpen ? "rotate-180" : ""} aria-hidden="true" />
           </Link>
+        </nav>
+
+        {/* Cuándo: tocar el elegido otra vez lo quita (vuelven las próximas dos semanas) */}
+        <nav aria-label="Cuándo" className="sin-barra -mx-5 -mt-2 flex gap-2 overflow-x-auto px-5 pb-1">
+          {DAY_CHIPS.map((c) => {
+            const on = day === c.id;
+            return (
+              <Link key={c.id} href={href({ d: on ? null : c.id, n: 0 })} aria-pressed={on} scroll={false} className={dayChip(on)}>
+                {c.label}
+              </Link>
+            );
+          })}
+          <DayPicker value={pickedDay} today={today} baseHref={href({ d: null, n: 0 })} param="d" todayHref={href({ d: "hoy", n: 0 })} className={dayChip(!!pickedDay)}>
+            <CalendarDays size={18} aria-hidden="true" />
+            {pickedDay ? formatDayLong(pickedDay).replace(/ de .*/, "") : "Elegir día"}
+          </DayPicker>
         </nav>
 
         {interestsOpen && (
@@ -192,7 +254,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
         )}
 
         <div className="flex items-baseline justify-between">
-          <h1 className="text-3xl font-bold">{search ? `«${search}»` : "Próximas quedadas"}</h1>
+          <h1 className="text-3xl font-bold">{search ? `«${search}»` : (dayTitle ?? "Próximas quedadas")}</h1>
           <Link href="/mapa" className="text-lg font-semibold text-coral-texto">Ver mapa</Link>
         </div>
 
@@ -205,7 +267,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
         ) : (
           <div className="flex flex-col gap-5">
             {shown.map((e, i) => (
-              <EventCard key={e.id} evento={e} photo={photos[i]} fuente={fuentes[e.fuente]} distanceKm={origin.kind !== "centro" ? withKm(e) : undefined} />
+              <EventCard key={e.id} evento={e} photo={photos[i]} fuente={fuentes[e.fuente]} distanceKm={origin.kind !== "centro" ? withKm(e) : undefined} onDay={range?.from} />
             ))}
           </div>
         )}

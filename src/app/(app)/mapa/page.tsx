@@ -5,11 +5,11 @@ import { distanceKm, getEvents, getPlaces, getSources, hasEnded, isAccessible, t
 import { getCurrentProfile } from "@/lib/profile";
 import { getOrigin } from "@/lib/origin";
 import { categoryInfo } from "@/lib/categories";
-import { formatDistance, formatWhen, niceText } from "@/lib/format";
+import { formatDayLong, formatDistance, formatWhen, isPickableDay, niceText } from "@/lib/format";
 import HomeHeader from "@/components/HomeHeader";
 import ViewToggle from "@/components/ViewToggle";
 import MapExplorerLazy from "./MapExplorerLazy";
-import DatePicker from "./DatePicker";
+import DayPicker from "@/components/DayPicker";
 import type { MapPoint, MapSource } from "./types";
 
 export const metadata = { title: "Mapa · MiMad" };
@@ -42,7 +42,7 @@ export default async function MapPage({ searchParams }: { searchParams: Promise<
 
   // Qué días: hoy, mañana, los próximos 7 días o una fecha elegida
   const today = new Date().toLocaleString("sv-SE", { timeZone: "Europe/Madrid" }).slice(0, 10);
-  const picked = /^\d{4}-\d{2}-\d{2}$/.test(params.d ?? "") && params.d! >= today ? params.d! : null;
+  const picked = isPickableDay(params.d, today) ? params.d : null;
   const day: Day = picked ? "fecha" : params.d === "hoy" || params.d === "manana" ? params.d : "semana";
   const range =
     day === "hoy" ? { from: today, to: today }
@@ -179,13 +179,20 @@ export default async function MapPage({ searchParams }: { searchParams: Promise<
             <Link href={href({ d: "hoy" })} aria-pressed={day === "hoy"} scroll={false} className={chip(day === "hoy")}>Hoy</Link>
             <Link href={href({ d: "manana" })} aria-pressed={day === "manana"} scroll={false} className={chip(day === "manana")}>Mañana</Link>
             <Link href={href({ d: "semana" })} aria-pressed={day === "semana"} scroll={false} className={chip(day === "semana")}>Esta semana</Link>
-            <DatePicker value={picked} min={today} baseHref={href({ d: null })} className={chip(day === "fecha")} icon={<CalendarDays size={18} aria-hidden="true" />} />
+            <DayPicker value={picked} today={today} baseHref={href({ d: null })} param="d" todayHref={href({ d: "hoy" })} className={chip(day === "fecha")}>
+              <CalendarDays size={18} aria-hidden="true" />
+              {picked ? formatDayLong(picked).replace(/ de .*/, "") : "Elegir día"}
+            </DayPicker>
               </>
             )}
           </nav>
         </div>
       </section>
 
+      {/* Día elegido en el calendario: que se vea claro de qué día son los planes */}
+      {picked && showEvents && (
+        <h1 className="px-5 pt-4 text-2xl font-bold">Planes del {formatDayLong(picked)}</h1>
+      )}
       <p className="px-5 py-3 text-sm text-gris">
         {[
           showEvents ? `${events.length} ${events.length === 1 ? "plan" : "planes"}` : null,

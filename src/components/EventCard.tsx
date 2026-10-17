@@ -12,15 +12,16 @@ export function eventHref(id: string) {
 }
 
 export default function EventCard({
-  evento, fuente, distanceKm, photo,
+  evento, fuente, distanceKm, photo, onDay,
 }: {
   evento: Evento;
   fuente?: Fuente;
   distanceKm?: number;
   photo?: string; // foto por defecto elegida por la lista (listPhotos)
+  onDay?: string; // día elegido en el calendario (lo que ya había empezado se dice "Hasta el…")
 }) {
   const { label } = categoryInfo(evento.categoria);
-  const when = formatWhen(evento);
+  const when = formatWhen(evento, onDay);
   const accessible = isAccessible(evento);
 
   return (
