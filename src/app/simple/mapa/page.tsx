@@ -39,12 +39,12 @@ export default async function SimpleMapPage({ searchParams }: { searchParams: Pr
           </ol>
         }
       >
+        <Link href="/simple" className="flex h-16 items-center justify-center gap-2 rounded-2xl border-2 border-slate-400 bg-slate-100 text-xl font-bold">
+          <ArrowLeft size={26} aria-hidden="true" /> Volver al inicio
+        </Link>
         <Option href="/simple/mapa?ver=hoy" icon={<Sun size={44} />} titulo={QUE_VER.hoy.boton} detalle={QUE_VER.hoy.detalle} />
         <Option href="/simple/mapa?ver=manana" icon={<CalendarDays size={44} />} titulo={QUE_VER.manana.boton} detalle={QUE_VER.manana.detalle} />
         <Option href="/simple/mapa?ver=sitios" icon={<HeartHandshake size={44} />} titulo={QUE_VER.sitios.boton} detalle={QUE_VER.sitios.detalle} />
-        <Link href="/simple" className="flex h-16 items-center justify-center gap-2 rounded-2xl text-xl font-semibold underline-offset-4 hover:underline">
-          <ArrowLeft size={26} aria-hidden="true" /> Volver al inicio
-        </Link>
       </SimpleShell>
     );
   }
@@ -93,6 +93,10 @@ export default async function SimpleMapPage({ searchParams }: { searchParams: Pr
         </ol>
       }
     >
+      {/* Volver, arriba: así se ve sin bajar hasta el final del mapa y la lista */}
+      <Link href="/simple/mapa" className="flex h-16 items-center justify-center gap-2 rounded-2xl border-2 border-slate-400 bg-slate-100 text-xl font-bold">
+        <ArrowLeft size={26} aria-hidden="true" /> Ver otra cosa en el mapa
+      </Link>
       <LocationPanel
         kind={origin.kind}
         cp={origin.cp}
@@ -143,9 +147,6 @@ export default async function SimpleMapPage({ searchParams }: { searchParams: Pr
         </div>
       )}
 
-      <Link href="/simple/mapa" className="flex h-16 items-center justify-center gap-2 rounded-2xl border-2 border-slate-400 bg-slate-100 text-xl font-bold">
-        <ArrowLeft size={26} aria-hidden="true" /> Ver otra cosa en el mapa
-      </Link>
     </SimpleShell>
   );
 }

@@ -1,5 +1,6 @@
 import BottomNav from "@/components/BottomNav";
 import { getAuthUser } from "@/lib/supabase/server";
+import { getLang } from "@/lib/i18n/server";
 
 // Pantallas de la versión por defecto: llevan la barra inferior
 // (la de las cuentas de entidad es distinta: panel, sus planes, publicar, avisos y perfil)
@@ -10,7 +11,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   return (
     <>
       <div className="pb-28">{children}</div>
-      <BottomNav variant={variant} />
+      <BottomNav variant={variant} lang={await getLang()} />
     </>
   );
 }

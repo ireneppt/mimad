@@ -1,5 +1,12 @@
 // Textos de fechas, horas y distancias en español, para las dos versiones.
+// En la versión por defecto se puede pasar otro idioma (lang): entonces las fechas salen
+// con Intl (nombres de meses y días de ese idioma) y las palabras con el diccionario (t).
 import type { Evento } from "./data";
+import { makeT, type Lang } from "./i18n";
+
+const LOCALES: Record<string, string> = { zh: "zh-CN", ar: "ar-MA", pt: "pt-PT", uk: "uk-UA" };
+const other = (lang?: Lang | null): lang is Exclude<Lang, "es"> => !!lang && lang !== "es";
+const intl = (lang: string, d: Date, o: Intl.DateTimeFormatOptions) => new Intl.DateTimeFormat(LOCALES[lang] ?? lang, o).format(d);
 
 const MONTHS = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
 const WEEKDAYS = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
@@ -28,9 +35,15 @@ function dayDiff(a: Date, b: Date): number {
 const hhmm = (d: Date) => `${d.getHours()}:${String(d.getMinutes()).padStart(2, "0")}`;
 
 // "Hoy", "Mañana", "Jueves 23 oct."
-export function formatDay(s: string): string {
+export function formatDay(s: string, lang?: Lang | null): string {
   const d = parseLocal(s);
   const diff = dayDiff(d, todayInMadrid());
+  if (other(lang)) {
+    const t = makeT(lang);
+    if (diff === 0) return t("Hoy");
+    if (diff === 1) return t("Mañana");
+    return intl(lang, d, { weekday: "short", day: "numeric", month: "short" });
+  }
   if (diff === 0) return "Hoy";
   if (diff === 1) return "Mañana";
   const wd = WEEKDAYS[d.getDay()];
@@ -39,12 +52,14 @@ export function formatDay(s: string): string {
 
 // Resumen de cuándo es un evento, para tarjetas: { day, time }.
 // on: día elegido en el calendario; si el plan empezó antes de ese día, "Hasta el…"
-export function formatWhen(e: Evento, on?: string): { day: string; time: string | null } {
+export function formatWhen(e: Evento, on?: string, lang?: Lang | null): { day: string; time: string | null } {
+  const t = makeT(lang);
   if (e.fuente === "cepi_actividades" && e.fecha_inicio) {
-    return { day: `Durante ${MONTHS[parseLocal(e.fecha_inicio).getMonth()]}`, time: null };
+    const month = other(lang) ? intl(lang, parseLocal(e.fecha_inicio), { month: "long" }) : MONTHS[parseLocal(e.fecha_inicio).getMonth()];
+    return { day: t("Durante {mes}", { mes: month }), time: null };
   }
   if (!e.fecha_inicio) {
-    return { day: e.horario ?? "Consultar horario", time: null }; // recurrentes: "Cada jueves, 16:00 - 17:30"
+    return { day: e.horario ?? t("Consultar horario"), time: null }; // recurrentes: "Cada jueves, 16:00 - 17:30"
   }
   const start = parseLocal(e.fecha_inicio);
   const end = e.fecha_fin ? parseLocal(e.fecha_fin) : null;
@@ -56,9 +71,10 @@ export function formatWhen(e: Evento, on?: string): { day: string; time: string 
   // Evento que dura varios días y ya ha empezado: "Hasta el 30 nov."
   const started = on ? dayDiff(start, parseLocal(on)) < 0 : dayDiff(start, today) <= 0;
   if (end && dayDiff(end, start) > 0 && started) {
-    return { day: `Hasta el ${end.getDate()} ${MONTHS[end.getMonth()].slice(0, 3)}.`, time };
+    const until = other(lang) ? intl(lang, end, { day: "numeric", month: "short" }) : `${end.getDate()} ${MONTHS[end.getMonth()].slice(0, 3)}.`;
+    return { day: t("Hasta el {fecha}", { fecha: until }), time };
   }
-  return { day: formatDay(e.fecha_inicio), time };
+  return { day: formatDay(e.fecha_inicio, lang), time };
 }
 
 // Para la versión simplificada: "Jueves 23 de octubre, a las 5 de la tarde"
@@ -80,8 +96,9 @@ export function hourInWords(h: number, m: number): string {
 }
 
 // "2026-11-07" → "viernes 7 de noviembre" (para "Planes del viernes 7 de noviembre")
-export function formatDayLong(iso: string): string {
+export function formatDayLong(iso: string, lang?: Lang | null): string {
   const [y, m, d] = iso.split("-").map(Number);
+  if (other(lang)) return intl(lang, new Date(Date.UTC(y, m - 1, d, 12)), { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" });
   return `${WEEKDAYS[new Date(Date.UTC(y, m - 1, d, 12)).getUTCDay()]} ${d} de ${MONTHS[m - 1]}`;
 }
 

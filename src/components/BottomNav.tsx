@@ -4,6 +4,7 @@
 // Las cuentas de entidad tienen la suya: Panel, Agenda (sus planes), Publicar, Avisos y Perfil.
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { makeT, type Lang } from "@/lib/i18n";
 import { Bell, CalendarDays, House, LayoutDashboard, Map, Plus, Sparkles, User, type LucideIcon } from "lucide-react";
 
 type Item = { href: string; label: string; icon: LucideIcon };
@@ -28,8 +29,9 @@ const ENTITY: { items: Item[]; center: Item } = {
   center: { href: "/entidad/nuevo", label: "Publicar un plan", icon: Plus },
 };
 
-export default function BottomNav({ variant = "persona" }: { variant?: "persona" | "entidad" }) {
+export default function BottomNav({ variant = "persona", lang }: { variant?: "persona" | "entidad"; lang?: Lang }) {
   const path = usePathname();
+  const t = makeT(variant === "persona" ? lang : "es"); // las entidades, en español
   const { items, center } = variant === "entidad" ? ENTITY : PERSON;
   // "/entidad" solo está activo en el panel, no en sus subpáginas
   const isActive = (href: string) => (href === "/" || href === "/entidad" ? path === href : path.startsWith(href));
@@ -42,14 +44,14 @@ export default function BottomNav({ variant = "persona" }: { variant?: "persona"
       className={`flex flex-1 flex-col items-center gap-1 py-2 text-sm font-medium ${isActive(href) ? "text-coral-texto" : "text-gris"}`}
     >
       <Icon size={26} aria-hidden="true" />
-      {label}
+      {t(label)}
     </Link>
   );
   const CenterIcon = center.icon;
 
   return (
     <nav
-      aria-label="Principal"
+      aria-label={t("Principal")}
       className="fixed inset-x-0 bottom-0 z-[1000] mx-auto max-w-[430px] border-t border-slate-200 bg-white pb-[env(safe-area-inset-bottom)]"
     >
       <div className="relative flex items-end px-2">
@@ -57,7 +59,7 @@ export default function BottomNav({ variant = "persona" }: { variant?: "persona"
         <div className="flex flex-1 justify-center">
           <Link
             href={center.href}
-            aria-label={center.label}
+            aria-label={t(center.label)}
             aria-current={isActive(center.href) ? "page" : undefined}
             className={`-mt-8 flex h-16 w-16 items-center justify-center rounded-2xl text-white shadow-lg ${variant === "entidad" ? "bg-degradado" : "bg-tinta"}`}
           >
