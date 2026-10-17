@@ -13,6 +13,7 @@ import {
   Accessibility, Clock, Database, ExternalLink, LoaderCircle, LocateFixed, MapPin, Phone, Route, X, type LucideIcon,
 } from "lucide-react";
 import { categoryInfo, placeIcon } from "@/lib/categories";
+import { categoryPhoto } from "@/lib/categoryPhotos";
 import { useMyLocation } from "@/components/useMyLocation";
 import { setHereLocation } from "@/lib/locationActions";
 import type { MapPoint, MapSource } from "./types";
@@ -270,9 +271,9 @@ function Sheet({ point: p, source, origin, onClose }: { point: MapPoint; source?
   return (
     <div role="dialog" aria-label={p.title} className="absolute inset-x-3 bottom-3 z-[600] flex flex-col gap-3 rounded-3xl bg-white p-4 shadow-2xl">
       <div className="flex items-start gap-3">
-        {p.image ? (
+        {p.kind === "evento" ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={p.image} alt="" className="h-16 w-20 shrink-0 rounded-2xl object-cover" />
+          <img src={p.image || categoryPhoto(p.category)} alt="" className="h-16 w-20 shrink-0 rounded-2xl object-cover" />
         ) : (
           <span
             className={`flex h-16 w-16 shrink-0 items-center justify-center ${p.kind === "lugar" ? "rounded-2xl bg-blue-700 text-white" : "rounded-full bg-degradado text-white"}`}
