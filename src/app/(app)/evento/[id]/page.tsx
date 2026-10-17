@@ -17,6 +17,8 @@ import RecommendSlot from "@/components/RecommendSlot";
 import RouteMapLazy from "@/components/simple/RouteMapLazy";
 import JoinButton from "./JoinButton";
 import EventImage, { photoCredit } from "@/components/EventImage";
+import { TRANSLATE_LANGUAGES } from "@/lib/translate";
+import TranslatePlan from "./TranslatePlan";
 import { timeAgo } from "@/lib/companion";
 
 const LANGUAGES: Record<string, string> = {
@@ -139,6 +141,8 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
         <section className="flex flex-col gap-2" aria-labelledby="sobre">
           <h2 id="sobre" className="text-2xl font-bold">Sobre el plan</h2>
           <Description evento={evento} label={label} />
+          {/* Para personas extranjeras: los datos abiertos solo vienen en español */}
+          <TranslatePlan eventoId={evento.id} languages={TRANSLATE_LANGUAGES} loggedIn={!!perfil} />
           {evento.url && (
             <a href={evento.url} target="_blank" rel="noopener noreferrer" className="flex w-fit items-center gap-1.5 text-base font-medium text-coral-texto underline">
               Ver la web oficial <ExternalLink size={16} aria-hidden="true" />
