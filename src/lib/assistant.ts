@@ -271,6 +271,8 @@ async function askClaude({ mensaje, historial = [], vistos = [], candidatos, per
     fallbacks: "default",
   });
 
+  // Para vigilar el gasto en los registros de Vercel (sin datos personales)
+  console.info(`[asistente] ${response.model}: ${response.usage.input_tokens} tokens de entrada, ${response.usage.output_tokens} de salida`);
   if (response.stop_reason === "refusal" || response.stop_reason === "max_tokens") return null;
   const text = response.content.find((b) => b.type === "text")?.text;
   if (!text) return null;
