@@ -1,10 +1,10 @@
 import Link from "next/link";
-import { Accessibility, Database } from "lucide-react";
+import { Accessibility, ChevronDown, Database, Sparkles } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { distanceKm, getEvents, getSources, sortByRelevance, type EventFilters, type Evento } from "@/lib/data";
 import { getCurrentProfile } from "@/lib/profile";
 import { getOrigin } from "@/lib/origin";
-import { categoriesForInterests } from "@/lib/interests";
+import { categoriesForInterests, INTERESTS } from "@/lib/interests";
 import EventCard from "@/components/EventCard";
 import Welcome from "@/components/Welcome";
 import HomeHeader from "@/components/HomeHeader";
@@ -15,7 +15,8 @@ export const metadata = { title: "Inicio · MiMad" };
 type Filter = "para-ti" | "cerca" | "gratis" | "accesible";
 const PAGE = 20;
 
-type Search = { bienvenida?: string; q?: string; f?: string; n?: string };
+// i = intereses elegidos a mano ("musica,baile"); t = 1 si la fila de intereses está abierta
+type Search = { bienvenida?: string; q?: string; f?: string; n?: string; i?: string; t?: string };
 
 // Inicio de la versión por defecto (diseño inicio.png). Los filtros van en la dirección
 // (?f=gratis,cerca&q=taller) para que se puedan compartir y volver atrás sin perderlos.
@@ -32,13 +33,21 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
     params.f !== undefined ? (params.f.split(",").filter(Boolean) as Filter[]) : intereses.length ? ["para-ti"] : []
   );
   const limit = Math.min(Number(params.n) || PAGE, 200);
+  const validInterests = new Set(INTERESTS.map((x) => x.id));
+  const picked = (params.i ?? "").split(",").filter((x) => validInterests.has(x));
+  const interestsOpen = params.t === "1" || picked.length > 0;
 
   const today = new Date().toLocaleString("sv-SE", { timeZone: "Europe/Madrid" }).slice(0, 10);
   const base: EventFilters = {
     search: search || undefined,
     free: active.has("gratis"),
     accessible: active.has("accesible"),
-    categories: active.has("para-ti") && intereses.length ? categoriesForInterests(intereses) : undefined,
+    // Intereses elegidos a mano en el filtro; si no, "Para ti" usa los del perfil
+    categories: picked.length
+      ? categoriesForInterests(picked)
+      : active.has("para-ti") && intereses.length
+        ? categoriesForInterests(intereses)
+        : undefined,
   };
   // Dos consultas: lo que empieza en las dos próximas semanas y lo que ya está en marcha o es semanal
   const in14 = new Date(Date.now() + 14 * 86_400_000).toLocaleString("sv-SE", { timeZone: "Europe/Madrid" }).slice(0, 10);
@@ -66,27 +75,31 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
 
   const withKm = (e: Evento) => (e.lat != null && e.lon != null ? distanceKm(origin, { lat: e.lat, lon: e.lon }) : undefined);
   // Orden: lo que te interesa y está cerca, en los próximos días ("Cerca de mí": solo por distancia)
-  let events = sortByRelevance(found, { origin, categories: categoriesForInterests(intereses) });
+  let events = sortByRelevance(found, { origin, categories: categoriesForInterests(picked.length ? picked : intereses) });
   if (active.has("cerca")) events = [...events].sort((a, b) => (withKm(a) ?? 99) - (withKm(b) ?? 99));
   const shown = events.slice(0, limit);
 
   const usedSources = [...new Set(shown.map((e) => e.fuente))].map((id) => fuentes[id]).filter(Boolean);
 
-  // Enlace que activa/desactiva un filtro manteniendo los demás y la búsqueda
+  // Enlaces que cambian un filtro y conservan los demás (y la búsqueda)
+  const href = (changes: { f?: Set<Filter>; i?: string[]; t?: boolean; n?: number }) => {
+    const qs = new URLSearchParams();
+    qs.set("f", [...(changes.f ?? active)].join(","));
+    const i = changes.i ?? picked;
+    if (i.length) qs.set("i", i.join(","));
+    if (changes.t ?? interestsOpen) qs.set("t", "1");
+    if (changes.n) qs.set("n", String(changes.n));
+    if (search) qs.set("q", search);
+    return `/?${qs}`;
+  };
   const toggleHref = (f: Filter) => {
     const next = new Set(active);
     if (next.has(f)) next.delete(f);
     else next.add(f);
-    const qs = new URLSearchParams();
-    qs.set("f", [...next].join(","));
-    if (search) qs.set("q", search);
-    return `/?${qs}`;
+    return href({ f: next });
   };
-  const moreHref = () => {
-    const qs = new URLSearchParams({ f: [...active].join(","), n: String(limit + PAGE) });
-    if (search) qs.set("q", search);
-    return `/?${qs}`;
-  };
+  const toggleInterest = (id: string) => href({ i: picked.includes(id) ? picked.filter((x) => x !== id) : [...picked, id] });
+  const moreHref = () => href({ n: limit + PAGE });
 
   const chips: { id: Filter; label: string; hidden?: boolean }[] = [
     { id: "para-ti", label: "Para ti", hidden: !perfil },
@@ -100,7 +113,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
       <Welcome mode={params.bienvenida} nombre={perfil?.nombre} />
 
       <HomeHeader db={supabase} perfil={perfil} originKind={origin.kind}
-        zone={origin.zone} search={search} searchAction="/" hidden={{ f: [...active].join(",") }} />
+        zone={origin.zone} search={search} searchAction="/" hidden={{ f: [...active].join(","), ...(picked.length ? { i: picked.join(",") } : {}) }} />
 
       <div className="flex flex-col gap-5 bg-fondo px-5 pb-8 pt-5">
         <ViewToggle current="lista" search={search} />
@@ -123,9 +136,48 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
               </Link>
             );
           })}
+          {/* Filtro por intereses: abre/cierra la fila con los 12 intereses */}
+          <Link
+            href={interestsOpen ? href({ t: false, i: [] }) : href({ t: true })}
+            aria-expanded={interestsOpen}
+            scroll={false}
+            className={`flex h-12 shrink-0 items-center gap-1.5 rounded-full px-5 text-lg font-medium ${
+              picked.length ? "bg-degradado text-white shadow-md shadow-coral/25" : "border border-slate-200 bg-white"
+            }`}
+          >
+            <Sparkles size={18} aria-hidden="true" />
+            Intereses{picked.length ? ` · ${picked.length}` : ""}
+            <ChevronDown size={18} className={interestsOpen ? "rotate-180" : ""} aria-hidden="true" />
+          </Link>
         </nav>
 
-        {active.has("para-ti") && intereses.length === 0 && (
+        {interestsOpen && (
+          <nav aria-label="Filtrar por intereses" className="-mt-2 flex flex-wrap gap-2 rounded-3xl bg-white p-3 ring-1 ring-slate-200">
+            {INTERESTS.map(({ id, label, icon: Icon }) => {
+              const on = picked.includes(id);
+              return (
+                <Link
+                  key={id}
+                  href={toggleInterest(id)}
+                  aria-pressed={on}
+                  scroll={false}
+                  className={`flex h-11 items-center gap-1.5 rounded-full px-4 text-base font-medium ${
+                    on ? "bg-degradado text-white" : "bg-slate-50 text-tinta ring-1 ring-slate-200"
+                  }`}
+                >
+                  <Icon size={17} className={on ? "" : "text-coral-texto"} aria-hidden="true" /> {label}
+                </Link>
+              );
+            })}
+            {picked.length > 0 && (
+              <Link href={href({ i: [] })} scroll={false} className="flex h-11 items-center px-3 text-base font-medium text-coral-texto underline">
+                Quitar
+              </Link>
+            )}
+          </nav>
+        )}
+
+        {active.has("para-ti") && intereses.length === 0 && !picked.length && (
           <p className="rounded-2xl bg-crema p-4 text-base">
             Aún no has elegido tus intereses. <Link href="/perfil" className="font-semibold text-coral-texto underline">Elígelos en tu perfil</Link> y te recomendaremos planes.
           </p>
