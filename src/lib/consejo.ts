@@ -1,7 +1,7 @@
 // "Pedir consejo" (versión simplificada): opciones de las dos preguntas y qué planes
 // corresponden a cada una. Usa las categorías de los datos abiertos (v_eventos).
 import type { Evento } from "./data";
-import type { PlanWindow } from "./simplePlans";
+import type { NamedWindow } from "./simplePlans";
 
 export type Que = "pasear" | "aprender" | "musica" | "gente" | "sorpresa" | "distinto";
 
@@ -32,7 +32,7 @@ export const QUE: Record<Que, { label: string; eco: string; categorias: string[]
   distinto: { label: "Algo distinto a lo de siempre", eco: "¡Vale, algo distinto a lo de siempre!", categorias: [] },
 };
 
-export const CUANDO: { id: PlanWindow; label: string }[] = [
+export const CUANDO: { id: NamedWindow; label: string }[] = [
   { id: "hoy", label: "Hoy" },
   { id: "manana", label: "Mañana" },
   { id: "finde", label: "El fin de semana" },
@@ -40,7 +40,7 @@ export const CUANDO: { id: PlanWindow; label: string }[] = [
 ];
 
 export const parseQue = (s?: string): Que | null => (s && s in QUE ? (s as Que) : null);
-export const parseCuando = (s?: string): PlanWindow | null => CUANDO.find((c) => c.id === s)?.id ?? null;
+export const parseCuando = (s?: string): NamedWindow | null => CUANDO.find((c) => c.id === s)?.id ?? null;
 
 // ¿Este plan es del tipo que ha elegido?
 export function matchesQue(que: Que, e: Evento): boolean {
