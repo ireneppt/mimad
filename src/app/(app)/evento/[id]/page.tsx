@@ -193,7 +193,7 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
               <RouteMapLazy
                 home={showFrom ? { lat: origin.lat, lon: origin.lon } : null}
                 place={{ lat: evento.lat!, lon: evento.lon! }}
-                homeLabel={origin.kind === "aqui" ? t("Estás aquí") : origin.kind === "cp" ? `CP ${origin.cp}` : t("Tu casa")}
+                homeLabel={origin.kind === "aqui" ? t("Estás aquí") : origin.kind === "cp" ? `CP ${origin.cp}` : t("Tu ubicación")}
               />
               <p className="px-4 py-3 text-base">
                 <span className="font-semibold">{niceText(evento.lugar) ?? niceText(evento.direccion)}</span>

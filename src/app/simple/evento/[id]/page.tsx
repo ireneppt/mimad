@@ -212,7 +212,7 @@ export default async function SimpleEventPage({
           <RouteMapLazy
             home={hasHome ? home : null}
             place={{ lat: evento.lat, lon: evento.lon }}
-            homeLabel={origin.kind === "aqui" ? "Estás aquí" : origin.kind === "cp" ? `CP ${origin.cp}` : "Tu casa"}
+            homeLabel={origin.kind === "aqui" ? "Estás aquí" : origin.kind === "cp" ? `CP ${origin.cp}` : "Tu ubicación"}
           />
           {minutos != null && hasHome && (
             <p className="flex items-start gap-3 rounded-2xl bg-blue-50 p-5 text-xl leading-snug">
