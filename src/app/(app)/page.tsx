@@ -176,7 +176,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
   // "Planes del viernes 7 de noviembre", "Planes de hoy"…
   const dayTitle = pickedDay ? `Planes del ${formatDayLong(pickedDay)}` : DAY_CHIPS.find((c) => c.id === day)?.title ?? null;
   const dayChip = (on: boolean) =>
-    `flex h-11 shrink-0 items-center gap-1.5 rounded-full px-4 text-base font-medium ${on ? "bg-tinta text-white" : "border border-slate-200 bg-white"}`;
+    `flex h-9 shrink-0 items-center gap-1.5 rounded-full px-3.5 text-sm font-medium ${on ? "bg-tinta text-white" : "border border-slate-200 bg-white"}`;
 
   const chips: { id: Filter; label: string; hidden?: boolean }[] = [
     { id: "para-ti", label: "Para ti", hidden: !perfil },
@@ -194,7 +194,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
       <HomeHeader db={supabase} perfil={perfil} originKind={origin.kind} zone={origin.zone}
         newcomers={{ active: newcomers, href: toggleHref("recien") }} />
 
-      <div className="flex flex-col gap-5 border-t border-slate-200 bg-fondo px-5 pb-8 pt-5">
+      <div className="flex flex-col gap-4 border-t border-slate-200 bg-fondo px-5 pb-8 pt-4">
         <SearchBox search={search} action="/"
           hidden={{ f: [...active].join(","), ...(picked.length ? { i: picked.join(",") } : {}), ...(dayParam ? { d: dayParam } : {}), ...(group ? { g: group } : {}) }} />
         <ViewToggle current="lista" search={search} />
@@ -209,13 +209,13 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
                 href={toggleHref(c.id)}
                 aria-pressed={on}
                 scroll={false}
-                className={`flex h-12 shrink-0 items-center gap-1.5 rounded-full px-5 text-lg font-medium ${
+                className={`flex h-10 shrink-0 items-center gap-1.5 rounded-full px-4 text-base font-medium ${
                   on ? "bg-degradado text-white shadow-md shadow-coral/25" : "border border-slate-200 bg-white"
                 }`}
               >
                 {(() => {
                   const Icon = chipIcon[c.id];
-                  return Icon ? <Icon size={18} aria-hidden="true" /> : null;
+                  return Icon ? <Icon size={16} aria-hidden="true" /> : null;
                 })()}
                 {c.label}
               </Link>
@@ -226,13 +226,13 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
             href={interestsOpen ? href({ t: false, i: [] }) : href({ t: true })}
             aria-expanded={interestsOpen}
             scroll={false}
-            className={`flex h-12 shrink-0 items-center gap-1.5 rounded-full px-5 text-lg font-medium ${
+            className={`flex h-10 shrink-0 items-center gap-1.5 rounded-full px-4 text-base font-medium ${
               picked.length ? "bg-degradado text-white shadow-md shadow-coral/25" : "border border-slate-200 bg-white"
             }`}
           >
-            <Sparkles size={18} aria-hidden="true" />
+            <Sparkles size={16} aria-hidden="true" />
             Intereses{picked.length ? ` · ${picked.length}` : ""}
-            <ChevronDown size={18} className={interestsOpen ? "rotate-180" : ""} aria-hidden="true" />
+            <ChevronDown size={16} className={interestsOpen ? "rotate-180" : ""} aria-hidden="true" />
           </Link>
         </nav>
 
@@ -247,7 +247,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
             );
           })}
           <DayPicker value={pickedDay} today={today} baseHref={href({ d: null, n: 0 })} param="d" todayHref={href({ d: "hoy", n: 0 })} className={dayChip(!!pickedDay)}>
-            <CalendarDays size={18} aria-hidden="true" />
+            <CalendarDays size={16} aria-hidden="true" />
             {pickedDay ? formatDayLong(pickedDay).replace(/ de .*/, "") : "Elegir día"}
           </DayPicker>
         </nav>

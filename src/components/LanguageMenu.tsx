@@ -8,7 +8,13 @@ import { Check, ChevronDown } from "lucide-react";
 import { TRANSLATE_LANGUAGES } from "@/lib/languages";
 import { setLanguage } from "@/lib/languageActions";
 
-const OPTIONS = [{ id: "es", short: "ES", label: "Español" }, ...TRANSLATE_LANGUAGES];
+const OPTIONS = [{ id: "es", short: "ES", label: "Español", flag: "es" }, ...TRANSLATE_LANGUAGES];
+
+// Bandera pequeña (decorativa: el nombre del idioma ya va escrito)
+function Flag({ code, className = "" }: { code: string; className?: string }) {
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src={`/banderas/${code}.svg`} alt="" width={20} height={15} className={`h-[15px] w-5 shrink-0 rounded-[3px] object-cover ring-1 ring-black/10 ${className}`} />;
+}
 
 export default function LanguageMenu({ current }: { current: string | null }) {
   const router = useRouter();
@@ -45,10 +51,10 @@ export default function LanguageMenu({ current }: { current: string | null }) {
         aria-expanded={open}
         aria-haspopup="true"
         aria-label={`Idioma: ${selected.label}. Cambiar idioma · Language`}
-        className="flex h-11 w-11 items-center justify-center gap-0.5 rounded-full bg-slate-100 text-sm font-bold disabled:opacity-60"
+        className="flex h-11 w-11 items-center justify-center gap-0.5 rounded-full bg-slate-100 text-sm font-bold transition-all duration-200 group-data-[compact=true]:h-9 group-data-[compact=true]:w-9 disabled:opacity-60"
         disabled={pending}
       >
-        {selected.short}
+        <Flag code={selected.flag} />
         <ChevronDown size={14} aria-hidden="true" />
       </button>
       {open && (
@@ -62,9 +68,10 @@ export default function LanguageMenu({ current }: { current: string | null }) {
                   lang={o.id}
                   onClick={() => choose(o.id)}
                   aria-current={o.id === selected.id}
-                  className="flex h-12 w-full items-center justify-between rounded-xl px-3 text-left text-base hover:bg-slate-50"
+                  className="flex h-12 w-full items-center gap-3 rounded-xl px-3 text-left text-base hover:bg-slate-50"
                 >
-                  {o.label}
+                  <Flag code={o.flag} />
+                  <span className="flex-1">{o.label}</span>
                   {o.id === selected.id && <Check size={18} className="text-coral-texto" aria-hidden="true" />}
                 </button>
               </li>

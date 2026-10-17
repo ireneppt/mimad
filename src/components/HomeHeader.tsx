@@ -9,6 +9,7 @@ import { Bell, Globe } from "lucide-react";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import LocationChip from "@/components/LocationChip";
 import LanguageMenu from "@/components/LanguageMenu";
+import ShrinkOnScroll from "@/components/ShrinkOnScroll";
 import { switchToSimple } from "@/app/(app)/actions";
 import { LANG_COOKIE, parseLanguage } from "@/lib/languages";
 import type { Perfil } from "@/lib/profile";
@@ -45,21 +46,21 @@ export default async function HomeHeader({
 
   return (
     <>
-      <header className="sticky top-0 z-[700] flex items-center gap-2.5 border-b border-slate-200/70 bg-white/95 px-5 py-2.5 backdrop-blur">
+      <ShrinkOnScroll className="sticky top-0 z-[700] flex items-center gap-2.5 border-b border-slate-200/70 bg-white/95 px-5 py-2.5 backdrop-blur transition-[padding] duration-200 data-[compact=true]:py-1.5 data-[compact=true]:shadow-sm">
         <Link href="/" aria-label="MiMad, inicio" className="shrink-0">
-          <Image src="/icono.svg" alt="" width={40} height={40} priority />
+          <Image src="/icono.svg" alt="" width={40} height={40} priority className="h-10 w-10 transition-all duration-200 group-data-[compact=true]:h-8 group-data-[compact=true]:w-8" />
         </Link>
         <LocationChip place={place} kind={originKind} zone={zone} zones={zones.map((z) => z.name)} loggedIn={!!perfil} />
         <LanguageMenu current={lang} />
         <Link
           href="/notificaciones"
           aria-label={unread ? `Notificaciones: ${unread} sin leer` : "Notificaciones"}
-          className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-slate-100"
+          className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-slate-100 transition-all duration-200 group-data-[compact=true]:h-9 group-data-[compact=true]:w-9"
         >
-          <Bell size={22} aria-hidden="true" />
+          <Bell size={20} aria-hidden="true" />
           {!!unread && <span className="absolute right-2.5 top-2 h-2.5 w-2.5 rounded-full border-2 border-slate-100 bg-coral" aria-hidden="true" />}
         </Link>
-      </header>
+      </ShrinkOnScroll>
 
       <div className={`grid gap-2 bg-white px-5 pb-4 pt-3 ${newcomers ? "grid-cols-2" : "grid-cols-1"}`}>
         <form action={switchToSimple}>
