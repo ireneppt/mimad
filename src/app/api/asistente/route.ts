@@ -56,7 +56,7 @@ export async function POST(request: Request) {
 
   const [recomendaciones, fuentes, inscritos] = await Promise.all([
     perfil ? getPendingRecommendations(supabase, perfil.id) : Promise.resolve([]),
-    getSources(supabase),
+    getSources(),
     perfil ? getMyInscriptionIds(supabase, perfil.id) : Promise.resolve([] as string[]),
   ]);
   const candidatos = await getCandidates(supabase, { home: origin, when, persona, recomendaciones });

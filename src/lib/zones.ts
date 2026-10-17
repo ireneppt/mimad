@@ -1,7 +1,8 @@
 // "Ver planes en otra zona": un distrito de Madrid o un municipio de la Comunidad.
 // Se guarda solo en una cookie de este móvil durante 3 horas (no cambia la casa del perfil).
-import type { SupabaseClient } from "@supabase/supabase-js";
+import { unstable_cache } from "next/cache";
 import { isInComunidad, roundCoord, type Point } from "./location";
+import { createPublicClient } from "./supabase/public";
 
 export const ZONE_COOKIE = "mm_zona";
 export const ZONE_MAX_AGE = 60 * 60 * 3;
@@ -33,7 +34,11 @@ function officialDistrict(raw: string): string | undefined {
 
 // Zonas que se pueden elegir: los distritos de Madrid (centro de sus sitios en v_lugares)
 // y los municipios de la Comunidad (v_municipios). Todo sale de los datos abiertos.
-export async function getZones(db: SupabaseClient): Promise<Zone[]> {
+// Es igual para todo el mundo y casi no cambia: se guarda en memoria una hora.
+export const getZones = unstable_cache(loadZones, ["zonas"], { revalidate: 3600 });
+
+async function loadZones(): Promise<Zone[]> {
+  const db = createPublicClient();
   const [{ data: lugares }, { data: municipios }] = await Promise.all([
     db.from("v_lugares").select("distrito, lat, lon").ilike("municipio", "madrid").not("distrito", "is", null).limit(1000),
     db.from("v_municipios").select("nombre, lat, lon").order("nombre"),

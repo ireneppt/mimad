@@ -1,6 +1,8 @@
 // Lectura de los datos abiertos unificados (v_eventos, v_lugares, da_fuentes).
-// Funciona en servidor y en navegador: se le pasa el cliente de Supabase.
+// Se usa en el servidor: se le pasa el cliente de Supabase (salvo getSources, que va en memoria).
+import { unstable_cache } from "next/cache";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { createPublicClient } from "./supabase/public";
 
 export type Evento = {
   id: string; // "<fuente>:<id original>"
@@ -69,7 +71,7 @@ export type EventFilters = {
   // y terminan después del principio. Excluye los que no tienen fecha.
   between?: { from: string; to: string };
   undatedOnly?: boolean; // solo los que no tienen fecha (talleres semanales)
-  columns?: string; // columnas a traer (por defecto todas)
+  columns?: string; // columnas a traer (por defecto LIST_COLUMNS: todas menos la descripción)
   limit?: number;
 };
 
@@ -97,8 +99,13 @@ export function accessibilityLabels(e: Pick<Evento, "accesibilidad">): string[] 
   return accessibilityCodes(e).map((c) => ACCESSIBILITY_LABELS[c]).filter(Boolean);
 }
 
+// Columnas para las listas y el mapa: todas menos la descripción, que es lo que más pesa
+// (más de la mitad de los datos) y solo se enseña en el detalle (getEvent)
+export const LIST_COLUMNS =
+  "id, fuente, titulo, categoria, fecha_inicio, fecha_fin, horario, recurrente, lugar, direccion, municipio, distrito, lat, lon, url, gratuito, precio, accesibilidad, publico, idioma, organizacion, imagen";
+
 export async function getEvents(db: SupabaseClient, f: EventFilters = {}): Promise<Evento[]> {
-  let q = db.from("v_eventos").select(f.columns ?? "*");
+  let q = db.from("v_eventos").select(f.columns ?? LIST_COLUMNS);
   if (f.search) q = q.ilike("titulo", `%${f.search}%`);
   if (f.free) q = q.eq("gratuito", true);
   if (f.accessible) q = q.filter("accesibilidad", "match", "(^|,)1(,|$)"); // contiene el código 1
@@ -123,7 +130,7 @@ export async function getEvents(db: SupabaseClient, f: EventFilters = {}): Promi
 
   const { data, error } = await q;
   if (error) throw new Error(`No se pudieron cargar los eventos: ${error.message}`);
-  return (data ?? []) as unknown as Evento[];
+  return ((data ?? []) as unknown as Evento[]).map((e) => ({ ...e, descripcion: e.descripcion ?? null }));
 }
 
 export async function getEvent(db: SupabaseClient, id: string): Promise<Evento | null> {
@@ -144,7 +151,8 @@ export async function getPlaces(
   categories?: string[],
   opts: { near?: { lat: number; lon: number; km: number }; search?: string } = {}
 ): Promise<Lugar[]> {
-  let q = db.from("v_lugares").select("*");
+  // Sin la descripción (no se enseña en el mapa y es lo que más pesa)
+  let q = db.from("v_lugares").select("id, fuente, nombre, categoria, direccion, municipio, distrito, lat, lon, telefono, email, url, horario, accesibilidad, publico");
   if (categories?.length) q = q.in("categoria", categories);
   if (opts.search) q = q.ilike("nombre", `%${opts.search}%`);
   if (opts.near) {
@@ -156,13 +164,23 @@ export async function getPlaces(
   }
   const { data, error } = await q.limit(1000);
   if (error) throw new Error(`No se pudieron cargar los lugares: ${error.message}`);
-  return (data ?? []) as Lugar[];
+  return ((data ?? []) as Omit<Lugar, "descripcion">[]).map((l) => ({ ...l, descripcion: null }));
 }
 
-export async function getSources(db: SupabaseClient): Promise<Record<string, Fuente>> {
-  const { data, error } = await db.from("da_fuentes").select("id, nombre, organismo, url_ficha, ultima_carga");
-  if (error) throw new Error(`No se pudieron cargar las fuentes: ${error.message}`);
-  return Object.fromEntries((data ?? []).map((f) => [f.id, f as Fuente]));
+// Las fuentes de datos (nombre, enlace a la ficha, última carga) son iguales para todo el
+// mundo y cambian como mucho una vez al día: se guardan en memoria una hora
+const cachedSources = unstable_cache(
+  async (): Promise<Record<string, Fuente>> => {
+    const { data, error } = await createPublicClient().from("da_fuentes").select("id, nombre, organismo, url_ficha, ultima_carga");
+    if (error) throw new Error(`No se pudieron cargar las fuentes: ${error.message}`);
+    return Object.fromEntries((data ?? []).map((f) => [f.id as string, f as Fuente]));
+  },
+  ["da_fuentes"],
+  { revalidate: 3600 }
+);
+
+export function getSources(): Promise<Record<string, Fuente>> {
+  return cachedSources();
 }
 
 // Distancia en km entre dos puntos (fórmula del haversine)

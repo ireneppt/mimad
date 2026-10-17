@@ -40,7 +40,7 @@ export default async function SimplePlansPage({
   const origin = await getOrigin(perfil); // casa, dónde estoy ahora o el centro
   const intereses = perfil?.intereses ?? [];
   const [fuentes, recomendaciones, inscritos] = await Promise.all([
-    getSources(supabase),
+    getSources(),
     perfil ? getPendingRecommendations(supabase, perfil.id) : Promise.resolve([]),
     perfil ? getMyInscriptionIds(supabase, perfil.id) : Promise.resolve<string[]>([]),
   ]);

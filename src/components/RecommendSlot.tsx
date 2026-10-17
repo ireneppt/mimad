@@ -2,14 +2,12 @@
 // (vínculo aceptado). Lleva a la pantalla de recomendar de acompañamiento (tarea B10).
 import Link from "next/link";
 import { Heart } from "lucide-react";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getAuthUser } from "@/lib/supabase/server";
 
 export default async function RecommendSlot({ eventId }: { eventId: string }) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getAuthUser();
   if (!user) return null;
+  const supabase = await createClient();
 
   const { data: vinculos } = await supabase.from("mm_vinculos").select("persona").eq("familiar", user.id).eq("estado", "aceptado");
   const ids = (vinculos ?? []).map((v) => v.persona as string);

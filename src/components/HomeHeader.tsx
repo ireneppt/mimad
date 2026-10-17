@@ -23,7 +23,7 @@ export default async function HomeHeader({
 }) {
   const [{ count: unread }, zones] = await Promise.all([
     perfil ? db.from("mm_notificaciones").select("*", { count: "exact", head: true }).eq("leida", false) : Promise.resolve({ count: 0 }),
-    getZones(db),
+    getZones(),
   ]);
   const place = [perfil?.municipio ?? "Madrid", perfil?.barrio].filter(Boolean).join(", ");
 

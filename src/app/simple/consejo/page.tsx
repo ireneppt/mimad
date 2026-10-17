@@ -126,7 +126,7 @@ export default async function AdvicePage({
   const origin = await getOrigin(perfil);
   const [recomendaciones, fuentes, companions] = await Promise.all([
     perfil ? getPendingRecommendations(supabase, perfil.id) : Promise.resolve([]),
-    getSources(supabase),
+    getSources(),
     perfil ? getMyCompanions(supabase, perfil.id) : Promise.resolve([]),
   ]);
   const plans = await getSimplePlans(supabase, {

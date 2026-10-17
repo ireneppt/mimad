@@ -90,7 +90,7 @@ export async function getMapItems(
   opts: { home: Home; ver: QueVer; soloAccesible: boolean; intereses: string[] }
 ): Promise<MapItem[]> {
   const { home, ver, soloAccesible } = opts;
-  const fuentes = await getSources(db);
+  const fuentes = await getSources();
   const fuente = (id: string) => {
     const f = fuentes[id];
     return f ? { nombre: f.nombre, organismo: f.organismo, url: f.url_ficha } : null;

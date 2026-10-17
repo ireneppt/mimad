@@ -43,7 +43,7 @@ export default async function SimpleEventPage({
   const volver = query.volver?.startsWith("/simple/") ? query.volver : "/simple/planes";
 
   const supabase = await createClient();
-  const [evento, perfil, fuentes] = await Promise.all([getEvent(supabase, id), getCurrentProfile(supabase), getSources(supabase)]);
+  const [evento, perfil, fuentes] = await Promise.all([getEvent(supabase, id), getCurrentProfile(supabase), getSources()]);
 
   if (!evento) {
     return (

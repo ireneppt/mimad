@@ -24,7 +24,7 @@ type Search = { bienvenida?: string; q?: string; f?: string; n?: string; i?: str
 export default async function HomePage({ searchParams }: { searchParams: Promise<Search> }) {
   const params = await searchParams;
   const supabase = await createClient();
-  const [perfil, fuentes] = await Promise.all([getCurrentProfile(supabase), getSources(supabase)]);
+  const [perfil, fuentes] = await Promise.all([getCurrentProfile(supabase), getSources()]);
   const origin = await getOrigin(perfil, { allowZone: true });
 
   const search = (params.q ?? "").trim().slice(0, 60);

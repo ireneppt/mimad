@@ -20,7 +20,7 @@ export default async function EntityPage({ searchParams }: { searchParams: Promi
 
   const [{ data: entidad }, fuentes] = await Promise.all([
     supabase.from("mm_entidades").select("id, nombre, nif, nombre_oficial, verificada, created_at").eq("usuario", perfil.id).maybeSingle(),
-    getSources(supabase),
+    getSources(),
   ]);
   const registro = fuentes["centros_atencion_social"];
   const events = entidad ? await getEntityEvents(supabase, entidad.id) : [];
