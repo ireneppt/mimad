@@ -287,9 +287,14 @@ function PlanRow({ plan: p, color, canLeave }: { plan: AgendaPlan; color: string
       <div className="relative flex min-w-0 flex-1 flex-col gap-3 overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 pl-5">
         <span className="absolute inset-y-0 left-0 w-1.5" style={{ background: color }} aria-hidden="true" />
         <div className="flex gap-3">
-          <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl text-white" style={{ background: color }} aria-hidden="true">
-            <Icon size={26} />
-          </span>
+          {p.image ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={p.image} alt="" loading="lazy" className="h-14 w-14 shrink-0 rounded-xl object-cover" />
+          ) : (
+            <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl text-white" style={{ background: color }} aria-hidden="true">
+              <Icon size={26} />
+            </span>
+          )}
           <div className="min-w-0">
             <h4 className="text-lg font-bold leading-snug">
               <Link href={`/evento/${encodeURIComponent(p.id)}`} className="hover:underline">{p.title}</Link>

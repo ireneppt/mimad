@@ -25,6 +25,7 @@ export type Evento = {
   publico: string | null;
   idioma: string | null;
   organizacion?: string | null; // quién lo organiza (agenda del Ayuntamiento, CEPI, entidades de MiMad)
+  imagen?: string | null; // foto (Agenda turística o la que sube la entidad); sin foto, se dibuja el icono
 };
 
 export type Lugar = {
@@ -174,7 +175,7 @@ export function distanceKm(a: { lat: number; lon: number }, b: { lat: number; lo
   return 2 * R * Math.asin(Math.sqrt(h));
 }
 
-// Orden para el Inicio: por la próxima vez que ocurre. Lo que ya ha empezado y dura
+// Orden por fecha: por la próxima vez que ocurre. Lo que ya ha empezado y dura
 // semanas (exposiciones) cuenta como "hoy", pero detrás de los planes de un solo día.
 // Los talleres semanales sin fecha van al final.
 export function sortByNext(events: Evento[]): Evento[] {
@@ -211,4 +212,33 @@ export function hasEnded(e: Evento): boolean {
   const [h, m] = start.slice(11).split(":").map(Number);
   const startPlus2h = `${start.slice(0, 10)}T${String(Math.min(h + 2, 23)).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
   return startPlus2h < now;
+}
+
+// Orden del Inicio: lo que te interesa y está cerca, en los próximos días.
+// Puntuación (menos = mejor): kilómetros + días que faltan, con ventaja si encaja con tus
+// intereses y una pequeña desventaja para lo que dura semanas (exposiciones).
+export function sortByRelevance(
+  events: Evento[],
+  opts: { origin: { lat: number; lon: number }; categories?: string[] }
+): Evento[] {
+  const today = nowInMadrid().slice(0, 10);
+  const liked = new Set(opts.categories ?? []);
+  const dayDiff = (d: string) => Math.round((Date.parse(`${d}T12:00:00Z`) - Date.parse(`${today}T12:00:00Z`)) / 86_400_000);
+  const score = (e: Evento) => {
+    const km = e.lat != null && e.lon != null ? distanceKm(opts.origin, { lat: e.lat, lon: e.lon }) : 8;
+    let days = 3; // talleres semanales sin fecha: como si fueran en unos días
+    let long = false;
+    if (e.fecha_inicio) {
+      const start = e.fecha_inicio.slice(0, 10);
+      days = Math.max(0, dayDiff(start));
+      long = start < today || (!!e.fecha_fin && e.fecha_fin.slice(0, 10) !== start);
+    }
+    return (
+      Math.min(km, 15) * 1.0 + // cada km cuenta
+      Math.min(days, 30) * 0.6 + // cada día que falta cuenta algo menos
+      (liked.size && e.categoria && liked.has(e.categoria) ? -4 : 0) + // encaja con tus intereses
+      (long ? 1.5 : 0) // dura semanas: no hay prisa
+    );
+  };
+  return [...events].filter((e) => !hasEnded(e)).map((e) => ({ e, s: score(e) })).sort((a, b) => a.s - b.s).map((x) => x.e);
 }

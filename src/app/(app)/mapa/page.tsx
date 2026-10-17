@@ -82,6 +82,7 @@ export default async function MapPage({ searchParams }: { searchParams: Promise<
           when: [w.day, w.time].filter(Boolean).join(" · "),
           free: !!e.gratuito,
           accessible: isAccessible(e),
+          image: e.imagen ?? null,
           km: km(e),
           address: niceText(e.lugar) ?? niceText(e.direccion),
           source: e.fuente,

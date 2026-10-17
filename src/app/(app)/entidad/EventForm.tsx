@@ -7,6 +7,7 @@ import { CircleCheck, LoaderCircle, MapPin } from "lucide-react";
 import { Field, FormError, TextInput } from "@/components/forms";
 import { ENTITY_AUDIENCES, ENTITY_CATEGORIES, type EntityEvent } from "@/lib/entityEvents";
 import { createEvent, updateEvent, type EventFormState } from "./actions";
+import PhotoPicker from "@/components/PhotoPicker";
 
 const selectClass = "h-14 w-full rounded-2xl border border-slate-200 bg-white px-4 text-lg focus:border-tinta focus:outline-none";
 
@@ -23,6 +24,7 @@ export default function EventForm({ evento, municipios, defaultMunicipio }: { ev
       {evento && <input type="hidden" name="id" value={evento.id} />}
 
       <Section n={1} title="Lo básico">
+        <PhotoPicker shape="wide" label="Añadir una foto" initialUrl={evento?.foto_url} removable={!!evento?.foto_url} />
           <Field label="Título del plan" htmlFor="titulo">
             <TextInput id="titulo" name="titulo" required minLength={3} maxLength={150} placeholder="Taller de cerámica para principiantes" defaultValue={initial("titulo", evento?.titulo)} />
           </Field>

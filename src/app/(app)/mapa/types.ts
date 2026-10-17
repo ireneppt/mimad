@@ -11,6 +11,7 @@ export type MapPoint = {
   address: string | null;
   source: string; // id de da_fuentes (el nombre va aparte, una sola vez: ver MapSource)
   // Solo planes
+  image?: string | null;
   when?: string;
   free?: boolean;
   accessible?: boolean;

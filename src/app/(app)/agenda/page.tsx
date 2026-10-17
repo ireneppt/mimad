@@ -41,6 +41,7 @@ export default async function AgendaPage({ searchParams }: { searchParams: Promi
     lat: evento.lat,
     lon: evento.lon,
     overlaps: clash.has(evento.id),
+    image: evento.imagen ?? null,
   }));
 
   // Cuántas personas de MiMad van al próximo plan

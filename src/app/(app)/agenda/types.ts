@@ -12,4 +12,5 @@ export type AgendaPlan = {
   lat: number | null;
   lon: number | null;
   overlaps: boolean; // coincide con otro plan de la agenda
+  image: string | null;
 };

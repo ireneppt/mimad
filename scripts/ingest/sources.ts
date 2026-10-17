@@ -1,12 +1,14 @@
 // Una entrada por fuente de datos abiertos: cómo se descarga y cómo se
 // transforma cada fila al formato de su tabla da_*.
-import { clean, fetchArcgisAll, fetchJson, hashId, toNumber, utmToLatLon } from "./lib";
+import { XMLParser } from "fast-xml-parser";
+import { clean, decodeEntities, fetchArcgisAll, fetchJson, fetchText, hashId, htmlToText, titleKey, toNumber, utmToLatLon } from "./lib";
 
 export type Source = {
   id: string; // = da_fuentes.id
   url: string; // URL de descarga (la misma que en da_fuentes)
   table: string;
   key: string; // clave primaria de la tabla
+  scope?: { column: string; value: string }; // si la tabla tiene varias fuentes (p. ej. idiomas)
   load: (url: string) => Promise<Record<string, unknown>[]>;
 };
 
@@ -150,6 +152,7 @@ export const SOURCES: Source[] = [
       return items.map((e) => ({
         id: clean(e.id),
         titulo: clean(e.title) ?? "(sin título)",
+        titulo_clave: titleKey(e.title), // para reconocerlo en la Agenda turística (y coger su foto)
         descripcion: clean(e.description),
         categoria: clean(String(e["@type"] ?? "").split("/").pop()),
         fecha_inicio: clean(e.dtstart)?.replace(/\.0$/, "") ?? null,
@@ -214,4 +217,88 @@ export const SOURCES: Source[] = [
       }));
     },
   },
+  {
+    id: "agenda_turismo",
+    url: "https://datos.madrid.es/dataset/300028-0-agenda-turismo/resource/300028-2-agenda-turismo/download/300028-2-agenda-turismo.xml",
+    table: "da_agenda_turismo",
+    key: "id,idioma",
+    scope: { column: "idioma", value: "es" },
+    load: (url) => loadTourism(url, "es"),
+  },
 ];
+
+// ---------------------------------------------------------------------
+// Agenda turística (esmadrid.com): XML, ~1.100 planes con foto. Fila = /serviceList/service
+// ---------------------------------------------------------------------
+type Xml = Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
+
+// Sus categorías → las de la agenda del Ayuntamiento (iconos y filtro "Para ti")
+const TOURISM_CATEGORIES: Record<string, string> = {
+  "Música": "Musica",
+  Exposiciones: "Exposiciones",
+  "Niños": "CuentacuentosTiteresMarionetas",
+  "Teatro y danza": "TeatroPerformance",
+  "Eventos de ciudad": "Fiestas",
+  Deporte: "ActividadesDeportivas",
+  Ferias: "Ferias",
+};
+
+const cdata = (v: Xml | string | undefined): string | null => (v == null ? null : typeof v === "string" ? v : (v["#cdata"] ?? v["#text"] ?? null));
+// "08/11/2026" → "2026-11-08"
+const dmy = (s: string | undefined) => {
+  const m = String(s ?? "").match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  return m ? `${m[3]}-${m[2]}-${m[1]}` : null;
+};
+
+async function loadTourism(url: string, idioma: string) {
+  const parser = new XMLParser({
+    ignoreAttributes: false,
+    attributeNamePrefix: "@",
+    cdataPropName: "#cdata",
+    isArray: (n) => ["service", "media", "item", "categoria", "subcategoria", "rango"].includes(n),
+  });
+  const services: Xml[] = parser.parse(await fetchText(url))?.serviceList?.service ?? [];
+  if (!services.length) throw new Error("No se encuentran planes en el XML");
+
+  return services.map((sv) => {
+    const b = sv.basicData ?? {};
+    const g = sv.geoData ?? {};
+    const items: Xml[] = sv.extradata?.item ?? [];
+    const item = (name: string) => htmlToText(cdata(items.find((i) => i["@name"] === name)));
+    const cat = sv.extradata?.categorias?.categoria?.[0]?.item?.find((i: Xml) => i["@name"] === "Categoria")?.["#text"];
+    const ranges: Xml[] = sv.extradata?.fechas?.rango ?? [];
+    const starts = ranges.map((r) => dmy(r.inicio)).filter(Boolean).sort() as string[];
+    const ends = ranges.map((r) => dmy(r.fin)).filter(Boolean).sort() as string[];
+    const horario = item("Horario");
+    const times = [...(horario ?? "").matchAll(/(\d{1,2})[:.](\d{2})/g)].map((m) => `${m[1].padStart(2, "0")}:${m[2]}`);
+    const start = starts[0] ?? null;
+    const end = ends[ends.length - 1] ?? start;
+    const sameDay = start && start === end;
+    const precio = item("Servicios de pago");
+    const title = decodeEntities(cdata(b.title) ?? cdata(b.name) ?? "").trim();
+    const image = (sv.multimedia?.media ?? []).find((m: Xml) => m["@type"] === "image")?.url;
+    return {
+      id: String(sv["@id"]),
+      idioma,
+      titulo: title || "(sin título)",
+      titulo_clave: titleKey(title),
+      descripcion: htmlToText(cdata(b.body))?.slice(0, 3000) ?? null,
+      categoria: TOURISM_CATEGORIES[cat] ?? null,
+      categoria_original: clean(cat),
+      fecha_inicio: start ? `${start}T${times[0] ?? "00:00"}:00` : null,
+      fecha_fin: end ? `${end}T${sameDay && times[1] ? times[1] : "23:59"}:00` : null,
+      horario: horario?.slice(0, 300) ?? null,
+      gratuito: precio ? /gratu|gratis|libre/i.test(precio) : null,
+      precio: precio?.slice(0, 200) ?? null,
+      publico: cat === "Niños" ? "Niños,Familias" : null,
+      lugar: clean(decodeEntities(cdata(b.nombrert) ?? "")),
+      direccion: clean(decodeEntities(cdata(g.address) ?? "")),
+      codigo_postal: clean(g.zipcode),
+      localidad: clean(g.subAdministrativeArea) ?? "Madrid",
+      lat: toNumber(g.latitude),
+      lon: toNumber(g.longitude),
+      url: clean(cdata(b.web)),
+      imagen_url: clean(image),
+    };
+  });
+}

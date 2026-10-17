@@ -34,3 +34,33 @@ export async function removeAvatars(db: SupabaseClient, userId: string, keep?: s
   const old = (data ?? []).map((f) => `${userId}/${f.name}`).filter((p) => p !== keep);
   if (old.length) await db.storage.from(AVATAR_BUCKET).remove(old);
 }
+
+// ---------------------------------------------------------------------
+// Fotos de los planes de entidades (bucket "fotos-planes", carpeta de cada cuenta)
+// ---------------------------------------------------------------------
+export const PLAN_PHOTO_BUCKET = "fotos-planes";
+const PLAN_MAX_BYTES = 2 * 1024 * 1024; // ya llega reducida a 1200×675 (~120 KB)
+
+export function planPhotoError(file: File | null): string | null {
+  if (!file || file.size === 0) return null;
+  if (!TYPES[file.type]) return "La foto tiene que ser una imagen (JPG, PNG o WebP).";
+  if (file.size > PLAN_MAX_BYTES) return "La foto es demasiado grande. Prueba con otra.";
+  return null;
+}
+
+// Sube la foto y devuelve su dirección pública (o un error)
+export async function uploadPlanPhoto(db: SupabaseClient, userId: string, file: File): Promise<{ url?: string; error?: string }> {
+  const err = planPhotoError(file);
+  if (err) return { error: err };
+  const path = `${userId}/${crypto.randomUUID()}.${TYPES[file.type]}`;
+  const { error } = await db.storage.from(PLAN_PHOTO_BUCKET).upload(path, file, { contentType: file.type, cacheControl: "31536000" });
+  if (error) return { error: "No se ha podido subir la foto. Prueba otra vez." };
+  return { url: db.storage.from(PLAN_PHOTO_BUCKET).getPublicUrl(path).data.publicUrl };
+}
+
+// Borra una foto de plan a partir de su dirección pública (al cambiarla o quitarla)
+export async function removePlanPhoto(db: SupabaseClient, url: string | null | undefined) {
+  const marker = `/${PLAN_PHOTO_BUCKET}/`;
+  const i = url?.indexOf(marker) ?? -1;
+  if (url && i >= 0) await db.storage.from(PLAN_PHOTO_BUCKET).remove([url.slice(i + marker.length)]);
+}

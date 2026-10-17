@@ -31,7 +31,7 @@ async function main() {
     try {
       const rows = await source.load(source.url);
       if (db) {
-        await replaceTable(db, source.table, source.key, rows, loadedAt);
+        await replaceTable(db, source.table, source.key, rows, loadedAt, source.scope);
         await db
           .from("da_fuentes")
           .update({ ultima_carga: loadedAt, filas: rows.length, ultimo_error: null })

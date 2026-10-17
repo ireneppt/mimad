@@ -18,6 +18,7 @@ export type EntityEvent = {
   publico: string | null;
   accesible: boolean;
   plazas: number | null;
+  foto_url: string | null;
   estado: "pendiente" | "publicado" | "rechazado" | "cancelado";
   created_at: string;
 };
