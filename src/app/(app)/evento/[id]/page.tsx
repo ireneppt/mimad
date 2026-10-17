@@ -89,7 +89,7 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
 
       <div className="flex flex-col gap-6 px-5 pb-6 pt-4">
         {/* Los datos abiertos no traen imagen: fondo de marca con el icono de la categoría */}
-        <EventImage src={evento.imagen} categoria={evento.categoria} className="h-56 rounded-3xl" iconSize={80} credit={photoCredit(evento.fuente)} />
+        <EventImage src={evento.imagen} categoria={evento.categoria} title={evento.titulo} className="h-56 rounded-3xl" iconSize={80} credit={photoCredit(evento.fuente)} />
 
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between gap-3">

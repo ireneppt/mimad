@@ -5,6 +5,7 @@ import { distanceKm, getEvents, getSources, sortByRelevance, type EventFilters, 
 import { getCurrentProfile } from "@/lib/profile";
 import { getOrigin } from "@/lib/origin";
 import { categoriesForInterests, INTERESTS } from "@/lib/interests";
+import { listPhotos } from "@/lib/categoryPhotos";
 import EventCard from "@/components/EventCard";
 import Welcome from "@/components/Welcome";
 import HomeHeader from "@/components/HomeHeader";
@@ -78,6 +79,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
   let events = sortByRelevance(found, { origin, categories: categoriesForInterests(picked.length ? picked : intereses) });
   if (active.has("cerca")) events = [...events].sort((a, b) => (withKm(a) ?? 99) - (withKm(b) ?? 99));
   const shown = events.slice(0, limit);
+  const photos = listPhotos(shown);
 
   const usedSources = [...new Set(shown.map((e) => e.fuente))].map((id) => fuentes[id]).filter(Boolean);
 
@@ -202,8 +204,8 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
           </div>
         ) : (
           <div className="flex flex-col gap-5">
-            {shown.map((e) => (
-              <EventCard key={e.id} evento={e} fuente={fuentes[e.fuente]} distanceKm={origin.kind !== "centro" ? withKm(e) : undefined} />
+            {shown.map((e, i) => (
+              <EventCard key={e.id} evento={e} photo={photos[i]} fuente={fuentes[e.fuente]} distanceKm={origin.kind !== "centro" ? withKm(e) : undefined} />
             ))}
           </div>
         )}

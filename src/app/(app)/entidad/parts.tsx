@@ -58,7 +58,7 @@ export function EventRow({ e }: { e: EntityEventWithCount }) {
           <span className="text-xs font-semibold text-gris">{WEEKDAYS[d.getUTCDay()]} · {MONTHS[d.getUTCMonth()]}</span>
         </span>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={e.foto_url || categoryPhoto(e.categoria)} alt="" loading="lazy" className="h-12 w-12 shrink-0 rounded-xl object-cover" />
+        <img src={e.foto_url || categoryPhoto(e.categoria, e.titulo)} alt="" loading="lazy" className="h-12 w-12 shrink-0 rounded-xl object-cover" />
         <span className="flex min-w-0 flex-1 flex-col gap-1">
           <span className="truncate text-lg font-semibold leading-tight">{e.titulo}</span>
           <span className="flex flex-wrap items-center gap-2">

@@ -287,7 +287,7 @@ function PlanRow({ plan: p, color, canLeave }: { plan: AgendaPlan; color: string
         <span className="absolute inset-y-0 left-0 w-1.5" style={{ background: color }} aria-hidden="true" />
         <div className="flex gap-3">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={p.image || categoryPhoto(p.category)} alt="" loading="lazy" className="h-14 w-14 shrink-0 rounded-xl object-cover ring-2" style={{ ["--tw-ring-color" as string]: color }} />
+          <img src={p.image || categoryPhoto(p.category, p.title)} alt="" loading="lazy" className="h-14 w-14 shrink-0 rounded-xl object-cover ring-2" style={{ ["--tw-ring-color" as string]: color }} />
           <div className="min-w-0">
             <h4 className="text-lg font-bold leading-snug">
               <Link href={`/evento/${encodeURIComponent(p.id)}`} className="hover:underline">{p.title}</Link>

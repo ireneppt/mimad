@@ -273,7 +273,7 @@ function Sheet({ point: p, source, origin, onClose }: { point: MapPoint; source?
       <div className="flex items-start gap-3">
         {p.kind === "evento" ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={p.image || categoryPhoto(p.category)} alt="" className="h-16 w-20 shrink-0 rounded-2xl object-cover" />
+          <img src={p.image || categoryPhoto(p.category, p.title)} alt="" className="h-16 w-20 shrink-0 rounded-2xl object-cover" />
         ) : (
           <span
             className={`flex h-16 w-16 shrink-0 items-center justify-center ${p.kind === "lugar" ? "rounded-2xl bg-blue-700 text-white" : "rounded-full bg-degradado text-white"}`}

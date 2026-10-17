@@ -12,11 +12,12 @@ export function eventHref(id: string) {
 }
 
 export default function EventCard({
-  evento, fuente, distanceKm,
+  evento, fuente, distanceKm, photo,
 }: {
   evento: Evento;
   fuente?: Fuente;
   distanceKm?: number;
+  photo?: string; // foto por defecto elegida por la lista (listPhotos)
 }) {
   const { label } = categoryInfo(evento.categoria);
   const when = formatWhen(evento);
@@ -24,8 +25,8 @@ export default function EventCard({
 
   return (
     <article className="relative overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-      {/* Foto del plan o, si no tiene, el icono de su tipo sobre el degradado de la marca */}
-      <EventImage src={evento.imagen} categoria={evento.categoria} className="h-40" credit={photoCredit(evento.fuente)}>
+      {/* Foto del plan o, si no tiene, una de las de su tipo */}
+      <EventImage src={evento.imagen} categoria={evento.categoria} title={evento.titulo} fallback={photo} className="h-40" credit={photoCredit(evento.fuente)}>
         <span className="absolute left-4 top-4 rounded-full bg-white px-3 py-1 text-sm font-semibold text-coral-texto shadow-sm">
           {label}
         </span>

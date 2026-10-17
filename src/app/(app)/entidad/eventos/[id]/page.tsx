@@ -67,7 +67,7 @@ export default async function EntityEventPage({
         {cancelado && <p role="status" className="rounded-2xl bg-slate-100 p-4 text-base">Has cancelado el plan. Hemos avisado a las personas apuntadas.</p>}
 
         <section className="flex flex-col gap-4 rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
-          {e.foto_url && <EventImage src={e.foto_url} categoria={e.categoria} className="-mx-5 -mt-5 h-48 rounded-t-3xl" />}
+          {e.foto_url && <EventImage src={e.foto_url} categoria={e.categoria} title={e.titulo} className="-mx-5 -mt-5 h-48 rounded-t-3xl" />}
           <div className="flex items-start gap-3">
             <span className="bg-degradado flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-white" aria-hidden="true">
               <Icon size={28} />

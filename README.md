@@ -43,3 +43,5 @@ Para la carga automática, añade en GitHub (Settings → Secrets and variables 
 ## Licencia
 
 Código bajo licencia [MIT](LICENSE). Los datos pertenecen a sus organismos publicadores y se usan según sus condiciones de reutilización.
+
+Las fotos por defecto de los planes sin foto propia (`public/fotos-por-tipo/`) son de [Pexels](https://www.pexels.com) y se usan según su [licencia](https://www.pexels.com/license/) (uso libre y gratuito). Las fotos de la Agenda turística son de [esmadrid.com](https://www.esmadrid.com) y se indican en cada plan.
