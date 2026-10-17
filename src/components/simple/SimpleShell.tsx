@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { CircleHelp, Volume2, VolumeX } from "lucide-react";
 import { NoticesBell } from "./Notices";
+import CamLogo from "../CamLogo";
 
 type Props = {
   defaultHref: string; // la misma pantalla en la versión por defecto
@@ -67,7 +68,8 @@ export default function SimpleShell({ defaultHref, step, total, title, intro, he
   }
 
   const toolClass =
-    "flex min-h-16 flex-1 items-center gap-3 rounded-2xl border-2 border-slate-500 bg-slate-100 px-4 py-2 text-left text-lg font-semibold leading-tight";
+    // min-w-0 y menos margen en móviles estrechos (360 px): que los dos botones quepan sin salirse
+    "flex min-h-16 min-w-0 flex-1 items-center gap-2 rounded-2xl border-2 border-slate-500 bg-slate-100 px-3 py-2 text-left text-lg font-semibold leading-tight min-[400px]:gap-3 min-[400px]:px-4";
 
   return (
     <main className="flex min-h-dvh flex-col gap-6 px-5 pb-12 pt-6 text-tinta">
@@ -78,6 +80,8 @@ export default function SimpleShell({ defaultHref, step, total, title, intro, he
             <p className="text-2xl font-bold leading-tight">MiMad</p>
             <p className="text-lg text-gris">Versión simplificada</p>
           </div>
+          {/* Proyecto junto a la Comunidad de Madrid */}
+          <CamLogo height={44} />
           {/* Campana de avisos (solo con sesión y avisos activados) */}
           <NoticesBell />
         </div>

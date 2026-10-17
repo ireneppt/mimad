@@ -9,6 +9,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import LocationChip from "@/components/LocationChip";
 import LanguageMenu from "@/components/LanguageMenu";
 import ShrinkOnScroll from "@/components/ShrinkOnScroll";
+import CamLogo from "@/components/CamLogo";
 import { switchToSimple } from "@/app/(app)/actions";
 import { getLang } from "@/lib/i18n/server";
 import { makeT } from "@/lib/i18n";
@@ -50,6 +51,8 @@ export default async function HomeHeader({
         <Link href="/" aria-label={t("MiMad, inicio")} className="shrink-0">
           <Image src="/icono.svg" alt="" width={40} height={40} priority className="h-10 w-10 transition-all duration-200 group-data-[compact=true]:h-8 group-data-[compact=true]:w-8" />
         </Link>
+        {/* Proyecto junto a la Comunidad de Madrid (más pequeño: la barra es compacta) */}
+        <CamLogo height={32} className="gap-2" />
         <LocationChip place={place} kind={originKind} zone={zone} zones={zones.map((z) => z.name)} loggedIn={!!perfil} lang={lang} />
         <LanguageMenu current={lang} />
         <Link
