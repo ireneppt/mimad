@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Accessibility, Database } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import { distanceKm, getEvents, getSources, sortByNext, type EventFilters, type Evento } from "@/lib/data";
+import { distanceKm, getEvents, getSources, sortByRelevance, type EventFilters, type Evento } from "@/lib/data";
 import { getCurrentProfile } from "@/lib/profile";
 import { getOrigin } from "@/lib/origin";
 import { categoriesForInterests } from "@/lib/interests";
@@ -42,14 +42,16 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
     // "Cerca de mí" = 2 km; si no, la zona de alrededor (10 km)
     near: { lat: origin.lat, lon: origin.lon, km: active.has("cerca") ? 2 : 10 },
   };
-  // Dos consultas pequeñas: lo que empieza desde hoy y lo que ya está en marcha o es semanal
+  // Dos consultas: lo que empieza en las dos próximas semanas y lo que ya está en marcha o es semanal
+  const in14 = new Date(Date.now() + 14 * 86_400_000).toLocaleString("sv-SE", { timeZone: "Europe/Madrid" }).slice(0, 10);
   const [upcoming, ongoing] = await Promise.all([
-    getEvents(supabase, { ...base, startsFrom: today, limit: 200 }),
-    getEvents(supabase, { ...base, startedBefore: today, limit: 100 }),
+    getEvents(supabase, { ...base, startsFrom: today, between: { from: today, to: in14 }, limit: 1000 }),
+    getEvents(supabase, { ...base, startedBefore: today, limit: 300 }),
   ]);
 
   const withKm = (e: Evento) => (e.lat != null && e.lon != null ? distanceKm(origin, { lat: e.lat, lon: e.lon }) : undefined);
-  let events = sortByNext([...upcoming, ...ongoing]);
+  // Orden: lo que te interesa y está cerca, en los próximos días ("Cerca de mí": solo por distancia)
+  let events = sortByRelevance([...upcoming, ...ongoing], { origin, categories: categoriesForInterests(intereses) });
   if (active.has("cerca")) events = [...events].sort((a, b) => (withKm(a) ?? 99) - (withKm(b) ?? 99));
   const shown = events.slice(0, limit);
 
