@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Accessibility, CalendarDays, ChevronDown, Database, Sparkles } from "lucide-react";
+import { Accessibility, CalendarDays, ChevronDown, Database, Globe, Languages, Sparkles } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { distanceKm, getEvents, getSources, hasEnded, sortByRelevance, type EventFilters, type Evento } from "@/lib/data";
 import { formatDayLong, isPickableDay } from "@/lib/format";
@@ -8,6 +8,9 @@ import { getCurrentProfile } from "@/lib/profile";
 import { getOrigin } from "@/lib/origin";
 import { categoriesForInterests, INTERESTS } from "@/lib/interests";
 import { listPhotos } from "@/lib/categoryPhotos";
+import {
+  isLanguagePlan, isNewcomerPlan, LANGUAGE_CATEGORIES, NEWCOMER_CATEGORIES, NEWCOMER_GROUPS, newcomerGroup, parseNewcomerGroup,
+} from "@/lib/newcomers";
 import EventCard from "@/components/EventCard";
 import Welcome from "@/components/Welcome";
 import HomeHeader from "@/components/HomeHeader";
@@ -15,12 +18,15 @@ import ViewToggle from "@/components/ViewToggle";
 
 export const metadata = { title: "Inicio · MiMad" };
 
-type Filter = "para-ti" | "cerca" | "gratis" | "accesible";
+type Filter = "para-ti" | "cerca" | "gratis" | "accesible" | "idiomas" | "recien";
+// Filtros que eligen el tipo de plan: solo uno a la vez (y quitan los intereses elegidos)
+const TOPIC_FILTERS: Filter[] = ["para-ti", "idiomas", "recien"];
 const PAGE = 20;
 
 // i = intereses elegidos a mano ("musica,baile"); t = 1 si la fila de intereses está abierta;
-// d = cuándo: "hoy", "manana", "semana" o un día elegido en el calendario ("2026-11-07")
-type Search = { bienvenida?: string; q?: string; f?: string; n?: string; i?: string; t?: string; d?: string };
+// d = cuándo: "hoy", "manana", "semana" o un día elegido en el calendario ("2026-11-07");
+// g = grupo de "Recién llegados" ("espanol", "tramites", "empleo", "convivencia")
+type Search = { bienvenida?: string; q?: string; f?: string; n?: string; i?: string; t?: string; d?: string; g?: string };
 type Day = "hoy" | "manana" | "semana";
 const DAY_CHIPS: { id: Day; label: string; title: string }[] = [
   { id: "hoy", label: "Hoy", title: "Planes de hoy" },
@@ -49,14 +55,24 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
   const validInterests = new Set(INTERESTS.map((x) => x.id));
   const picked = (params.i ?? "").split(",").filter((x) => validInterests.has(x));
   const interestsOpen = params.t === "1" || picked.length > 0;
+  // Personas extranjeras: actividades de los CEPI (por grupos) o de idiomas
+  const newcomers = active.has("recien");
+  const languages = !newcomers && active.has("idiomas");
+  const group = newcomers ? parseNewcomerGroup(params.g) : null;
+  const keep = (e: Evento) =>
+    newcomers ? isNewcomerPlan(e) && (!group || newcomerGroup(e) === group) : languages ? isLanguagePlan(e) : true;
 
   const today = new Date().toLocaleString("sv-SE", { timeZone: "Europe/Madrid" }).slice(0, 10);
   const base: EventFilters = {
     search: search || undefined,
     free: active.has("gratis"),
     accessible: active.has("accesible"),
-    // Intereses elegidos a mano en el filtro; si no, "Para ti" usa los del perfil
-    categories: picked.length
+    // "Recién llegados" e "Idiomas" mandan; luego los intereses elegidos a mano; si no, "Para ti"
+    categories: newcomers
+      ? NEWCOMER_CATEGORIES
+      : languages
+        ? LANGUAGE_CATEGORIES
+        : picked.length
       ? categoriesForInterests(picked)
       : active.has("para-ti") && intereses.length
         ? categoriesForInterests(intereses)
@@ -85,13 +101,13 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
         getEvents(supabase, { ...base, near, between: range, limit: 1000 }),
         getEvents(supabase, { ...base, near, undatedOnly: true, limit: 200 }),
       ]);
-      return [...dated.filter((e) => !hasEnded(e)), ...weekly.filter((e) => [...weekdays].some((w) => plain(e.horario ?? "").includes(plain(w))))];
+      return [...dated.filter((e) => !hasEnded(e)), ...weekly.filter((e) => [...weekdays].some((w) => plain(e.horario ?? "").includes(plain(w))))].filter(keep);
     }
     const [up, on] = await Promise.all([
       getEvents(supabase, { ...base, near, startsFrom: today, between: { from: today, to: in14 }, limit: 1000 }),
       getEvents(supabase, { ...base, near, startedBefore: today, limit: 300 }),
     ]);
-    return [...up, ...on];
+    return [...up, ...on].filter(keep);
   };
   // "Cerca de mí" = 2 km. Si no, 10 km alrededor; y si hay pocos planes (pueblos pequeños),
   // se amplía sola la búsqueda: 25 km, 50 km y, al final, toda la Comunidad.
@@ -123,7 +139,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
   const usedSources = [...new Set(shown.map((e) => e.fuente))].map((id) => fuentes[id]).filter(Boolean);
 
   // Enlaces que cambian un filtro y conservan los demás (y la búsqueda)
-  const href = (changes: { f?: Set<Filter>; i?: string[]; t?: boolean; n?: number; d?: string | null }) => {
+  const href = (changes: { f?: Set<Filter>; i?: string[]; t?: boolean; n?: number; d?: string | null; g?: string | null }) => {
     const qs = new URLSearchParams();
     qs.set("f", [...(changes.f ?? active)].join(","));
     const i = changes.i ?? picked;
@@ -132,16 +148,28 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
     if (changes.n) qs.set("n", String(changes.n));
     const d = changes.d === undefined ? dayParam : changes.d;
     if (d) qs.set("d", d);
+    const g = changes.g === undefined ? group : changes.g;
+    if (g && (changes.f ?? active).has("recien")) qs.set("g", g);
     if (search) qs.set("q", search);
     return `/?${qs}`;
   };
   const toggleHref = (f: Filter) => {
     const next = new Set(active);
     if (next.has(f)) next.delete(f);
-    else next.add(f);
-    return href({ f: next });
+    else {
+      // "Para ti", "Idiomas" y "Recién llegados" no se mezclan entre sí ni con los intereses
+      if (TOPIC_FILTERS.includes(f)) {
+        TOPIC_FILTERS.forEach((x) => next.delete(x));
+        next.add(f);
+        return href({ f: next, i: [], t: false, g: null, n: 0 });
+      }
+      next.add(f);
+    }
+    return href({ f: next, n: 0 });
   };
-  const toggleInterest = (id: string) => href({ i: picked.includes(id) ? picked.filter((x) => x !== id) : [...picked, id] });
+  const withoutTopics = () => new Set([...active].filter((x) => x !== "idiomas" && x !== "recien"));
+  const toggleInterest = (id: string) =>
+    href({ f: withoutTopics(), i: picked.includes(id) ? picked.filter((x) => x !== id) : [...picked, id], n: 0 });
   const moreHref = () => href({ n: limit + PAGE });
 
   // "Planes del viernes 7 de noviembre", "Planes de hoy"…
@@ -154,20 +182,24 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
     { id: "cerca", label: "Cerca de mí" },
     { id: "gratis", label: "Gratis" },
     { id: "accesible", label: "Accesible" },
+    { id: "idiomas", label: "Idiomas" },
+    { id: "recien", label: "Recién llegados" },
   ];
+  const chipIcon = { accesible: Accessibility, idiomas: Languages, recien: Globe } as Partial<Record<Filter, typeof Globe>>;
 
   return (
     <main className="flex flex-col">
       <Welcome mode={params.bienvenida} nombre={perfil?.nombre} />
 
       <HomeHeader db={supabase} perfil={perfil} originKind={origin.kind}
-        zone={origin.zone} search={search} searchAction="/" hidden={{ f: [...active].join(","), ...(picked.length ? { i: picked.join(",") } : {}), ...(dayParam ? { d: dayParam } : {}) }} />
+        zone={origin.zone} search={search} searchAction="/" hidden={{ f: [...active].join(","), ...(picked.length ? { i: picked.join(",") } : {}), ...(dayParam ? { d: dayParam } : {}), ...(group ? { g: group } : {}) }} />
 
       <div className="flex flex-col gap-5 bg-fondo px-5 pb-8 pt-5">
         <ViewToggle current="lista" search={search} />
 
         <nav aria-label="Filtros" className="sin-barra -mx-5 flex gap-2 overflow-x-auto px-5 pb-1">
-          {chips.filter((c) => !c.hidden).map((c) => {
+          {/* Los activos primero: así se ven (y se pueden quitar) aunque la fila se desplace */}
+          {chips.filter((c) => !c.hidden).sort((a, b) => Number(active.has(b.id)) - Number(active.has(a.id))).map((c) => {
             const on = active.has(c.id);
             return (
               <Link
@@ -179,7 +211,10 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
                   on ? "bg-degradado text-white shadow-md shadow-coral/25" : "border border-slate-200 bg-white"
                 }`}
               >
-                {c.id === "accesible" && <Accessibility size={18} aria-hidden="true" />}
+                {(() => {
+                  const Icon = chipIcon[c.id];
+                  return Icon ? <Icon size={18} aria-hidden="true" /> : null;
+                })()}
                 {c.label}
               </Link>
             );
@@ -241,6 +276,33 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
           </nav>
         )}
 
+        {newcomers && (
+          <section aria-label="Recién llegados" className="-mt-2 flex flex-col gap-3 rounded-3xl bg-white p-4 ring-1 ring-slate-200">
+            <p className="text-base leading-relaxed">
+              Actividades gratuitas de los <strong>CEPI</strong>, los centros de participación e integración de la Comunidad de Madrid: clases de
+              español, ayuda con trámites, empleo y actividades para conocer gente. Son de este mes: pregunta en el centro el día y la hora.
+            </p>
+            <nav aria-label="Tipo de actividad" className="flex flex-wrap gap-2">
+              {NEWCOMER_GROUPS.map(({ id, label, icon: Icon }) => {
+                const on = group === id;
+                return (
+                  <Link
+                    key={id}
+                    href={href({ g: on ? null : id, n: 0 })}
+                    aria-pressed={on}
+                    scroll={false}
+                    className={`flex h-11 items-center gap-1.5 rounded-full px-4 text-base font-medium ${
+                      on ? "bg-degradado text-white" : "bg-slate-50 text-tinta ring-1 ring-slate-200"
+                    }`}
+                  >
+                    <Icon size={17} className={on ? "" : "text-coral-texto"} aria-hidden="true" /> {label}
+                  </Link>
+                );
+              })}
+            </nav>
+          </section>
+        )}
+
         {active.has("para-ti") && intereses.length === 0 && !picked.length && (
           <p className="rounded-2xl bg-crema p-4 text-base">
             Aún no has elegido tus intereses. <Link href="/perfil" className="font-semibold text-coral-texto underline">Elígelos en tu perfil</Link> y te recomendaremos planes.
@@ -254,7 +316,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
         )}
 
         <div className="flex items-baseline justify-between">
-          <h1 className="text-3xl font-bold">{search ? `«${search}»` : (dayTitle ?? "Próximas quedadas")}</h1>
+          <h1 className="text-3xl font-bold">{search ? `«${search}»` : (dayTitle ?? (newcomers ? "Para recién llegados" : languages ? "Planes de idiomas" : "Próximas quedadas"))}</h1>
           <Link href="/mapa" className="text-lg font-semibold text-coral-texto">Ver mapa</Link>
         </div>
 
