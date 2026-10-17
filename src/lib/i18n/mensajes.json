@@ -1289,6 +1289,16 @@
     "pt": "Mapa",
     "de": "Karte"
   },
+  "Mapa de planes y sitios": {
+    "en": "Map of plans and places",
+    "fr": "Carte des plans et des lieux",
+    "ar": "خريطة الخطط والأماكن",
+    "ro": "Harta planurilor și locurilor",
+    "zh": "活动和地点地图",
+    "uk": "Карта планів і місць",
+    "pt": "Mapa de planos e locais",
+    "de": "Karte mit Aktivitäten und Orten"
+  },
   "mayores": {
     "en": "seniors",
     "fr": "personnes âgées",
@@ -1918,16 +1928,6 @@
     "uk": "твій дім",
     "pt": "a tua casa",
     "de": "dein Zuhause"
-  },
-  "Tu casa": {
-    "en": "Your home",
-    "fr": "Chez toi",
-    "ar": "بيتك",
-    "ro": "Acasă la tine",
-    "zh": "你家",
-    "uk": "Твій дім",
-    "pt": "A tua casa",
-    "de": "Dein Zuhause"
   },
   "tu código postal": {
     "en": "your postal code",

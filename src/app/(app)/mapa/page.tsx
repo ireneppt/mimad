@@ -8,6 +8,7 @@ import { categoryInfo } from "@/lib/categories";
 import { formatDayLong, formatDistance, formatWhen, isPickableDay, niceText } from "@/lib/format";
 import HomeHeader from "@/components/HomeHeader";
 import SearchBox from "@/components/SearchBox";
+import { getT } from "@/lib/i18n/server";
 import ViewToggle from "@/components/ViewToggle";
 import MapExplorerLazy from "./MapExplorerLazy";
 import DayPicker from "@/components/DayPicker";
@@ -130,8 +131,11 @@ export default async function MapPage({ searchParams }: { searchParams: Promise<
   const chip = (on: boolean) =>
     `flex h-11 shrink-0 items-center gap-1.5 rounded-full px-4 text-base font-medium shadow-sm ${on ? "bg-tinta text-white" : "bg-white text-tinta"}`;
 
+  const t = await getT();
   return (
     <main className="flex flex-col">
+      {/* Título para lectores de pantalla (con un día elegido, el título visible de abajo) */}
+      {!picked && <h1 className="sr-only">{t("Mapa de planes y sitios")}</h1>}
       <HomeHeader
         db={supabase}
         perfil={perfil}
@@ -163,7 +167,7 @@ export default async function MapPage({ searchParams }: { searchParams: Promise<
                 <Link
                   key={v}
                   href={href({ ver: v === "planes" ? null : v })}
-                  aria-pressed={show === v}
+                  aria-current={show === v ? "true" : undefined}
                   scroll={false}
                   className={`flex h-9 items-center gap-1.5 rounded-full px-3 text-base font-medium ${
                     show === v ? (v === "sitios" ? "bg-blue-700 text-white" : v === "planes" ? "bg-degradado text-white" : "bg-tinta text-white") : "text-tinta"
@@ -177,9 +181,9 @@ export default async function MapPage({ searchParams }: { searchParams: Promise<
             </div>
             {showEvents && (
               <>
-            <Link href={href({ d: "hoy" })} aria-pressed={day === "hoy"} scroll={false} className={chip(day === "hoy")}>Hoy</Link>
-            <Link href={href({ d: "manana" })} aria-pressed={day === "manana"} scroll={false} className={chip(day === "manana")}>Mañana</Link>
-            <Link href={href({ d: "semana" })} aria-pressed={day === "semana"} scroll={false} className={chip(day === "semana")}>Esta semana</Link>
+            <Link href={href({ d: "hoy" })} aria-current={day === "hoy" ? "true" : undefined} scroll={false} className={chip(day === "hoy")}>Hoy</Link>
+            <Link href={href({ d: "manana" })} aria-current={day === "manana" ? "true" : undefined} scroll={false} className={chip(day === "manana")}>Mañana</Link>
+            <Link href={href({ d: "semana" })} aria-current={day === "semana" ? "true" : undefined} scroll={false} className={chip(day === "semana")}>Esta semana</Link>
             <DayPicker value={picked} today={today} baseHref={href({ d: null })} param="d" todayHref={href({ d: "hoy" })} className={chip(day === "fecha")}>
               <CalendarDays size={18} aria-hidden="true" />
               {picked ? formatDayLong(picked).replace(/ de .*/, "") : "Elegir día"}

@@ -8,7 +8,7 @@
   --color-ambar: #ffb86c;
   --color-tinta: #1b2333;
   /* Rojo de texto con contraste AA sobre blanco (el coral puro no llega a 4.5:1) */
-  --color-coral-texto: #d6334a;
+  --color-coral-texto: #c72b42; /* ≥ 4,5:1 (AA) sobre blanco, fondo gris, crema y coral/10 */
   --color-gris: #5b6372;
   --color-crema: #fff4ec;
   --color-fondo: #f6f7f9;

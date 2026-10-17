@@ -8,8 +8,8 @@ import { getSimplePlans, whenInWords } from "./simplePlans";
 export type QueVer = "hoy" | "manana" | "sitios";
 
 export const QUE_VER: Record<QueVer, { titulo: string; boton: string; detalle: string }> = {
-  hoy: { titulo: "Planes de hoy", boton: "Planes de hoy", detalle: "Actividades que hay hoy cerca de tu casa" },
-  manana: { titulo: "Planes de mañana", boton: "Planes de mañana", detalle: "Actividades que hay mañana cerca de tu casa" },
+  hoy: { titulo: "Planes de hoy", boton: "Planes de hoy", detalle: "Actividades que hay hoy cerca de ti" },
+  manana: { titulo: "Planes de mañana", boton: "Planes de mañana", detalle: "Actividades que hay mañana cerca de ti" },
   sitios: {
     titulo: "Sitios para mayores",
     boton: "Sitios para mayores y personas con discapacidad",

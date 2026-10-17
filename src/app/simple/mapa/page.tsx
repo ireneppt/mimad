@@ -12,7 +12,7 @@ import { getMapItems, parseQueVer, QUE_VER } from "@/lib/simpleMap";
 
 export const metadata = { title: "Mapa · MiMad simplificada" };
 
-const HOME_LABEL: Record<OriginKind, string> = { casa: "Tu casa", aqui: "Estás aquí", cp: "Tu código postal", centro: "Puerta del Sol" };
+const HOME_LABEL: Record<OriginKind, string> = { casa: "Tu ubicación", aqui: "Estás aquí", cp: "Tu código postal", centro: "Puerta del Sol" };
 
 // Mapa sencillo para personas mayores o con necesidades especiales. Dos pasos:
 //   1) ¿Qué quieres ver? (planes de hoy, de mañana, o sitios para mayores)
@@ -30,7 +30,7 @@ export default async function SimpleMapPage({ searchParams }: { searchParams: Pr
         step={1}
         total={2}
         title="¿Qué quieres ver en el mapa?"
-        intro={<p>Toca una opción. Después verás un mapa y una lista con lo que hay cerca de tu casa.</p>}
+        intro={<p>Toca una opción. Después verás un mapa y una lista con lo que hay cerca de ti.</p>}
         help={
           <ol>
             <li>Toca lo que quieres ver: <strong>Planes de hoy</strong>, <strong>Planes de mañana</strong> o <strong>Sitios para mayores</strong>.</li>
@@ -55,7 +55,7 @@ export default async function SimpleMapPage({ searchParams }: { searchParams: Pr
   const items = await getMapItems(supabase, { home: origin, ver, soloAccesible, intereses: perfil?.intereses ?? [] });
   const esPlan = ver !== "sitios";
   const desde = origin.kind === "centro" ? " de la Puerta del Sol" : fromWhere(origin.kind);
-  const lugarCasa = origin.kind === "casa" ? "tu casa" : origin.kind === "aqui" ? "donde estás" : origin.kind === "cp" ? "tu código postal" : "la Puerta del Sol";
+  const lugarCasa = origin.kind === "casa" ? "tu ubicación" : origin.kind === "aqui" ? "donde estás" : origin.kind === "cp" ? "tu código postal" : "la Puerta del Sol";
 
   return (
     <SimpleShell

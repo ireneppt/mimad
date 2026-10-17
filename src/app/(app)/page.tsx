@@ -216,7 +216,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
               <Link
                 key={c.id}
                 href={toggleHref(c.id)}
-                aria-pressed={on}
+                aria-current={on ? "true" : undefined}
                 scroll={false}
                 className={`flex h-10 shrink-0 items-center gap-1.5 rounded-full px-4 text-base font-medium ${
                   on ? "bg-degradado text-white shadow-md shadow-coral/25" : "border border-slate-200 bg-white"
@@ -250,7 +250,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
           {DAY_CHIPS.map((c) => {
             const on = day === c.id;
             return (
-              <Link key={c.id} href={href({ d: on ? null : c.id, n: 0 })} aria-pressed={on} scroll={false} className={dayChip(on)}>
+              <Link key={c.id} href={href({ d: on ? null : c.id, n: 0 })} aria-current={on ? "true" : undefined} scroll={false} className={dayChip(on)}>
                 {t(c.label)}
               </Link>
             );
@@ -269,7 +269,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
                 <Link
                   key={id}
                   href={toggleInterest(id)}
-                  aria-pressed={on}
+                  aria-current={on ? "true" : undefined}
                   scroll={false}
                   className={`flex h-11 items-center gap-1.5 rounded-full px-4 text-base font-medium ${
                     on ? "bg-degradado text-white" : "bg-slate-50 text-tinta ring-1 ring-slate-200"
@@ -299,7 +299,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
                   <Link
                     key={id}
                     href={href({ g: on ? null : id, n: 0 })}
-                    aria-pressed={on}
+                    aria-current={on ? "true" : undefined}
                     scroll={false}
                     className={`flex h-11 items-center gap-1.5 rounded-full px-4 text-base font-medium ${
                       on ? "bg-degradado text-white" : "bg-slate-50 text-tinta ring-1 ring-slate-200"

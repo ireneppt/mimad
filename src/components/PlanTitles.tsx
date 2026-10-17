@@ -25,5 +25,6 @@ export function PlanTitlesProvider({ ids, lang, children }: { ids: string[]; lan
 
 export function PlanTitle({ id, children }: { id: string; children: ReactNode }) {
   const { titles, lang } = useContext(Ctx);
-  return titles[id] ? <span lang={lang}>{titles[id]}</span> : <>{children}</>;
+  if (titles[id]) return <span lang={lang}>{titles[id]}</span>;
+  return lang === "es" ? <>{children}</> : <span lang="es">{children}</span>; // sin traducir: en español
 }

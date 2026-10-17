@@ -1,7 +1,7 @@
 "use client";
 
 // Mapa de la versión simplificada (Leaflet + OpenStreetMap, sin claves).
-// Pocos puntos y grandes: cada plan o sitio es un círculo con su número; la casa, una etiqueta "Tu casa".
+// Pocos puntos y grandes: cada plan o sitio es un círculo con su número; tu ubicación, una etiqueta "Tu ubicación".
 // Sin gestos difíciles: botones grandes para acercar, alejar y ver todo.
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
