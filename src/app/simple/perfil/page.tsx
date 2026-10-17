@@ -220,6 +220,10 @@ export default async function SimpleProfilePage({
             </button>
           </form>
         ))}
+        {/* Chat simulado del bot de WhatsApp (todavía no se envía nada por WhatsApp) */}
+        <Link href="/whatsapp" className="flex min-h-16 items-center justify-center rounded-2xl border-2 border-slate-500 bg-white px-5 text-xl font-semibold">
+          Abrir el chat de avisos (simulación)
+        </Link>
       </section>
 
       <section className="flex flex-col gap-3" aria-labelledby="version">

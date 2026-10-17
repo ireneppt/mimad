@@ -6,6 +6,7 @@ import RegisterServiceWorker from "@/components/RegisterServiceWorker";
 import NavigationProgress from "@/components/NavigationProgress";
 import PressFeedback from "@/components/PressFeedback";
 import Splash from "@/components/Splash";
+import WhatsappNotice from "@/components/WhatsappNotice";
 import { SPLASH_KEY } from "@/lib/splash";
 
 const outfit = Outfit({
@@ -48,6 +49,10 @@ export default function RootLayout({
           <NavigationProgress />
         </Suspense>
         <PressFeedback />
+        {/* Notificación simulada del bot de WhatsApp (solo con sesión y avisos por WhatsApp activados) */}
+        <Suspense fallback={null}>
+          <WhatsappNotice />
+        </Suspense>
       </body>
     </html>
   );

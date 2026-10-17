@@ -9,6 +9,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { joinEvent } from "@/app/(app)/evento/[id]/actions";
+import { announceBotUpdate } from "@/components/WhatsappNotice";
 import type { PlanTarjeta, RespuestaAsistente } from "@/app/api/asistente/route";
 
 type Mensaje =
@@ -173,8 +174,10 @@ function Tarjeta({ plan, loggedIn }: { plan: PlanTarjeta; loggedIn: boolean }) {
   const apuntarme = () =>
     startTransition(async () => {
       const r = await joinEvent(plan.id);
-      if (r.status === "joined") setEstado("apuntada");
-      else if (r.status === "conflict") {
+      if (r.status === "joined") {
+        setEstado("apuntada");
+        announceBotUpdate(); // llega el aviso simulado de WhatsApp al momento
+      } else if (r.status === "conflict") {
         setChoque(`${r.conflict.titulo} (${r.conflict.cuando})`);
         setEstado("choque");
       } else setEstado("error");

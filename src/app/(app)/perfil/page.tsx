@@ -282,6 +282,13 @@ export default async function ProfilePage() {
             {!isEntity && <NoticeToggle field="avisos_whatsapp" initial={perfil.avisos_whatsapp} icon={tile("verde", <MessageCircle size={22} />)} title="Avisos por WhatsApp" detail="Recordatorios y planes recomendados" />}
             <NoticeToggle field="avisos_app" initial={perfil.avisos_app ?? true} icon={tile("verde", <Bell size={22} />)} title="Avisos en la app" detail={isEntity ? "Cambios y novedades de tus planes" : "Novedades cerca de ti"} />
           </ul>
+          {/* Chat simulado del bot de WhatsApp (todavía no se envía nada por WhatsApp) */}
+          {!isEntity && (
+            <Link href="/whatsapp" className="flex items-center justify-center gap-2 rounded-2xl border border-slate-300 bg-white px-4 py-3 text-base font-medium">
+              <MessageCircle size={20} className="text-green-700" aria-hidden="true" />
+              Abrir el chat de avisos (simulación)
+            </Link>
+          )}
         </section>
 
         {!isEntity && (
