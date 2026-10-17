@@ -8,8 +8,19 @@ import { formatDay, formatWhenLong } from "./format";
 import { INTERESTS } from "./interests";
 
 export type When = "hoy" | "manana" | "semana";
-// Ventanas de días: las pestañas de Planes y, además, "el fin de semana" (Pedir consejo)
-export type PlanWindow = When | "finde";
+// Ventanas de días: las pestañas de Planes, "el fin de semana" (Pedir consejo) y un día
+// concreto elegido en el calendario ({ day: "2026-11-07" })
+export type NamedWindow = When | "finde";
+export type PlanWindow = NamedWindow | { day: string };
+
+// Día elegido en el calendario → ventana. Hoy y mañana se tratan como sus pestañas
+// (así "hoy" sigue quitando los talleres que ya han empezado)
+export function windowForDay(day: string): PlanWindow {
+  const today = todayIso();
+  if (day === today) return "hoy";
+  if (day === addDays(today, 1)) return "manana";
+  return { day };
+}
 
 export const WHEN_LABELS: Record<When, string> = { hoy: "Hoy", manana: "Mañana", semana: "Semana" };
 
@@ -49,6 +60,7 @@ function addDays(iso: string, days: number): string {
 // Días que cubre cada pestaña: [primer día, último día]
 export function windowFor(when: PlanWindow): [string, string] {
   const today = todayIso();
+  if (typeof when === "object") return [when.day, when.day];
   if (when === "hoy") return [today, today];
   if (when === "manana") return [addDays(today, 1), addDays(today, 1)];
   if (when === "finde") {
@@ -119,6 +131,18 @@ function availableIn(when: PlanWindow, opts: { todos?: boolean; filter?: (e: Eve
     if (oneDay && e.fecha_inicio.slice(11, 16) !== "00:00" && e.fecha_inicio.slice(0, 16) < now) return false;
     return true;
   };
+}
+
+// ¿El plan ocurre en esa ventana? (fechas que se cruzan, o taller semanal de esos días).
+// Lo usa "Elegir día" para no enseñar recomendaciones de otros días.
+export function happensIn(e: Evento, when: PlanWindow): boolean {
+  const [from, to] = windowFor(when);
+  if (e.fecha_inicio) {
+    const start = e.fecha_inicio.slice(0, 10);
+    const end = (e.fecha_fin ?? e.fecha_inicio).slice(0, 10);
+    if (start > to || end < from) return false;
+  }
+  return availableIn(when, { todos: true })(e);
 }
 
 // Máximo de planes que se enseñan: pocos y buenos, para no abrumar
@@ -321,13 +345,15 @@ export async function getMyInscriptionIds(db: SupabaseClient, userId: string): P
 }
 
 // Cuándo es, en palabras: "Mañana, jueves 23 de octubre, a las 5 de la tarde"
-export function whenInWords(e: Evento): string {
+// opts.on: día elegido en el calendario; un plan que empezó antes de ese día se dice "Hasta el…"
+export function whenInWords(e: Evento, opts: { on?: string } = {}): string {
   if (!e.fecha_inicio) return e.horario ?? "Consultar el horario";
   const today = todayIso();
   const startDay = e.fecha_inicio.slice(0, 10);
   const endDay = e.fecha_fin?.slice(0, 10);
+  const started = opts.on ? startDay < opts.on : startDay <= today;
   // Dura varios días y ya ha empezado: "Hasta el 30 de noviembre"
-  if (endDay && endDay > startDay && startDay <= today) {
+  if (endDay && endDay > startDay && started) {
     const [, m, d] = endDay.split("-").map(Number);
     const until = `Hasta el ${d} de ${MONTHS[m - 1]}`;
     return e.horario ? `${until}, ${e.horario}` : until;

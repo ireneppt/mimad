@@ -6,13 +6,14 @@ import { photoCredit } from "@/components/EventImage";
 import { listPhotos } from "@/lib/categoryPhotos";
 import { createClient } from "@/lib/supabase/server";
 import { getEvent, getSources, isAccessible, type Fuente } from "@/lib/data";
-import { formatDistance, walkingMinutes } from "@/lib/format";
+import { formatDayLong, formatDistance, isPickableDay, walkingMinutes } from "@/lib/format";
+import DayPicker from "@/components/DayPicker";
 import { getCurrentProfile } from "@/lib/profile";
 import { getOrigin } from "@/lib/origin";
 import LocationPanel from "@/components/simple/LocationPanel";
 import {
-  fromWhere, getMyInscriptionIds, getOtherPlans, getPendingRecommendations, getSimplePlans, parseWhen, whenInWords,
-  whyThisPlan, WHEN_LABELS, type Plan, type When,
+  fromWhere, getMyInscriptionIds, getOtherPlans, getPendingRecommendations, getSimplePlans, happensIn, parseWhen, whenInWords,
+  whyThisPlan, windowForDay, WHEN_LABELS, type Plan, type PlanWindow, type When,
 } from "@/lib/simplePlans";
 import PlanList from "./PlanList";
 import type { PlanView } from "./PlanCard";
@@ -31,10 +32,14 @@ const MAX_WALK_MINUTES = 45;
 export default async function SimplePlansPage({
   searchParams,
 }: {
-  searchParams: Promise<{ cuando?: string; hecho?: string; choque?: string; con?: string }>;
+  searchParams: Promise<{ cuando?: string; dia?: string; hecho?: string; choque?: string; con?: string }>;
 }) {
   const params = await searchParams;
-  const when = parseWhen(params.cuando);
+  // Un día elegido en el calendario (?dia=2026-11-07) manda sobre Hoy / Mañana / Semana
+  const today = new Date().toLocaleString("sv-SE", { timeZone: "Europe/Madrid" }).slice(0, 10);
+  const picked = isPickableDay(params.dia, today) ? params.dia : null;
+  const tab = parseWhen(params.cuando);
+  const when: PlanWindow = picked ? windowForDay(picked) : tab;
   const supabase = await createClient();
   const perfil = await getCurrentProfile(supabase);
   const origin = await getOrigin(perfil); // casa, dónde estoy ahora o el centro
@@ -48,9 +53,10 @@ export default async function SimplePlansPage({
     getSimplePlans(supabase, { home: origin, when, recomendaciones, intereses }),
     params.hecho ? getEvent(supabase, params.hecho) : null,
   ]);
-  // Cerca de ti: los recomendados por la familia primero y luego del más cercano al más lejano
+  // Cerca de ti: los recomendados por la familia primero y luego del más cercano al más lejano.
+  // Con un día elegido, solo los recomendados que son ese día.
   const nearby = [
-    ...plans.filter((p) => p.recomendadoPor),
+    ...plans.filter((p) => p.recomendadoPor && (!picked || happensIn(p.evento, when))),
     ...plans.filter((p) => !p.recomendadoPor).sort((a, b) => (a.km ?? Infinity) - (b.km ?? Infinity)),
   ];
   // Debajo, el resto de planes de estos días en cualquier sitio (sin repetir los de arriba)
@@ -67,19 +73,22 @@ export default async function SimplePlansPage({
       : [null, null];
 
   const href = (w: When) => `/simple/planes?cuando=${w}`;
-  const when_ = when === "semana" ? "esta semana" : WHEN_LABELS[when].toLowerCase(); // "hoy", "mañana", "esta semana"
-  const toView = (plan: Plan, withReason: boolean) => planView(plan, { fuentes, inscritos, origin, withReason });
+  const here = picked ? `/simple/planes?dia=${picked}` : href(tab); // esta misma pantalla
+  const dayName = picked ? formatDayLong(picked) : null; // "viernes 7 de noviembre"
+  // "hoy", "mañana", "esta semana" o "el viernes 7 de noviembre"
+  const when_ = dayName ? `el ${dayName}` : tab === "semana" ? "esta semana" : WHEN_LABELS[tab].toLowerCase();
+  const toView = (plan: Plan, withReason: boolean) => planView(plan, { fuentes, inscritos, origin, withReason, on: picked ?? undefined });
   // Fotos de tipo para los planes sin foto propia, sin repetir la de la tarjeta de al lado
   const photos = listPhotos([...nearby, ...others].map((p) => p.evento));
   const nearbyViews = nearby.map((p, i) => ({ ...toView(p, true), foto: photos[i] }));
   const otherViews = others.map((p, i) => ({ ...toView(p, false), foto: photos[nearby.length + i] }));
   const total = nearbyViews.length + otherViews.length;
-  const capitalized = `${when_[0].toUpperCase()}${when_.slice(1)}`;
+  const capitalized = dayName ? "Ese día" : `${when_[0].toUpperCase()}${when_.slice(1)}`;
 
   return (
     <SimpleShell
-      defaultHref="/"
-      title="Planes"
+      defaultHref={picked ? `/?d=${picked}` : "/"}
+      title={dayName ? `Planes del ${dayName}` : "Planes"}
       intro={
         total > 0 ? (
           <p>
@@ -92,6 +101,7 @@ export default async function SimplePlansPage({
       help={
         <ol>
           <li>Arriba elige cuándo: <strong>Hoy</strong>, <strong>Mañana</strong> o toda la <strong>Semana</strong>.</li>
+          <li>Para otro día, toca <strong>Elegir día</strong> y toca el número del día en el calendario.</li>
           <li>Baja con el dedo para ver los planes. Primero salen los que están más cerca de tu casa.</li>
           <li>Si un plan te gusta, toca <strong>Me apunto</strong>.</li>
           <li>Al final hay más planes en otros sitios de Madrid. Para ver más, toca <strong>Ver más planes</strong>.</li>
@@ -106,19 +116,17 @@ export default async function SimplePlansPage({
         Volver al inicio
       </Link>
 
-      <nav aria-label="Cuándo" className="grid grid-cols-3 gap-3">
-        {(Object.keys(WHEN_LABELS) as When[]).map((w) => (
-          <Link
-            key={w}
-            href={href(w)}
-            aria-current={w === when ? "page" : undefined}
-            className={`flex h-16 items-center justify-center rounded-2xl border-2 text-xl font-bold ${
-              w === when ? "border-tinta bg-tinta text-white" : "border-slate-500 bg-white"
-            }`}
-          >
-            {WHEN_LABELS[w]}
-          </Link>
-        ))}
+      {/* Cuándo: cuatro botones grandes en dos filas */}
+      <nav aria-label="Cuándo" className="grid grid-cols-2 gap-3">
+        {(Object.keys(WHEN_LABELS) as When[]).map((w) => {
+          const on = !picked && w === tab;
+          return (
+            <Link key={w} href={href(w)} aria-current={on ? "page" : undefined} className={tabClass(on)}>
+              {WHEN_LABELS[w]}
+            </Link>
+          );
+        })}
+        <DayPicker value={picked} today={today} baseHref="/simple/planes" param="dia" todayHref={href("hoy")} size="big" className={tabClass(!!picked)} />
       </nav>
 
       <LocationPanel
@@ -133,7 +141,7 @@ export default async function SimplePlansPage({
         <ConflictChoice
           nuevo={{ id: choque.id, titulo: choque.titulo, cuando: whenInWords(choque) }}
           existente={{ id: con.id, titulo: con.titulo, cuando: whenInWords(con) }}
-          back={href(when)}
+          back={here}
         />
       )}
 
@@ -155,15 +163,15 @@ export default async function SimplePlansPage({
 
       {total > 0 ? (
         <PlanList
-          // key: al cambiar de pestaña la lista empieza otra vez desde arriba
-          key={when}
+          // key: al cambiar de pestaña o de día la lista empieza otra vez desde arriba
+          key={picked ?? tab}
           nearby={nearbyViews}
           others={otherViews}
-          back={href(when)}
+          back={here}
           emptyNearby={`${capitalized} no hay planes cerca de ti. Mira los de otros sitios de Madrid, aquí debajo.`}
         />
       ) : (
-        when !== "semana" && (
+        (picked || tab !== "semana") && (
           <Link
             href={href("semana")}
             className="bg-degradado-fuerte flex h-16 items-center justify-center gap-3 rounded-2xl text-2xl font-bold text-white"
@@ -175,13 +183,20 @@ export default async function SimplePlansPage({
       )}
 
       <Link
-        href={when === "semana" ? "/simple/mapa" : `/simple/mapa?ver=${when}`}
+        href={picked || tab === "semana" ? "/simple/mapa" : `/simple/mapa?ver=${tab}`}
         className="flex h-16 items-center justify-center gap-3 rounded-2xl border-2 border-slate-400 bg-white text-xl font-bold"
       >
         <MapIcon size={26} className="text-coral-texto" aria-hidden="true" /> Verlos en el mapa
       </Link>
     </SimpleShell>
   );
+}
+
+// Botón de "Cuándo" (el elegido, oscuro)
+function tabClass(on: boolean) {
+  return `flex h-16 items-center justify-center gap-2 rounded-2xl border-2 text-xl font-bold ${
+    on ? "border-tinta bg-tinta text-white" : "border-slate-500 bg-white"
+  }`;
 }
 
 // Algunos horarios de la Agenda turística son párrafos enteros: en la tarjeta, solo la
@@ -199,6 +214,7 @@ function planView(
     inscritos: string[];
     origin: Awaited<ReturnType<typeof getOrigin>>;
     withReason: boolean; // "¿Por qué este plan?" solo en los cercanos
+    on?: string; // día elegido en el calendario
   }
 ): PlanView {
   const { evento: e, km, recomendadoPor, mensaje } = plan;
@@ -215,7 +231,7 @@ function planView(
     categoria: e.categoria,
     imagen: e.imagen ?? null,
     credito: photoCredit(e.fuente),
-    cuando: shortText(whenInWords(e)),
+    cuando: shortText(whenInWords(e, { on: ctx.on })),
     lugar: e.lugar ?? e.direccion,
     distancia,
     precio: e.gratuito ? "Gratis" : e.precio ? `Cuesta ${e.precio}` : "Consultar el precio",

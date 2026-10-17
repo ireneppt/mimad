@@ -37,8 +37,9 @@ export function formatDay(s: string): string {
   return `${wd[0].toUpperCase()}${wd.slice(1)} ${d.getDate()} ${MONTHS[d.getMonth()].slice(0, 3)}.`;
 }
 
-// Resumen de cuándo es un evento, para tarjetas: { day, time }
-export function formatWhen(e: Evento): { day: string; time: string | null } {
+// Resumen de cuándo es un evento, para tarjetas: { day, time }.
+// on: día elegido en el calendario; si el plan empezó antes de ese día, "Hasta el…"
+export function formatWhen(e: Evento, on?: string): { day: string; time: string | null } {
   if (e.fuente === "cepi_actividades" && e.fecha_inicio) {
     return { day: `Durante ${MONTHS[parseLocal(e.fecha_inicio).getMonth()]}`, time: null };
   }
@@ -53,7 +54,8 @@ export function formatWhen(e: Evento): { day: string; time: string | null } {
   const time = horario ?? (start.getHours() || start.getMinutes() ? hhmm(start) : null);
 
   // Evento que dura varios días y ya ha empezado: "Hasta el 30 nov."
-  if (end && dayDiff(end, start) > 0 && dayDiff(start, today) <= 0) {
+  const started = on ? dayDiff(start, parseLocal(on)) < 0 : dayDiff(start, today) <= 0;
+  if (end && dayDiff(end, start) > 0 && started) {
     return { day: `Hasta el ${end.getDate()} ${MONTHS[end.getMonth()].slice(0, 3)}.`, time };
   }
   return { day: formatDay(e.fecha_inicio), time };
@@ -75,6 +77,21 @@ export function hourInWords(h: number, m: number): string {
   const part = h < 6 ? "de la madrugada" : h < 12 ? "de la mañana" : h < 14 ? "del mediodía" : h < 21 ? "de la tarde" : "de la noche";
   const min = m ? ` y ${m}` : "";
   return `${h12 === 1 ? "a la" : "a las"} ${h12}${min} ${part}`;
+}
+
+// "2026-11-07" → "viernes 7 de noviembre" (para "Planes del viernes 7 de noviembre")
+export function formatDayLong(iso: string): string {
+  const [y, m, d] = iso.split("-").map(Number);
+  return `${WEEKDAYS[new Date(Date.UTC(y, m - 1, d, 12)).getUTCDay()]} ${d} de ${MONTHS[m - 1]}`;
+}
+
+// ¿Es una fecha "AAAA-MM-DD" válida entre hoy y dentro de un año? (para ?dia= en la dirección)
+export function isPickableDay(s: string | undefined | null, today: string): s is string {
+  if (!s || !/^\d{4}-\d{2}-\d{2}$/.test(s) || s < today) return false;
+  const [y, m, d] = s.split("-").map(Number);
+  const date = new Date(Date.UTC(y, m - 1, d));
+  if (date.getUTCMonth() !== m - 1) return false; // 31 de febrero, etc.
+  return date.getTime() - Date.parse(`${today}T00:00:00Z`) <= 366 * 86_400_000;
 }
 
 export function formatDistance(km: number): string {
