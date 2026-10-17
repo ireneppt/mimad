@@ -52,5 +52,5 @@ export default function RouteMap({ home, place, homeLabel }: { home: Point | nul
     };
   }, [home, place, homeLabel]);
 
-  return <div ref={ref} className="h-56 w-full overflow-hidden rounded-2xl border-2 border-slate-300" aria-hidden="true" />;
+  return <div ref={ref} className="h-56 w-full overflow-hidden rounded-2xl border-2 border-slate-300" aria-hidden="true" inert />;
 }

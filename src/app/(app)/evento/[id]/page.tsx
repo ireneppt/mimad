@@ -100,10 +100,10 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
 
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between gap-3">
-            <span className="rounded-full bg-coral/10 px-3 py-1 text-sm font-semibold text-coral-texto">{label}</span>
+            <span className="rounded-full bg-coral/10 px-3 py-1 text-sm font-semibold text-coral-texto">{t(label)}</span>
             <span className="text-lg font-bold">{evento.gratuito ? t("Gratis") : evento.precio ?? ""}</span>
           </div>
-          <h2 className="text-3xl font-bold leading-tight text-balance">{evento.titulo}</h2>
+          <h2 lang="es" className="text-3xl font-bold leading-tight text-balance">{evento.titulo}</h2>
           {evento.organizacion && evento.fuente !== "cepi_actividades" ? (
             <p className="flex flex-wrap items-center gap-x-1.5 text-base text-gris">
               Organiza <span className="font-semibold text-tinta">{niceText(evento.organizacion.replace(" · Entidad verificada", ""))}</span>
@@ -145,7 +145,9 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
 
         <section className="flex flex-col gap-2" aria-labelledby="sobre">
           <h2 id="sobre" className="text-2xl font-bold">{t("Sobre el plan")}</h2>
-          <Description evento={evento} label={label} t={t} />
+          <div lang={evento.descripcion ? "es" : undefined}>
+            <Description evento={evento} label={label} t={t} />
+          </div>
           {/* Para personas extranjeras: los datos abiertos solo vienen en español */}
           <TranslatePlan eventoId={evento.id} languages={TRANSLATE_LANGUAGES} loggedIn={!!perfil} lang={lang}
             auto={lang !== "es" && (isNewcomerPlan(evento) || isLanguagePlan(evento))} />

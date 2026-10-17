@@ -29,7 +29,7 @@ export default function EventCard({
   const accessible = isAccessible(evento);
 
   return (
-    <article className="relative overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+    <article className="relative overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm has-[a:focus-visible]:ring-[3px] has-[a:focus-visible]:ring-tinta has-[a:focus-visible]:ring-offset-2">
       {/* Foto del plan o, si no tiene, una de las de su tipo */}
       <EventImage src={evento.imagen} categoria={evento.categoria} title={evento.titulo} fallback={photo} className="h-40" credit={photoCredit(evento.fuente)}>
         <span className="absolute left-4 top-4 rounded-full bg-white px-3 py-1 text-sm font-semibold text-coral-texto shadow-sm">
@@ -39,11 +39,11 @@ export default function EventCard({
 
       <div className="flex flex-col gap-3 p-5">
         <div className="flex items-start justify-between gap-3">
-          <h3 className="text-xl font-bold leading-snug">
+          <h2 className="text-xl font-bold leading-snug">
             <Link href={eventHref(evento.id)} className="after:absolute after:inset-0 focus:outline-none">
               <PlanTitle id={evento.id}>{evento.titulo}</PlanTitle>
             </Link>
-          </h3>
+          </h2>
           {evento.gratuito && <span className="shrink-0 text-lg font-semibold text-coral-texto">{t("Gratis")}</span>}
         </div>
 

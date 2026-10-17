@@ -161,7 +161,7 @@ export default async function NotificationsPage({ searchParams }: { searchParams
     <Link
       key={f}
       href={f === "todas" ? "/notificaciones" : `/notificaciones?ver=${f}`}
-      aria-pressed={filter === f}
+      aria-current={filter === f ? "true" : undefined}
       className={`flex h-11 shrink-0 items-center rounded-full px-4 text-base font-medium ${filter === f ? "bg-tinta text-white" : "bg-slate-100 text-tinta"}`}
     >
       {label}
