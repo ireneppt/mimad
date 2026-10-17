@@ -79,22 +79,68 @@ function encajaTema(tema: (typeof TEMAS)[number], e: Evento): boolean {
 }
 
 // ---------------------------------------------------------------------------
-// Candidatos: planes reales cerca, ya ordenados por gustos, distancia, gratis...
+// Candidatos: planes reales cerca que se le pasan a Claude para que elija.
+// Lo que PIDE la persona manda sobre sus gustos: si pide un tema (deporte, teatro…),
+// los candidatos son de ese tema aunque no esté entre sus intereses. Si no pide
+// ninguno, van mezclados: la mitad según sus gustos y la otra mitad de otras cosas.
 // ---------------------------------------------------------------------------
+
+// "Otra cosa", "algo diferente", "fuera de mis gustos": no tirar de sus intereses
+const PIDE_OTRA_COSA = /(otr[oa]s? (cosas?|tipo|planes)|algo (distinto|diferente|nuevo)|diferentes?|distint[oa]s?|fuera de mis gustos|que no sea|no me interesa|variar|cambiar de)/;
+
+function interleave(a: Plan[], b: Plan[], max: number): Plan[] {
+  const out: Plan[] = [];
+  const seen = new Set<string>();
+  for (let i = 0; out.length < max && (i < a.length || i < b.length); i++) {
+    for (const p of [a[i], b[i]]) {
+      if (p && !seen.has(p.evento.id) && out.length < max) {
+        seen.add(p.evento.id);
+        out.push(p);
+      }
+    }
+  }
+  return out;
+}
 
 export async function getCandidates(
   db: SupabaseClient,
-  opts: { home: { lat: number; lon: number }; when: PlanWindow; persona: Persona; recomendaciones?: Recomendacion[]; filter?: (e: Evento) => boolean }
+  opts: {
+    home: { lat: number; lon: number };
+    when: PlanWindow;
+    persona: Persona;
+    recomendaciones?: Recomendacion[];
+    filter?: (e: Evento) => boolean;
+    mensaje?: string; // lo que ha pedido (para buscar planes de ese tema)
+    historial?: Turno[];
+  }
 ): Promise<Plan[]> {
-  return getSimplePlans(db, {
-    home: opts.home,
-    when: opts.when,
-    recomendaciones: opts.recomendaciones ?? [],
-    intereses: opts.persona.intereses,
-    filter: opts.filter,
-    max: MAX_CANDIDATOS,
-    todos: !opts.persona.simplificada,
-  });
+  const mensaje = opts.mensaje ?? "";
+  const otraCosa = PIDE_OTRA_COSA.test(plain(mensaje));
+  // El tema del mensaje o, si es una continuación ("¿y gratis?"), el último que pidió
+  const pedidos = (opts.historial ?? []).filter((t) => t.rol === "usuario").map((t) => t.texto).reverse();
+  const tema = temaDe(mensaje) ?? (otraCosa ? null : pedidos.map(temaDe).find(Boolean) ?? null);
+
+  const buscar = (intereses: string[], filter?: (e: Evento) => boolean, max = MAX_CANDIDATOS) =>
+    getSimplePlans(db, {
+      home: opts.home,
+      when: opts.when,
+      recomendaciones: opts.recomendaciones ?? [],
+      intereses,
+      filter: (e) => (opts.filter?.(e) ?? true) && (filter?.(e) ?? true),
+      max,
+      todos: !opts.persona.simplificada,
+    });
+
+  if (tema) {
+    const delTema = (await buscar(opts.persona.intereses, (e) => encajaTema(tema, e))).filter((p) => encajaTema(tema, p.evento));
+    // Si hay pocos de ese tema, se completa con otros para que Claude diga "lo más parecido"
+    if (delTema.length >= MAX_ELEGIDOS) return delTema;
+    return interleave(delTema, await buscar([]), MAX_CANDIDATOS);
+  }
+  if (otraCosa || opts.persona.intereses.length === 0) return buscar([]);
+  // Sin tema: mitad según sus gustos, mitad de todo (para que Claude pueda salirse de sus gustos)
+  const [gustos, todo] = await Promise.all([buscar(opts.persona.intereses), buscar([])]);
+  return interleave(gustos, todo, MAX_CANDIDATOS);
 }
 
 // ---------------------------------------------------------------------------
@@ -188,7 +234,8 @@ Recomiendas planes y actividades reales sacados de los datos abiertos de la Comu
 
 Reglas:
 - Solo puedes recomendar planes de la lista de CANDIDATOS del último mensaje, citándolos por su id exacto. Nunca inventes planes, fechas, lugares ni precios.
-- Elige entre 1 y 3 planes que encajen con lo que pide la persona (tema, día, hora, compañía, precio, accesibilidad) y con sus gustos.
+- Elige entre 1 y 3 planes que encajen con lo que pide la persona (tema, día, hora, compañía, precio, accesibilidad).
+- Lo que pide en el mensaje manda sobre sus gustos: si pide algo que no está entre sus gustos (por ejemplo deporte y le gusta la música), recomiéndale eso. Usa sus gustos solo para decidir cuando no pide nada concreto. Si pide "otra cosa" o "algo diferente", elige planes que NO sean de sus gustos.
 - "texto": 1 o 2 frases cercanas, en español y tuteando, que presenten tu elección. Si nada encaja de verdad, dilo con sinceridad y propone lo más parecido.
 - "porque" de cada plan: una frase corta (máximo 25 palabras) con motivos que salgan de los datos del candidato: gustos, distancia, horario, gratis, accesible, público...
 - Si la persona pregunta algo que no tiene que ver con planes, recuérdale amablemente que solo ayudas a encontrar planes, y elige de todas formas 1 o 2 que le puedan gustar.
