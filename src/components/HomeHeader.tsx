@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Bell, Search } from "lucide-react";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import LocationChip from "@/components/LocationChip";
+import CamLogo from "@/components/CamLogo";
 import { switchToSimple } from "@/app/(app)/actions";
 import type { Perfil } from "@/lib/profile";
 import type { OriginKind } from "@/lib/origin";
@@ -33,6 +34,8 @@ export default async function HomeHeader({
         <Link href="/" aria-label="MiMad, inicio" className="shrink-0">
           <Image src="/icono.svg" alt="" width={56} height={56} priority />
         </Link>
+        {/* Proyecto junto a la Comunidad de Madrid */}
+        <CamLogo height={40} />
         <LocationChip place={place} kind={originKind} zone={zone} zones={zones.map((z) => z.name)} loggedIn={!!perfil} />
         <Link
           href="/notificaciones"
