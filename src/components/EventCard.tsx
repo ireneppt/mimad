@@ -7,20 +7,20 @@ import { formatDistance, formatWhen } from "@/lib/format";
 import SourceTag from "./SourceTag";
 import EventImage, { photoCredit } from "./EventImage";
 import { makeT, type Lang } from "@/lib/i18n";
+import { PlanTitle } from "./PlanTitles";
 
 export function eventHref(id: string) {
   return `/evento/${encodeURIComponent(id)}`;
 }
 
 export default function EventCard({
-  evento, fuente, distanceKm, photo, onDay, lang, title,
+  evento, fuente, distanceKm, photo, onDay, lang,
 }: {
   evento: Evento;
   fuente?: Fuente;
   distanceKm?: number;
   photo?: string; // foto por defecto elegida por la lista (listPhotos)
   lang?: Lang; // idioma elegido (textos fijos y fechas)
-  title?: string; // título traducido (planes para personas extranjeras)
   onDay?: string; // día elegido en el calendario (lo que ya había empezado se dice "Hasta el…")
 }) {
   const t = makeT(lang);
@@ -41,7 +41,7 @@ export default function EventCard({
         <div className="flex items-start justify-between gap-3">
           <h3 className="text-xl font-bold leading-snug">
             <Link href={eventHref(evento.id)} className="after:absolute after:inset-0 focus:outline-none">
-              {title ? <span lang={lang}>{title}</span> : evento.titulo}
+              <PlanTitle id={evento.id}>{evento.titulo}</PlanTitle>
             </Link>
           </h3>
           {evento.gratuito && <span className="shrink-0 text-lg font-semibold text-coral-texto">{t("Gratis")}</span>}

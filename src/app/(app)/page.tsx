@@ -15,7 +15,7 @@ import EventCard from "@/components/EventCard";
 import Welcome from "@/components/Welcome";
 import HomeHeader from "@/components/HomeHeader";
 import { getLang } from "@/lib/i18n/server";
-import { translateTitles } from "@/lib/translate";
+import { PlanTitlesProvider } from "@/components/PlanTitles";
 import { makeT } from "@/lib/i18n";
 import SearchBox from "@/components/SearchBox";
 import ViewToggle from "@/components/ViewToggle";
@@ -118,16 +118,17 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
   // "Cerca de mí" = 2 km. Si no, 10 km alrededor; y si hay pocos planes (pueblos pequeños),
   // se amplía sola la búsqueda: 25 km, 50 km y, al final, toda la Comunidad.
   const MIN_PLANS = 8;
-  let radius: number | null = active.has("cerca") ? 2 : 10;
+  // "Recién llegados" e "Idiomas" son pocos planes (8 CEPI): toda la Comunidad de una vez
+  let radius: number | null = active.has("cerca") ? 2 : newcomers || languages ? null : 10;
   let found = await fetchWithin(radius);
-  if (!active.has("cerca")) {
+  if (!active.has("cerca") && radius !== null) {
     for (const next of [25, 50, null]) {
       if (found.length >= MIN_PLANS) break;
       radius = next;
       found = await fetchWithin(radius);
     }
   }
-  const widened = !active.has("cerca") && radius !== 10;
+  const widened = !active.has("cerca") && !newcomers && !languages && radius !== 10;
 
   const withKm = (e: Evento) => (e.lat != null && e.lon != null ? distanceKm(origin, { lat: e.lat, lon: e.lon }) : undefined);
   // Orden: lo que te interesa y está cerca, en los próximos días ("Cerca de mí": solo por distancia)
@@ -141,9 +142,9 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
   }
   const shown = events.slice(0, limit);
   const photos = listPhotos(shown);
-  // En otro idioma: los títulos de los planes para personas extranjeras (CEPI, idiomas), traducidos
-  const titles: Record<string, string> =
-    lang !== "es" ? await translateTitles(shown.filter((e) => isNewcomerPlan(e) || isLanguagePlan(e)).map((e) => [e.id, e.titulo]), lang) : {};
+  // En otro idioma: los títulos de los planes para personas extranjeras (CEPI, idiomas) se piden
+  // traducidos después de pintar la página (PlanTitlesProvider), para no esperar a Claude
+  const foreignIds = lang !== "es" ? shown.filter((e) => isNewcomerPlan(e) || isLanguagePlan(e)).map((e) => e.id) : [];
 
   const usedSources = [...new Set(shown.map((e) => e.fuente))].map((id) => fuentes[id]).filter(Boolean);
 
@@ -336,11 +337,13 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
             <Link href="/?f=" className="mt-2 rounded-2xl border border-slate-300 px-5 py-3 font-medium">{t("Ver todos los planes")}</Link>
           </div>
         ) : (
+          <PlanTitlesProvider ids={foreignIds} lang={lang}>
           <div className="flex flex-col gap-5">
             {shown.map((e, i) => (
-              <EventCard key={e.id} evento={e} photo={photos[i]} fuente={fuentes[e.fuente]} distanceKm={origin.kind !== "centro" ? withKm(e) : undefined} onDay={range?.from} lang={lang} title={titles[e.id]} />
+              <EventCard key={e.id} evento={e} photo={photos[i]} fuente={fuentes[e.fuente]} distanceKm={origin.kind !== "centro" ? withKm(e) : undefined} onDay={range?.from} lang={lang} />
             ))}
           </div>
+          </PlanTitlesProvider>
         )}
 
         {events.length > shown.length && (

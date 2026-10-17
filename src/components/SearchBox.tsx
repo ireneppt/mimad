@@ -16,7 +16,7 @@ export default async function SearchBox({
         <input key={k} type="hidden" name={k} value={v} />
       ))}
       <label htmlFor="buscar" className="sr-only">{t("Buscar actividades")}</label>
-      <Search size={22} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gris" aria-hidden="true" />
+      <Search size={18} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-gris" aria-hidden="true" />
       <input
         id="buscar"
         name="q"
@@ -24,7 +24,7 @@ export default async function SearchBox({
         defaultValue={search}
         maxLength={60}
         placeholder={t("Buscar actividades, talleres…")}
-        className="h-13 w-full rounded-2xl bg-white pl-12 pr-4 text-lg shadow-sm ring-1 ring-slate-200 placeholder:text-gris focus:outline-none focus:ring-2 focus:ring-tinta"
+        className="h-11 w-full rounded-xl bg-white pl-10 pr-3 text-base shadow-sm ring-1 ring-slate-200 placeholder:text-gris focus:outline-none focus:ring-2 focus:ring-tinta"
       />
     </form>
   );
