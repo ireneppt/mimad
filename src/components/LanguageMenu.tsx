@@ -45,7 +45,7 @@ export default function LanguageMenu({ current }: { current: string | null }) {
         aria-expanded={open}
         aria-haspopup="true"
         aria-label={`Idioma: ${selected.label}. Cambiar idioma · Language`}
-        className="flex h-14 w-14 items-center justify-center gap-0.5 rounded-full bg-slate-100 text-base font-bold disabled:opacity-60"
+        className="flex h-11 w-11 items-center justify-center gap-0.5 rounded-full bg-slate-100 text-sm font-bold disabled:opacity-60"
         disabled={pending}
       >
         {selected.short}

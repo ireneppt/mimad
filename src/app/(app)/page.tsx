@@ -14,6 +14,7 @@ import {
 import EventCard from "@/components/EventCard";
 import Welcome from "@/components/Welcome";
 import HomeHeader from "@/components/HomeHeader";
+import SearchBox from "@/components/SearchBox";
 import ViewToggle from "@/components/ViewToggle";
 
 export const metadata = { title: "Inicio · MiMad" };
@@ -190,11 +191,12 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
     <main className="flex flex-col">
       <Welcome mode={params.bienvenida} nombre={perfil?.nombre} />
 
-      <HomeHeader db={supabase} perfil={perfil} originKind={origin.kind}
-        zone={origin.zone} search={search} searchAction="/" hidden={{ f: [...active].join(","), ...(picked.length ? { i: picked.join(",") } : {}), ...(dayParam ? { d: dayParam } : {}), ...(group ? { g: group } : {}) }}
+      <HomeHeader db={supabase} perfil={perfil} originKind={origin.kind} zone={origin.zone}
         newcomers={{ active: newcomers, href: toggleHref("recien") }} />
 
-      <div className="flex flex-col gap-5 bg-fondo px-5 pb-8 pt-5">
+      <div className="flex flex-col gap-5 border-t border-slate-200 bg-fondo px-5 pb-8 pt-5">
+        <SearchBox search={search} action="/"
+          hidden={{ f: [...active].join(","), ...(picked.length ? { i: picked.join(",") } : {}), ...(dayParam ? { d: dayParam } : {}), ...(group ? { g: group } : {}) }} />
         <ViewToggle current="lista" search={search} />
 
         <nav aria-label="Filtros" className="sin-barra -mx-5 flex gap-2 overflow-x-auto px-5 pb-1">

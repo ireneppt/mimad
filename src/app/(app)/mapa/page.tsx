@@ -7,6 +7,7 @@ import { getOrigin } from "@/lib/origin";
 import { categoryInfo } from "@/lib/categories";
 import { formatDayLong, formatDistance, formatWhen, isPickableDay, niceText } from "@/lib/format";
 import HomeHeader from "@/components/HomeHeader";
+import SearchBox from "@/components/SearchBox";
 import ViewToggle from "@/components/ViewToggle";
 import MapExplorerLazy from "./MapExplorerLazy";
 import DayPicker from "@/components/DayPicker";
@@ -136,10 +137,10 @@ export default async function MapPage({ searchParams }: { searchParams: Promise<
         perfil={perfil}
         originKind={origin.kind}
         zone={origin.zone}
-        search={search}
-        searchAction="/mapa"
-        hidden={{ d: picked ?? day, ...(show !== "planes" ? { ver: show } : {}) }}
       />
+      <div className="border-t border-slate-200 bg-fondo px-4 py-3">
+        <SearchBox search={search} action="/mapa" hidden={{ ...(picked ?? day ? { d: (picked ?? day)! } : {}), ...(show !== "planes" ? { ver: show } : {}) }} />
+      </div>
 
       <section aria-label="Mapa de planes y sitios" className="relative h-[72dvh] min-h-[440px]">
         <MapExplorerLazy

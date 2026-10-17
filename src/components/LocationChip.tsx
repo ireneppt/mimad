@@ -69,13 +69,13 @@ export default function LocationChip({
 
   return (
     <div className="min-w-0 flex-1">
-      <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open} className="flex min-w-0 flex-col items-start text-left">
-        <span className="text-sm text-gris">{zone ? "Viendo planes en" : "Tu ubicación"}</span>
-        <span className="flex max-w-full items-center gap-1.5 text-xl font-bold leading-tight">
+      <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open} className="flex min-w-0 max-w-full flex-col items-start text-left">
+        <span className="text-xs text-gris">{zone ? "Viendo planes en" : "Tu ubicación"}</span>
+        <span className="flex max-w-full items-center gap-1.5 text-lg font-bold leading-tight">
           <span className="truncate">{zone ?? place}</span>
-          {zone ? <Compass size={20} className="shrink-0 text-coral-texto" aria-hidden="true" /> : <MapPin size={20} className="shrink-0 text-coral-texto" aria-hidden="true" />}
+          {zone ? <Compass size={18} className="shrink-0 text-coral-texto" aria-hidden="true" /> : <MapPin size={18} className="shrink-0 text-coral-texto" aria-hidden="true" />}
         </span>
-        <span className="text-xs text-gris">{zone ? "Toca para volver a tu ubicación" : `Distancias desde ${KIND_LABEL[kind]}`}</span>
+        <span className="truncate text-xs text-gris">{zone ? "Toca para volver a tu ubicación" : `Distancias desde ${KIND_LABEL[kind]}`}</span>
       </button>
 
       {open && (
