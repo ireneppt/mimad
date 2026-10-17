@@ -49,7 +49,7 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
   const [evento, perfil, fuentes, inscritos] = await Promise.all([
     getEvent(supabase, id),
     getCurrentProfile(supabase),
-    getSources(supabase),
+    getSources(),
     supabase.rpc("contar_inscritos", { p_evento: id }),
   ]);
   if (!evento) notFound();

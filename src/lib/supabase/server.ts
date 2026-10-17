@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
@@ -28,3 +29,14 @@ export async function createClient() {
     }
   );
 }
+
+// Quién ha entrado. Mientras se pinta una página (layout, página y componentes) se pregunta
+// a Supabase una sola vez y se reutiliza: antes se hacía hasta 3 veces seguidas.
+// (En las acciones de formularios no se guarda: allí se usa supabase.auth.getUser().)
+export const getAuthUser = cache(async () => {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  return user;
+});

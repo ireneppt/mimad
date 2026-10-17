@@ -76,8 +76,7 @@ export async function savePostalCode(_prev: LocationState, form: FormData): Prom
 export async function setZone(_prev: LocationState, form: FormData): Promise<LocationState> {
   const name = String(form.get("zona") ?? "").trim().toLowerCase();
   if (!name) return { error: "Escribe un distrito de Madrid o un municipio." };
-  const supabase = await createClient();
-  const zones = await getZones(supabase);
+  const zones = await getZones();
   const plain = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
   // Vale "Arganzuela" o "Madrid · Arganzuela", con o sin tildes
   const zone = zones.find((z) => plain(z.name) === plain(name) || plain(z.name) === `madrid · ${plain(name)}`);

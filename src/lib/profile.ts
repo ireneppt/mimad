@@ -1,5 +1,7 @@
 // Perfil de la persona con sesión (o null si es invitada / no ha entrado)
+import { cache } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { getAuthUser } from "@/lib/supabase/server";
 
 export type Perfil = {
   id: string;
@@ -18,13 +20,15 @@ export type Perfil = {
   foto_url: string | null;
 };
 
-export async function getCurrentProfile(db: SupabaseClient): Promise<Perfil | null> {
-  const {
-    data: { user },
-  } = await db.auth.getUser();
-  if (!user) return null;
-  const { data } = await db.from("mm_perfiles").select("*").eq("id", user.id).maybeSingle();
+// Se lee una sola vez por página aunque lo pidan varios componentes
+const loadProfile = cache(async (db: SupabaseClient, id: string): Promise<Perfil | null> => {
+  const { data } = await db.from("mm_perfiles").select("*").eq("id", id).maybeSingle();
   return (data as Perfil) ?? null;
+});
+
+export async function getCurrentProfile(db: SupabaseClient): Promise<Perfil | null> {
+  const user = await getAuthUser();
+  return user ? loadProfile(db, user.id) : null;
 }
 
 // Punto de referencia para "cerca de mí": casa del perfil o, si no hay, la Puerta del Sol

@@ -32,7 +32,7 @@ type Show = "planes" | "sitios" | "todo";
 export default async function MapPage({ searchParams }: { searchParams: Promise<{ d?: string; ver?: string; lugares?: string; q?: string }> }) {
   const params = await searchParams;
   const supabase = await createClient();
-  const [perfil, fuentes] = await Promise.all([getCurrentProfile(supabase), getSources(supabase)]);
+  const [perfil, fuentes] = await Promise.all([getCurrentProfile(supabase), getSources()]);
   const origin = await getOrigin(perfil, { allowZone: true });
   const search = (params.q ?? "").trim().slice(0, 60);
   const show: Show =
@@ -66,6 +66,14 @@ export default async function MapPage({ searchParams }: { searchParams: Promise<
   const km = (p: { lat: number | null; lon: number | null }) =>
     origin.kind !== "centro" && p.lat != null && p.lon != null ? formatDistance(distanceKm(origin, { lat: p.lat, lon: p.lon })) : null;
 
+  // Se mandan al móvil más de mil puntos: lo justo de cada uno (5 decimales ≈ 1 m; del
+  // horario, solo la primera línea; el resto está en el detalle del plan)
+  const coord = (n: number) => Math.round(n * 1e5) / 1e5;
+  const firstLine = (s?: string | null) => {
+    const line = s?.split("\n")[0].trim();
+    return line && line.length > 70 ? `${line.slice(0, 68)}…` : line;
+  };
+
   const points: MapPoint[] = [
     ...events
       .filter((e): e is Evento & { lat: number; lon: number } => e.lat != null && e.lon != null)
@@ -77,9 +85,9 @@ export default async function MapPage({ searchParams }: { searchParams: Promise<
           title: e.titulo,
           category: e.categoria,
           label: categoryInfo(e.categoria).label,
-          lat: e.lat,
-          lon: e.lon,
-          when: [w.day, w.time].filter(Boolean).join(" · "),
+          lat: coord(e.lat),
+          lon: coord(e.lon),
+          when: [w.day, firstLine(w.time)].filter(Boolean).join(" · "),
           free: !!e.gratuito,
           accessible: isAccessible(e),
           image: e.imagen ?? null,
@@ -94,11 +102,11 @@ export default async function MapPage({ searchParams }: { searchParams: Promise<
       title: l.nombre,
       category: l.categoria,
       label: l.categoria,
-      lat: l.lat,
-      lon: l.lon,
+      lat: coord(l.lat),
+      lon: coord(l.lon),
       km: km(l),
       address: [niceText(l.direccion), l.municipio].filter(Boolean).join(", "),
-      schedule: l.horario,
+      schedule: firstLine(l.horario) ?? null,
       phone: l.telefono,
       web: l.url,
       source: l.fuente,
