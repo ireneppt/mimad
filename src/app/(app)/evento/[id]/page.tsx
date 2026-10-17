@@ -54,7 +54,7 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
   ]);
   if (!evento) notFound();
 
-  const origin = await getOrigin(perfil);
+  const origin = await getOrigin(perfil, { allowZone: true });
   const { data: mine } = perfil
     ? await supabase.from("mm_inscripciones").select("id").eq("usuario", perfil.id).eq("evento_id", id).maybeSingle()
     : { data: null };
@@ -118,7 +118,7 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
           <InfoRow
             icon={<MapPin size={22} />}
             title={niceText(evento.direccion) ?? niceText(evento.lugar) ?? "Consultar el lugar"}
-            detail={[evento.municipio, km != null && showFrom ? `A ${formatDistance(km)} ${FROM_LABEL[origin.kind]}` : null].filter(Boolean).join(" · ") || null}
+            detail={[evento.municipio, km != null && showFrom ? `A ${formatDistance(km)} ${origin.zone ? `de ${origin.zone}` : FROM_LABEL[origin.kind]}` : null].filter(Boolean).join(" · ") || null}
           />
           {count != null && (
             <InfoRow

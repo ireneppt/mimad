@@ -7,6 +7,7 @@ import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { HERE_COOKIE, HERE_MAX_AGE, isPostalCode, parsePoint } from "@/lib/location";
 import { postalCodeLocation } from "@/lib/postalCodes";
+import { getZones, ZONE_COOKIE, ZONE_MAX_AGE, zoneCookieValue } from "@/lib/zones";
 
 export type LocationState = { error?: string; ok?: string };
 
@@ -68,4 +69,26 @@ export async function savePostalCode(_prev: LocationState, form: FormData): Prom
   store.delete(HERE_COOKIE);
   refresh();
   return { ok: `Hemos guardado tu casa en el código postal ${cp} (${place.municipio}).` };
+}
+
+// "Ver planes en otra zona" (versión por defecto): distrito de Madrid o municipio.
+// Solo una cookie de este móvil durante 3 horas; no cambia la casa del perfil.
+export async function setZone(_prev: LocationState, form: FormData): Promise<LocationState> {
+  const name = String(form.get("zona") ?? "").trim().toLowerCase();
+  if (!name) return { error: "Escribe un distrito de Madrid o un municipio." };
+  const supabase = await createClient();
+  const zones = await getZones(supabase);
+  const plain = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+  // Vale "Arganzuela" o "Madrid · Arganzuela", con o sin tildes
+  const zone = zones.find((z) => plain(z.name) === plain(name) || plain(z.name) === `madrid · ${plain(name)}`);
+  if (!zone) return { error: "No encontramos esa zona. Elige un distrito o municipio de la lista." };
+  (await cookies()).set(ZONE_COOKIE, zoneCookieValue(zone), { path: "/", maxAge: ZONE_MAX_AGE, sameSite: "lax" });
+  refresh();
+  return { ok: `Ahora ves planes en ${zone.name}.` };
+}
+
+export async function clearZone(): Promise<LocationState> {
+  (await cookies()).delete(ZONE_COOKIE);
+  refresh();
+  return {};
 }

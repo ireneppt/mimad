@@ -23,7 +23,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
   const params = await searchParams;
   const supabase = await createClient();
   const [perfil, fuentes] = await Promise.all([getCurrentProfile(supabase), getSources(supabase)]);
-  const origin = await getOrigin(perfil);
+  const origin = await getOrigin(perfil, { allowZone: true });
 
   const search = (params.q ?? "").trim().slice(0, 60);
   const intereses = perfil?.intereses ?? [];
@@ -39,19 +39,34 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
     free: active.has("gratis"),
     accessible: active.has("accesible"),
     categories: active.has("para-ti") && intereses.length ? categoriesForInterests(intereses) : undefined,
-    // "Cerca de mí" = 2 km; si no, la zona de alrededor (10 km)
-    near: { lat: origin.lat, lon: origin.lon, km: active.has("cerca") ? 2 : 10 },
   };
   // Dos consultas: lo que empieza en las dos próximas semanas y lo que ya está en marcha o es semanal
   const in14 = new Date(Date.now() + 14 * 86_400_000).toLocaleString("sv-SE", { timeZone: "Europe/Madrid" }).slice(0, 10);
-  const [upcoming, ongoing] = await Promise.all([
-    getEvents(supabase, { ...base, startsFrom: today, between: { from: today, to: in14 }, limit: 1000 }),
-    getEvents(supabase, { ...base, startedBefore: today, limit: 300 }),
-  ]);
+  const fetchWithin = async (km: number | null) => {
+    const near = km ? { lat: origin.lat, lon: origin.lon, km } : undefined;
+    const [up, on] = await Promise.all([
+      getEvents(supabase, { ...base, near, startsFrom: today, between: { from: today, to: in14 }, limit: 1000 }),
+      getEvents(supabase, { ...base, near, startedBefore: today, limit: 300 }),
+    ]);
+    return [...up, ...on];
+  };
+  // "Cerca de mí" = 2 km. Si no, 10 km alrededor; y si hay pocos planes (pueblos pequeños),
+  // se amplía sola la búsqueda: 25 km, 50 km y, al final, toda la Comunidad.
+  const MIN_PLANS = 8;
+  let radius: number | null = active.has("cerca") ? 2 : 10;
+  let found = await fetchWithin(radius);
+  if (!active.has("cerca")) {
+    for (const next of [25, 50, null]) {
+      if (found.length >= MIN_PLANS) break;
+      radius = next;
+      found = await fetchWithin(radius);
+    }
+  }
+  const widened = !active.has("cerca") && radius !== 10;
 
   const withKm = (e: Evento) => (e.lat != null && e.lon != null ? distanceKm(origin, { lat: e.lat, lon: e.lon }) : undefined);
   // Orden: lo que te interesa y está cerca, en los próximos días ("Cerca de mí": solo por distancia)
-  let events = sortByRelevance([...upcoming, ...ongoing], { origin, categories: categoriesForInterests(intereses) });
+  let events = sortByRelevance(found, { origin, categories: categoriesForInterests(intereses) });
   if (active.has("cerca")) events = [...events].sort((a, b) => (withKm(a) ?? 99) - (withKm(b) ?? 99));
   const shown = events.slice(0, limit);
 
@@ -84,7 +99,8 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
     <main className="flex flex-col">
       <Welcome mode={params.bienvenida} nombre={perfil?.nombre} />
 
-      <HomeHeader db={supabase} perfil={perfil} originKind={origin.kind} search={search} searchAction="/" hidden={{ f: [...active].join(",") }} />
+      <HomeHeader db={supabase} perfil={perfil} originKind={origin.kind}
+        zone={origin.zone} search={search} searchAction="/" hidden={{ f: [...active].join(",") }} />
 
       <div className="flex flex-col gap-5 bg-fondo px-5 pb-8 pt-5">
         <ViewToggle current="lista" search={search} />
@@ -112,6 +128,12 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
         {active.has("para-ti") && intereses.length === 0 && (
           <p className="rounded-2xl bg-crema p-4 text-base">
             Aún no has elegido tus intereses. <Link href="/perfil" className="font-semibold text-coral-texto underline">Elígelos en tu perfil</Link> y te recomendaremos planes.
+          </p>
+        )}
+
+        {widened && shown.length > 0 && (
+          <p role="status" className="rounded-2xl bg-crema p-4 text-base">
+            Cerca de {origin.zone ?? "ti"} hay pocos planes: te enseñamos los más cercanos{radius ? `, hasta a ${radius} km` : " de toda la Comunidad de Madrid"}.
           </p>
         )}
 

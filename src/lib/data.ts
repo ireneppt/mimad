@@ -225,7 +225,8 @@ export function sortByRelevance(
   const liked = new Set(opts.categories ?? []);
   const dayDiff = (d: string) => Math.round((Date.parse(`${d}T12:00:00Z`) - Date.parse(`${today}T12:00:00Z`)) / 86_400_000);
   const score = (e: Evento) => {
-    const km = e.lat != null && e.lon != null ? distanceKm(opts.origin, { lat: e.lat, lon: e.lon }) : 8;
+    // Sin ubicación en los datos: al final (no sabemos si está cerca)
+    const km = e.lat != null && e.lon != null ? distanceKm(opts.origin, { lat: e.lat, lon: e.lon }) : 100;
     let days = 3; // talleres semanales sin fecha: como si fueran en unos días
     let long = false;
     if (e.fecha_inicio) {
@@ -234,7 +235,7 @@ export function sortByRelevance(
       long = start < today || (!!e.fecha_fin && e.fecha_fin.slice(0, 10) !== start);
     }
     return (
-      Math.min(km, 15) * 1.0 + // cada km cuenta
+      Math.min(km, 100) * 1.0 + // cada km cuenta (también lejos: pueblos pequeños)
       Math.min(days, 30) * 0.6 + // cada día que falta cuenta algo menos
       (liked.size && e.categoria && liked.has(e.categoria) ? -4 : 0) + // encaja con tus intereses
       (long ? 1.5 : 0) // dura semanas: no hay prisa
