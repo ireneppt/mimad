@@ -1,52 +1,90 @@
 "use client";
 
-// Notificación simulada de WhatsApp: estando en cualquier pantalla de la app, baja un aviso
-// con el primer mensaje del bot de MiMad; al tocarlo se abre el chat simulado (/whatsapp).
+// Notificación simulada de WhatsApp (versión simplificada y normal): cuando llega un mensaje
+// nuevo del bot (al apuntarse a un plan, 24 horas antes, una recomendación…) baja un aviso
+// arriba; al tocarlo se abre el chat simulado (/whatsapp).
 // Forma parte del canal simulado del bot (ver lib/bot/canal.ts): no envía nada fuera de la app.
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { MessageCircle, X } from "lucide-react";
-import { getWhatsappNotice, type WhatsappNotice as Notice } from "@/app/whatsapp/actions";
+import { getWhatsappNotice, type NoticeItem } from "@/app/whatsapp/actions";
 
-const SEEN_KEY = "mm_aviso_whatsapp_visto"; // una vez por sesión y por conjunto de avisos
-const DELAY_MS = 3000; // después de la animación de apertura
-const HIDDEN_ON = ["/whatsapp", "/login", "/registro", "/simple/login", "/simple/registro", "/privacidad"];
+// Las pantallas que apuntan a un plan sin cambiar de dirección lanzan este evento
+// para que el aviso de "te has apuntado" llegue al momento
+export const BOT_UPDATE_EVENT = "mm:bot";
+export const announceBotUpdate = () => window.dispatchEvent(new Event(BOT_UPDATE_EVENT));
+
+const SEEN_KEY = "mm_whatsapp_vistos"; // ids de mensajes ya vistos en este móvil
+const CHECK_EVERY_MS = 60_000; // para que el recordatorio de 24 horas llegue con la app abierta
+const NO_NOTICE_ON = ["/login", "/registro", "/simple/login", "/simple/registro", "/privacidad"];
+
+function readSeen(): Set<string> {
+  try {
+    return new Set(JSON.parse(localStorage.getItem(SEEN_KEY) ?? "[]"));
+  } catch {
+    return new Set();
+  }
+}
+function markSeen(ids: string[]) {
+  try {
+    const all = [...new Set([...readSeen(), ...ids])].slice(-300);
+    localStorage.setItem(SEEN_KEY, JSON.stringify(all));
+  } catch {}
+}
 
 export default function WhatsappNotice() {
   const pathname = usePathname();
-  const [notice, setNotice] = useState<Notice | null>(null);
-  const hiddenHere = HIDDEN_ON.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+  const search = useSearchParams().toString(); // p. ej. "?hecho=…" tras "Me apunto"
+  const [notice, setNotice] = useState<{ latest: NoticeItem; more: number; ids: string[] } | null>(null);
+  const busy = useRef(false);
+  const inChat = pathname === "/whatsapp";
+  const off = NO_NOTICE_ON.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 
-  // Se pregunta una sola vez, en la primera pantalla donde puede salir (p. ej. justo después
-  // de entrar desde el login). El aviso sigue aunque se cambie de pantalla.
-  const asked = useRef(false);
+  const check = useCallback(async () => {
+    if (off || busy.current) return;
+    busy.current = true;
+    try {
+      const items = await getWhatsappNotice().catch(() => null);
+      if (!items) return setNotice(null);
+      // En el chat ya se están viendo: cuentan como vistos
+      if (inChat) {
+        markSeen(items.map((i) => i.id));
+        return setNotice(null);
+      }
+      const seen = readSeen();
+      const unseen = items.filter((i) => !seen.has(i.id));
+      setNotice(unseen.length ? { latest: unseen[unseen.length - 1], more: unseen.length - 1, ids: items.map((i) => i.id) } : null);
+    } finally {
+      busy.current = false;
+    }
+  }, [off, inChat]);
+
+  // Al cambiar de pantalla (y al entrar en la app, tras la animación de apertura)
   useEffect(() => {
-    if (hiddenHere || asked.current) return;
-    let cancelled = false;
-    const t = setTimeout(async () => {
-      asked.current = true;
-      const n = await getWhatsappNotice().catch(() => null);
-      let seen: string | null = null;
-      try {
-        seen = sessionStorage.getItem(SEEN_KEY);
-      } catch {}
-      if (!cancelled && n && n.signature !== seen) setNotice(n);
-    }, DELAY_MS);
+    const t = setTimeout(check, 1500);
+    return () => clearTimeout(t);
+  }, [check, pathname, search]);
+
+  // Cada minuto, al volver a la app y justo después de apuntarse
+  useEffect(() => {
+    const onVisible = () => document.visibilityState === "visible" && check();
+    const interval = setInterval(check, CHECK_EVERY_MS);
+    window.addEventListener(BOT_UPDATE_EVENT, check);
+    document.addEventListener("visibilitychange", onVisible);
     return () => {
-      cancelled = true;
-      clearTimeout(t);
+      clearInterval(interval);
+      window.removeEventListener(BOT_UPDATE_EVENT, check);
+      document.removeEventListener("visibilitychange", onVisible);
     };
-  }, [hiddenHere]);
+  }, [check]);
 
   function dismiss() {
-    try {
-      if (notice) sessionStorage.setItem(SEEN_KEY, notice.signature);
-    } catch {}
+    if (notice) markSeen(notice.ids);
     setNotice(null);
   }
 
-  if (!notice || hiddenHere) return null;
+  if (!notice || off || inChat) return null;
 
   return (
     <div role="status" className="aviso-entrada fixed inset-x-0 top-2 z-50 mx-auto w-[min(414px,calc(100%-16px))]">
@@ -60,8 +98,8 @@ export default function WhatsappNotice() {
               <span className="font-semibold text-tinta">WhatsApp</span> · ahora
               <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-bold text-amber-950">Simulación</span>
             </span>
-            <span className="block text-lg font-bold leading-tight">{notice.title}</span>
-            <span className="line-clamp-2 text-base leading-snug">{notice.body}</span>
+            <span className="block text-lg font-bold leading-tight">MiMad</span>
+            <span className="line-clamp-2 text-base leading-snug">{notice.latest.preview}</span>
             {notice.more > 0 && (
               <span className="block text-sm text-gris">
                 +{notice.more} {notice.more === 1 ? "mensaje más" : "mensajes más"}

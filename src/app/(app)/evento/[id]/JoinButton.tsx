@@ -7,6 +7,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { CalendarCheck, CircleAlert, LoaderCircle } from "lucide-react";
 import { joinEvent, leaveEvent, type JoinResult } from "./actions";
+import { announceBotUpdate } from "@/components/WhatsappNotice";
 
 export default function JoinButton({ eventoId, joined, loggedIn }: { eventoId: string; joined: boolean; loggedIn: boolean }) {
   const router = useRouter();
@@ -19,6 +20,7 @@ export default function JoinButton({ eventoId, joined, loggedIn }: { eventoId: s
       const r = await action();
       setResult(r);
       if (r.status === "joined" || r.status === "left") router.refresh();
+      if (r.status === "joined") announceBotUpdate(); // llega el aviso simulado de WhatsApp al momento
     });
 
   if (!loggedIn) {

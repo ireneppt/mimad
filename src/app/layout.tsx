@@ -50,7 +50,9 @@ export default function RootLayout({
         </Suspense>
         <PressFeedback />
         {/* Notificación simulada del bot de WhatsApp (solo con sesión y avisos por WhatsApp activados) */}
-        <WhatsappNotice />
+        <Suspense fallback={null}>
+          <WhatsappNotice />
+        </Suspense>
       </body>
     </html>
   );

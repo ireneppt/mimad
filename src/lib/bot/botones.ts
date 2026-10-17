@@ -4,19 +4,18 @@
 // Las reglas de seguridad (RLS) de mm_inscripciones y mm_recomendaciones impiden tocar
 // datos de otra persona aunque alguien fabrique un botón a mano.
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { getEvent, type Evento } from "../data";
-import { findConflict } from "../simpleAgenda";
-import { whenInWords } from "../simplePlans";
-import { directionsUrl } from "./mensajes";
+import { getEvent } from "../data";
+import { findConflict, getMyAgenda } from "../simpleAgenda";
+import { confirmationMessage } from "./mensajes";
 import { buttonId, parseButtonId, type BotButton, type BotMessage } from "./tipos";
 
 let replyCount = 0;
-const reply = (text: string, buttons: BotButton[] = []): BotMessage => ({ id: `respuesta:${Date.now()}:${replyCount++}`, text, buttons });
-
-const directions = (e: Evento): BotButton[] => {
-  const url = directionsUrl(e);
-  return url ? [{ kind: "url", label: "Cómo llegar", url }] : [];
-};
+const reply = (text: string, buttons: BotButton[] = []): BotMessage => ({
+  id: `respuesta:${Date.now()}:${replyCount++}`,
+  at: Date.now(),
+  text,
+  buttons,
+});
 
 async function isJoined(db: SupabaseClient, userId: string, eventoId: string): Promise<boolean> {
   const { data } = await db.from("mm_inscripciones").select("id").eq("usuario", userId).eq("evento_id", eventoId).maybeSingle();
@@ -34,12 +33,11 @@ async function join(db: SupabaseClient, userId: string, eventoId: string): Promi
 
 const SORRY = "Perdona, no hemos podido hacerlo. Inténtalo otra vez dentro de un rato.";
 
-export async function handleBotButton(db: SupabaseClient, userId: string, id: string): Promise<BotMessage[]> {
+export async function handleBotButton(db: SupabaseClient, userId: string, nombre: string, id: string): Promise<BotMessage[]> {
   const parsed = parseButtonId(id);
   if (!parsed) return [reply("Perdona, no he entendido ese botón.")];
   const evento = await getEvent(db, parsed.eventoId);
   if (!evento) return [reply("Ese plan ya no está disponible. Puede que haya terminado o se haya cancelado.")];
-  const title = `«${evento.titulo}»`;
 
   switch (parsed.action) {
     // "Sí, voy": no hay columna de "confirmado"; se comprueba que sigue apuntada (y si no, se la apunta)
@@ -53,18 +51,21 @@ export async function handleBotButton(db: SupabaseClient, userId: string, id: st
       const { error } = await db.from("mm_inscripciones").delete().eq("usuario", userId).eq("evento_id", evento.id);
       if (error) return [reply(SORRY)];
       return [
-        reply(`Vale. Te hemos quitado de ${title}. ¡Otra vez será!`, [
+        reply(`Vale. Te hemos quitado de «${evento.titulo}». ¡Otra vez será!`, [
           { kind: "reply", id: buttonId("apuntarme", evento.id), label: "Me vuelvo a apuntar" },
         ]),
       ];
     }
 
-    // "Me apunto" (recomendación) o "Me vuelvo a apuntar"
+    // "Me apunto" (recomendación) o "Me vuelvo a apuntar": se responde con la misma
+    // confirmación que llega al apuntarse desde cualquier otra pantalla
     case "apuntarme": {
       const conflict = await findConflict(db, userId, evento);
       if (!(await join(db, userId, evento.id))) return [reply(SORRY)];
-      const when = whenInWords(evento).split("\n")[0];
-      const messages = [reply(`¡Hecho! Te hemos apuntado a *${evento.titulo}*.\n${when}.\nTe lo recordaremos por aquí.`, directions(evento))];
+      const item = (await getMyAgenda(db, userId)).find((a) => a.evento.id === evento.id);
+      const messages = item
+        ? [confirmationMessage(item, { id: `respuesta:${Date.now()}:${replyCount++}`, at: Date.now(), nombre })]
+        : [reply(`¡Hecho! Te has apuntado a *${evento.titulo}*.`)];
       if (conflict) messages.push(reply(`Ojo: a esa hora también tienes *${conflict.titulo}*. Si no puedes ir a los dos, quita uno en «Mis planes».`));
       return messages;
     }

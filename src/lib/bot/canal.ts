@@ -12,8 +12,13 @@
 //     un mismo mensaje, así que "Cómo llegar" tendrá que ir en un mensaje aparte.
 //   - Una ruta /api/whatsapp (webhook) que reciba el toque de un botón, busque a la persona
 //     por su teléfono y llame a handleBotButton() con el id del botón; después, deliver().
-//   - Una tarea programada (p. ej. cada mañana) que llame a getBotMessages() para quien
-//     tenga avisos_whatsapp = true y los envíe con deliver().
+//   - Una tarea programada (p. ej. cada 15 minutos) que llame a getBotMessages() para quien
+//     tenga avisos_whatsapp = true y envíe con deliver() los mensajes cuya hora (at) ya ha
+//     llegado: la confirmación al apuntarse y el recordatorio 24 h antes. Para no enviar dos
+//     veces el mismo mensaje hará falta una tabla con los ids ya enviados (migración nueva).
+//
+// Mientras tanto, la pantalla simulada enseña los mensajes que ya han llegado y la
+// notificación simulada (components/WhatsappNotice.tsx) avisa de los que no se han visto.
 import type { BotMessage } from "./tipos";
 
 export interface BotChannel {

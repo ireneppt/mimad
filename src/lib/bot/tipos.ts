@@ -16,6 +16,7 @@ export type BotButton = ReplyButton | UrlButton;
 
 export type BotMessage = {
   id: string; // único en la conversación
+  at: number; // cuándo llega (milisegundos desde 1970): el canal lo envía a esa hora
   text: string; // con *negrita* al estilo WhatsApp y saltos de línea
   card?: { categoria: string | null; imagen: string | null }; // imagen de cabecera (recomendaciones)
   buttons: BotButton[];
