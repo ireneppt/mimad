@@ -2,44 +2,62 @@ import Link from "next/link";
 import { ArrowLeft, ArrowRight, Check } from "lucide-react";
 import { Map as MapIcon } from "lucide-react";
 import SimpleShell from "@/components/simple/SimpleShell";
+import { photoCredit } from "@/components/EventImage";
+import { listPhotos } from "@/lib/categoryPhotos";
 import { createClient } from "@/lib/supabase/server";
-import { getEvent, getSources, isAccessible } from "@/lib/data";
-import { walkingMinutes } from "@/lib/format";
+import { getEvent, getSources, isAccessible, type Fuente } from "@/lib/data";
+import { formatDistance, walkingMinutes } from "@/lib/format";
 import { getCurrentProfile } from "@/lib/profile";
 import { getOrigin } from "@/lib/origin";
 import LocationPanel from "@/components/simple/LocationPanel";
 import {
-  getMyInscriptionIds, getPendingRecommendations, getSimplePlans, parseWhen, whenInWords, whyThisPlan, WHEN_LABELS, type When,
+  fromWhere, getMyInscriptionIds, getOtherPlans, getPendingRecommendations, getSimplePlans, parseWhen, whenInWords,
+  whyThisPlan, WHEN_LABELS, type Plan, type When,
 } from "@/lib/simplePlans";
-import PlanSteps, { type PlanView } from "./PlanSteps";
+import PlanList from "./PlanList";
+import type { PlanView } from "./PlanCard";
 import ConflictChoice from "@/components/simple/ConflictChoice";
 import CompanionAsk from "@/components/simple/CompanionAsk";
 import { getMyCompanions } from "@/lib/companion";
 import { siteUrl } from "@/lib/siteUrl";
 
-
 export const metadata = { title: "Planes · MiMad simplificada" };
 
-// Planes cerca de casa, uno por pantalla (diseño planes-simplificada.png)
+// A partir de estos minutos andando se dice la distancia en km (andar ya no es realista)
+const MAX_WALK_MINUTES = 45;
+
+// Planes en una lista que se baja con el dedo (diseño planes-simplificada.png):
+// primero los cercanos y, debajo, otros planes en Madrid para que nunca salga vacía.
 export default async function SimplePlansPage({
   searchParams,
 }: {
-  searchParams: Promise<{ cuando?: string; n?: string; hecho?: string; choque?: string; con?: string }>;
+  searchParams: Promise<{ cuando?: string; hecho?: string; choque?: string; con?: string }>;
 }) {
   const params = await searchParams;
   const when = parseWhen(params.cuando);
   const supabase = await createClient();
   const perfil = await getCurrentProfile(supabase);
   const origin = await getOrigin(perfil); // casa, dónde estoy ahora o el centro
+  const intereses = perfil?.intereses ?? [];
   const [fuentes, recomendaciones, inscritos] = await Promise.all([
     getSources(supabase),
     perfil ? getPendingRecommendations(supabase, perfil.id) : Promise.resolve([]),
     perfil ? getMyInscriptionIds(supabase, perfil.id) : Promise.resolve<string[]>([]),
   ]);
   const [plans, done] = await Promise.all([
-    getSimplePlans(supabase, { home: origin, when, recomendaciones, intereses: perfil?.intereses ?? [] }),
+    getSimplePlans(supabase, { home: origin, when, recomendaciones, intereses }),
     params.hecho ? getEvent(supabase, params.hecho) : null,
   ]);
+  // Cerca de ti: los recomendados por la familia primero y luego del más cercano al más lejano
+  const nearby = [
+    ...plans.filter((p) => p.recomendadoPor),
+    ...plans.filter((p) => !p.recomendadoPor).sort((a, b) => (a.km ?? Infinity) - (b.km ?? Infinity)),
+  ];
+  // Debajo, el resto de planes de estos días en cualquier sitio (sin repetir los de arriba)
+  const others = await getOtherPlans(supabase, {
+    home: origin, when, recomendaciones, intereses, exclude: nearby.map((p) => p.evento.id),
+  });
+
   // Tras apuntarse: "¿Quieres que Lucía vaya contigo?" (si tiene familiares que le acompañan)
   const companions = done && perfil ? await getMyCompanions(supabase, perfil.id) : [];
   // "Me apunto" a un plan que coincide con otro: se pregunta qué prefiere
@@ -48,54 +66,35 @@ export default async function SimplePlansPage({
       ? await Promise.all([getEvent(supabase, params.choque), getEvent(supabase, params.con)])
       : [null, null];
 
-  const total = plans.length;
-  const index = Math.min(Math.max(Number(params.n) || 0, 0), Math.max(total - 1, 0));
   const href = (w: When) => `/simple/planes?cuando=${w}`;
-
-  // Textos ya preparados para la tarjeta (la tarjeta cambia de plan sin volver al servidor)
-  const views: PlanView[] = plans.map((plan) => {
-    const { evento: e, km, recomendadoPor, mensaje } = plan;
-    const minutos = km != null ? walkingMinutes(km) : null;
-    return {
-    id: e.id,
-    titulo: e.titulo,
-    categoria: e.categoria,
-    cuando: whenInWords(e),
-    lugar: e.lugar ?? e.direccion,
-    minutosAndando: minutos,
-    precio: e.gratuito ? "Gratis" : e.precio ? `Cuesta ${e.precio}` : "Consultar el precio",
-    accesible: isAccessible(e),
-    recomendadoPor,
-    mensaje,
-    porque: whyThisPlan(plan, { minutes: minutos, from: origin.kind }),
-    fuente: fuentes[e.fuente] ?? null,
-    fuenteId: e.fuente,
-    apuntada: inscritos.includes(e.id),
-    };
-  });
+  const when_ = when === "semana" ? "esta semana" : WHEN_LABELS[when].toLowerCase(); // "hoy", "mañana", "esta semana"
+  const toView = (plan: Plan, withReason: boolean) => planView(plan, { fuentes, inscritos, origin, withReason });
+  // Fotos de tipo para los planes sin foto propia, sin repetir la de la tarjeta de al lado
+  const photos = listPhotos([...nearby, ...others].map((p) => p.evento));
+  const nearbyViews = nearby.map((p, i) => ({ ...toView(p, true), foto: photos[i] }));
+  const otherViews = others.map((p, i) => ({ ...toView(p, false), foto: photos[nearby.length + i] }));
+  const total = nearbyViews.length + otherViews.length;
+  const capitalized = `${when_[0].toUpperCase()}${when_.slice(1)}`;
 
   return (
     <SimpleShell
       defaultHref="/"
-      title="Planes cerca de ti"
+      title="Planes"
       intro={
         total > 0 ? (
           <p>
-            {total === 1 ? (
-              <>Hay <strong>1 plan</strong> cerca de tu casa.</>
-            ) : (
-              <>Te enseñamos <strong>{total} planes</strong> cerca de tu casa, de uno en uno.</>
-            )}
+            Primero, los planes <strong>cerca de ti</strong>. Más abajo, <strong>otros planes en Madrid</strong>.
           </p>
         ) : (
-          <p>No hay planes cerca de tu casa para {when === "semana" ? "esta semana" : WHEN_LABELS[when].toLowerCase()}.</p>
+          <p>No hay planes en Madrid para {when_}.</p>
         )
       }
       help={
         <ol>
           <li>Arriba elige cuándo: <strong>Hoy</strong>, <strong>Mañana</strong> o toda la <strong>Semana</strong>.</li>
-          <li>Primero salen los planes que encajan con tus gustos. Lee el plan y, si te gusta, toca <strong>Me apunto</strong>.</li>
-          <li>Para ver otro plan, toca <strong>Ver otro plan</strong>.</li>
+          <li>Baja con el dedo para ver los planes. Primero salen los que están más cerca de tu casa.</li>
+          <li>Si un plan te gusta, toca <strong>Me apunto</strong>.</li>
+          <li>Al final hay más planes en otros sitios de Madrid. Para ver más, toca <strong>Ver más planes</strong>.</li>
         </ol>
       }
     >
@@ -134,7 +133,7 @@ export default async function SimplePlansPage({
         <ConflictChoice
           nuevo={{ id: choque.id, titulo: choque.titulo, cuando: whenInWords(choque) }}
           existente={{ id: con.id, titulo: con.titulo, cuando: whenInWords(con) }}
-          back={`${href(when)}${index ? `&n=${index}` : ""}`}
+          back={href(when)}
         />
       )}
 
@@ -154,8 +153,15 @@ export default async function SimplePlansPage({
         />
       )}
 
-      {views.length > 0 ? (
-        <PlanSteps plans={views} initial={index} cuando={when} />
+      {total > 0 ? (
+        <PlanList
+          // key: al cambiar de pestaña la lista empieza otra vez desde arriba
+          key={when}
+          nearby={nearbyViews}
+          others={otherViews}
+          back={href(when)}
+          emptyNearby={`${capitalized} no hay planes cerca de ti. Mira los de otros sitios de Madrid, aquí debajo.`}
+        />
       ) : (
         when !== "semana" && (
           <Link
@@ -176,4 +182,49 @@ export default async function SimplePlansPage({
       </Link>
     </SimpleShell>
   );
+}
+
+// Algunos horarios de la Agenda turística son párrafos enteros: en la tarjeta, solo la
+// primera línea y como mucho 90 letras (el horario completo está en "Ver más información")
+function shortText(s: string, max = 90): string {
+  const line = s.split("\n")[0].replace(/[​-‍﻿]/g, "").trim().replace(/[:;,]$/, "");
+  return line.length > max ? `${line.slice(0, max).replace(/[\s,.:;]+\S*$/, "")}…` : line;
+}
+
+// Textos ya preparados para la tarjeta
+function planView(
+  plan: Plan,
+  ctx: {
+    fuentes: Record<string, Fuente>;
+    inscritos: string[];
+    origin: Awaited<ReturnType<typeof getOrigin>>;
+    withReason: boolean; // "¿Por qué este plan?" solo en los cercanos
+  }
+): PlanView {
+  const { evento: e, km, recomendadoPor, mensaje } = plan;
+  const minutos = km != null ? walkingMinutes(km) : null;
+  const distancia =
+    km == null || minutos == null
+      ? null
+      : minutos <= MAX_WALK_MINUTES
+        ? `A ${minutos} minutos andando`
+        : `A ${formatDistance(km)}${fromWhere(ctx.origin.kind)}`;
+  return {
+    id: e.id,
+    titulo: e.titulo,
+    categoria: e.categoria,
+    imagen: e.imagen ?? null,
+    credito: photoCredit(e.fuente),
+    cuando: shortText(whenInWords(e)),
+    lugar: e.lugar ?? e.direccion,
+    distancia,
+    precio: e.gratuito ? "Gratis" : e.precio ? `Cuesta ${e.precio}` : "Consultar el precio",
+    accesible: isAccessible(e),
+    recomendadoPor,
+    mensaje,
+    porque: ctx.withReason || recomendadoPor ? whyThisPlan(plan, { minutes: minutos, from: ctx.origin.kind }) : null,
+    fuente: ctx.fuentes[e.fuente] ?? null,
+    fuenteId: e.fuente,
+    apuntada: ctx.inscritos.includes(e.id),
+  };
 }
