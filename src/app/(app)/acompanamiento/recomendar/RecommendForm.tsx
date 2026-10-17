@@ -14,12 +14,13 @@ function Submit({ nombre }: { nombre: string }) {
   );
 }
 
-export default function RecommendForm({ persona, evento, nombre }: { persona: string; evento: string; nombre: string }) {
+export default function RecommendForm({ persona, evento, nombre, volver }: { persona: string; evento: string; nombre: string; volver: string }) {
   const [state, action] = useActionState<CompanionState, FormData>(recommendPlan, {});
   return (
     <form action={action} className="flex flex-col gap-4">
       <input type="hidden" name="persona" value={persona} />
       <input type="hidden" name="evento" value={evento} />
+      <input type="hidden" name="volver" value={volver} />
       <label htmlFor="mensaje" className="font-semibold">
         Un mensaje para {nombre} <span className="font-normal text-gris">(opcional)</span>
       </label>

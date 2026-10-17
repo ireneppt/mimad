@@ -56,7 +56,7 @@ export default async function AccompaniedAgendaPage({ params }: { params: Promis
       )}
 
       <Link
-        href={`/acompanamiento/recomendar?persona=${persona.id}`}
+        href={`/acompanamiento/recomendar?persona=${persona.id}&volver=/acompanamiento/${persona.id}`}
         className="bg-degradado flex h-14 items-center justify-center gap-2 rounded-2xl text-lg font-semibold"
       >
         <Heart size={22} aria-hidden="true" /> Recomendar un plan a {persona.nombre}

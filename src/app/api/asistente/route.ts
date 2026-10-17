@@ -59,7 +59,7 @@ export async function POST(request: Request) {
     getSources(),
     perfil ? getMyInscriptionIds(supabase, perfil.id) : Promise.resolve([] as string[]),
   ]);
-  const candidatos = await getCandidates(supabase, { home: origin, when, persona, recomendaciones });
+  const candidatos = await getCandidates(supabase, { home: origin, when, persona, recomendaciones, mensaje, historial });
   const r = await recommend({ mensaje, historial, vistos, candidatos, persona, origen: origin.kind });
 
   const respuesta: RespuestaAsistente = {

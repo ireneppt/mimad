@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowLeft, ChevronRight, Clock, MapPin, Star } from "lucide-react";
+import { ArrowLeft, Check, ChevronRight, Clock, MapPin, Star } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile, MADRID_CENTER } from "@/lib/profile";
 import { getEvent } from "@/lib/data";
@@ -13,13 +13,19 @@ export const metadata = { title: "Recomendar un plan · MiMad" };
 // Recomendar un plan a la persona que acompaño:
 //   ?persona=… → planes cerca de SU casa y según SUS gustos
 //   ?persona=…&evento=… → mensaje opcional y enviar
+//   …&enviado=1 → "Se lo has recomendado": volver a donde estaba o recomendar otro
 // El detalle de evento puede enlazar aquí con ?evento=… ("Recomendar a Carmen").
+// ?volver=… es la pantalla desde la que se ha entrado (el plan, el perfil…): se vuelve allí.
 export default async function RecommendPage({
   searchParams,
 }: {
-  searchParams: Promise<{ persona?: string; evento?: string }>;
+  searchParams: Promise<{ persona?: string; evento?: string; enviado?: string; volver?: string }>;
 }) {
-  const { persona: personaId, evento: eventoId } = await searchParams;
+  const { persona: personaId, evento: eventoId, enviado, volver: volverParam } = await searchParams;
+  // Solo direcciones de la propia app ("/perfil"), nunca de otra web
+  const volver = volverParam?.startsWith("/") && !volverParam.startsWith("//") ? volverParam : "/acompanamiento";
+  const here = (p: { persona?: string; evento?: string }) =>
+    `/acompanamiento/recomendar?${new URLSearchParams({ ...(p.persona ? { persona: p.persona } : {}), ...(p.evento ? { evento: p.evento } : {}), volver })}`;
   const supabase = await createClient();
   const perfil = await getCurrentProfile(supabase);
   if (!perfil) return null;
@@ -33,14 +39,14 @@ export default async function RecommendPage({
     else {
       const { data: personas } = ids.length ? await supabase.from("mm_perfiles").select("id, nombre").in("id", ids) : { data: [] };
       return (
-        <Shell title="¿A quién se lo recomiendas?" back="/acompanamiento">
+        <Shell title="¿A quién se lo recomiendas?" back={volver}>
           {(personas ?? []).length === 0 ? (
             <p className="rounded-3xl bg-slate-100 p-5 text-lg">
               Todavía no acompañas a nadie. <Link href="/acompanamiento" className="font-semibold text-coral-texto underline">Crea una invitación</Link>.
             </p>
           ) : (
             (personas ?? []).map((p) => (
-              <Link key={p.id} href={`/acompanamiento/recomendar?persona=${p.id}${eventoId ? `&evento=${encodeURIComponent(eventoId)}` : ""}`} className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white p-5 text-lg font-semibold">
+              <Link key={p.id} href={here({ persona: p.id, evento: eventoId })} className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white p-5 text-lg font-semibold">
                 {p.nombre} <ChevronRight size={22} aria-hidden="true" />
               </Link>
             ))
@@ -58,16 +64,40 @@ export default async function RecommendPage({
     const evento = await getEvent(supabase, eventoId);
     if (!evento) {
       return (
-        <Shell title="Ese plan ya no está" back={`/acompanamiento/recomendar?persona=${persona.id}`}>
+        <Shell title="Ese plan ya no está" back={here({ persona: persona.id })}>
           <p className="text-lg">Puede que haya terminado. Elige otro.</p>
         </Shell>
       );
     }
     const plan = buildPlan(evento, { home, intereses: persona.intereses, recomendaciones: [] });
+
+    // Ya enviado: se queda aquí con la confirmación (antes llevaba siempre a Acompañamiento)
+    if (enviado) {
+      return (
+        <Shell title="¡Recomendación enviada!" back={volver}>
+          <p role="status" className="flex items-start gap-3 rounded-3xl bg-crema p-5 text-lg">
+            <Check size={26} className="mt-0.5 shrink-0 text-coral-texto" aria-hidden="true" />
+            <span>
+              Se lo has recomendado a <strong>{persona.nombre}</strong>. Le saldrá el primero en sus planes y le llegará un aviso.
+            </span>
+          </p>
+          <PlanSummary plan={plan} nombre={persona.nombre} />
+          <Link href={volver} className="bg-degradado flex h-14 items-center justify-center rounded-2xl text-lg font-semibold">
+            Volver
+          </Link>
+          <Link href={here({ persona: persona.id })} className="flex h-14 items-center justify-center rounded-2xl border border-slate-300 bg-white text-lg font-medium">
+            Recomendar otro plan a {persona.nombre}
+          </Link>
+        </Shell>
+      );
+    }
+
+    // Si se ha entrado desde el propio plan, la flecha vuelve al plan; si no, a la lista
+    const fromThisPlan = volver === `/evento/${encodeURIComponent(evento.id)}` || volver === `/evento/${evento.id}`;
     return (
-      <Shell title={`Recomendar a ${persona.nombre}`} back={`/acompanamiento/recomendar?persona=${persona.id}`}>
+      <Shell title={`Recomendar a ${persona.nombre}`} back={fromThisPlan ? volver : here({ persona: persona.id })}>
         <PlanSummary plan={plan} nombre={persona.nombre} />
-        <RecommendForm persona={persona.id} evento={evento.id} nombre={persona.nombre} />
+        <RecommendForm persona={persona.id} evento={evento.id} nombre={persona.nombre} volver={volver} />
       </Shell>
     );
   }
@@ -75,7 +105,7 @@ export default async function RecommendPage({
   // Elegir plan: los mismos que vería ella, cerca de su casa y según sus gustos
   const plans = await getSimplePlans(supabase, { home, when: "semana", recomendaciones: [], intereses: persona.intereses });
   return (
-    <Shell title={`Recomendar a ${persona.nombre}`} back="/acompanamiento">
+    <Shell title={`Recomendar a ${persona.nombre}`} back={volver}>
       <p className="text-lg leading-relaxed text-gris">
         Planes de esta semana cerca de la casa de {persona.nombre}, primero los que encajan con sus gustos. Toca uno para recomendárselo.
       </p>
@@ -83,7 +113,7 @@ export default async function RecommendPage({
       <ul className="flex flex-col gap-3">
         {plans.map((plan) => (
           <li key={plan.evento.id}>
-            <Link href={`/acompanamiento/recomendar?persona=${persona.id}&evento=${encodeURIComponent(plan.evento.id)}`} className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4">
+            <Link href={here({ persona: persona.id, evento: plan.evento.id })} className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4">
               <span className="flex-1">
                 <PlanLines plan={plan} nombre={persona.nombre} />
               </span>

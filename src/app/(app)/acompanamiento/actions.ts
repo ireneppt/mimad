@@ -62,5 +62,7 @@ export async function recommendPlan(_prev: CompanionState, form: FormData): Prom
     if (error) return { error: "No se ha podido enviar. ¿Sigues acompañando a esta persona?" };
   }
   revalidatePath("/", "layout");
-  redirect(`/acompanamiento?recomendado=${encodeURIComponent(evento)}`);
+  // Se queda en la pantalla de recomendar con la confirmación; desde allí vuelve a donde estaba
+  const volver = String(form.get("volver") ?? "");
+  redirect(`/acompanamiento/recomendar?${new URLSearchParams({ persona, evento, enviado: "1", ...(volver ? { volver } : {}) })}`);
 }

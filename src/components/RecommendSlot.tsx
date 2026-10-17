@@ -15,7 +15,7 @@ export default async function RecommendSlot({ eventId }: { eventId: string }) {
 
   const { data: personas } = await supabase.from("mm_perfiles").select("id, nombre").in("id", ids);
   const only = personas?.length === 1 ? personas[0] : null;
-  const href = `/acompanamiento/recomendar?${new URLSearchParams({ ...(only ? { persona: only.id } : {}), evento: eventId })}`;
+  const href = `/acompanamiento/recomendar?${new URLSearchParams({ ...(only ? { persona: only.id } : {}), evento: eventId, volver: `/evento/${encodeURIComponent(eventId)}` })}`;
   const label = only ? `Recomendar a ${only.nombre}` : "Recomendar a alguien de tu familia";
 
   return (

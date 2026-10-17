@@ -195,7 +195,7 @@ export default async function ProfilePage() {
                     <Link href={`/agenda?de=${persona.id}`} className="flex h-12 items-center justify-center gap-2 rounded-xl border border-slate-200 text-base font-medium">
                       <CalendarDays size={18} className="text-coral-texto" aria-hidden="true" /> Ver su agenda
                     </Link>
-                    <Link href={`/acompanamiento/recomendar?persona=${persona.id}`} className="flex h-12 items-center justify-center gap-2 rounded-xl border border-slate-200 text-base font-medium">
+                    <Link href={`/acompanamiento/recomendar?persona=${persona.id}&volver=/perfil`} className="flex h-12 items-center justify-center gap-2 rounded-xl border border-slate-200 text-base font-medium">
                       <Heart size={18} className="text-coral-texto" aria-hidden="true" /> Recomendar plan
                     </Link>
                   </div>
