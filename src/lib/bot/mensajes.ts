@@ -9,7 +9,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Evento } from "../data";
 import { getEventsByIds } from "../data";
 import { hourInWords } from "../format";
-import { fullDate, getMyAgenda, type AgendaItem } from "../simpleAgenda";
+import { fullDate, getMyAgenda, nextOccurrence, type AgendaItem } from "../simpleAgenda";
 import { getPendingRecommendations, whenInWords, type Recomendacion } from "../simplePlans";
 import { buttonId, type BotButton, type BotMessage } from "./tipos";
 
@@ -113,12 +113,14 @@ function planMessages(item: AgendaItem, ins: { id: string; created_at: string },
   return messages;
 }
 
-// Todos los mensajes que le han llegado hasta ahora, del más antiguo al más reciente
-export async function getBotMessages(
-  db: SupabaseClient,
-  userId: string,
-  { nombre, plansHref, now = Date.now() }: { nombre: string; plansHref: string; now?: number }
-): Promise<BotMessage[]> {
+// Lo que necesitan todos los canales: sus planes (con cuándo se apuntó) y las
+// recomendaciones pendientes de sus familiares (con el plan y cuándo se hicieron)
+type BotData = {
+  plans: { item: AgendaItem; ins: { id: string; created_at: string } }[];
+  recs: { rec: Recomendacion; evento: Evento; at: number }[];
+};
+
+export async function loadBotData(db: SupabaseClient, userId: string): Promise<BotData> {
   const [agenda, inscripciones, recs] = await Promise.all([
     getMyAgenda(db, userId),
     db.from("mm_inscripciones").select("id, evento_id, created_at").eq("usuario", userId),
@@ -131,16 +133,89 @@ export async function getBotMessages(
   ]);
   const eventById = new Map(recEvents.map((e) => [e.id, e]));
   const recAt = new Map((recDates.data ?? []).map((r) => [r.id as string, Date.parse(r.created_at as string)]));
+  return {
+    plans: agenda.flatMap((item) => {
+      const ins = insByEvent.get(item.evento.id);
+      return ins ? [{ item, ins }] : [];
+    }),
+    // Si el plan ya ha terminado, no sale en v_eventos: la recomendación se queda fuera
+    recs: recs.flatMap((rec) => {
+      const evento = eventById.get(rec.evento_id);
+      return evento ? [{ rec, evento, at: recAt.get(rec.id) ?? Date.now() }] : [];
+    }),
+  };
+}
 
+// ---------------------------------------------------------------------
+// Avisos dentro de la app (versión simplificada): textos cortos, solo dos tipos.
+//   - Recomendación: en cuanto el familiar la hace.
+//   - Recordatorio: el día antes (desde las 9:00) y el mismo día (desde las 8:00),
+//     si se apuntó antes de esa hora.
+// ---------------------------------------------------------------------
+export type AppNotice = BotMessage & { kind: "recomendacion" | "recordatorio" };
+
+// "hoy", "mañana" o "el jueves 23", visto desde el momento "from"
+function dayLabel(date: string, from: number): string {
+  const day = (ms: number) => new Date(ms).toLocaleDateString("sv-SE", { timeZone: "Europe/Madrid" });
+  if (date === day(from)) return "hoy";
+  if (date === day(from + DAY_MS)) return "mañana";
+  const [y, mo, d] = date.split("-").map(Number);
+  return `el ${new Date(Date.UTC(y, mo - 1, d, 12)).toLocaleDateString("es-ES", { weekday: "long", timeZone: "UTC" })} ${d}`;
+}
+
+// " a las 11:00" (en cifras: más fácil de leer de un vistazo) o nada si no se sabe la hora
+const atTime = (time: string | null) => (time ? ` a las ${time}` : "");
+
+export async function getAppNotices(db: SupabaseClient, userId: string, now = Date.now()): Promise<AppNotice[]> {
+  const { plans, recs } = await loadBotData(db, userId);
+  const notices: AppNotice[] = [];
+
+  // "Lucía te recomienda: Taller de pintura, mañana a las 11:00"
+  for (const { rec, evento, at } of recs) {
+    const next = nextOccurrence(evento); // la próxima vez que ocurre, como en la agenda
+    const when = next ? `${dayLabel(next.date, now)}${atTime(next.time)}` : lowerFirst(whenInWords(evento).split("\n")[0]);
+    notices.push({
+      kind: "recomendacion",
+      id: `app-recomendacion:${rec.id}`,
+      at: Math.min(at, now),
+      text: `*${rec.de_nombre} te recomienda:* ${evento.titulo}, ${when}`,
+      buttons: [{ kind: "reply", id: buttonId("apuntarme", evento.id), label: "Me apunto" }],
+    });
+  }
+
+  for (const { item, ins } of plans) {
+    const joinedAt = Date.parse(ins.created_at);
+    const start = startOf(item);
+    const dayBefore = new Date(Date.parse(`${item.date}T12:00:00Z`) - DAY_MS).toISOString().slice(0, 10);
+    const moments = [
+      { key: "antes", at: madridTime(dayBefore, "09:00") },
+      { key: "hoy", at: Math.min(madridTime(item.date, "08:00"), start - 2 * 60 * 60 * 1000) },
+    ];
+    for (const m of moments) {
+      if (joinedAt >= m.at || m.at > now) continue; // aún no toca, o ya lo sabía al apuntarse
+      notices.push({
+        kind: "recordatorio",
+        id: `app-recordatorio:${ins.id}:${item.date}:${m.key}`,
+        at: m.at,
+        // "Recuerda: mañana tienes Taller de pintura a las 11:00"
+        text: `*Recuerda:* ${dayLabel(item.date, m.at)} tienes ${item.evento.titulo}${atTime(item.time)}`,
+        buttons: [...directionsButton(item.evento), { kind: "reply", id: buttonId("no_puedo", item.evento.id), label: "Ya no puedo ir" }],
+      });
+    }
+  }
+  return notices.sort((a, b) => b.at - a.at); // el más nuevo primero
+}
+
+// Todos los mensajes que le han llegado hasta ahora, del más antiguo al más reciente
+export async function getBotMessages(
+  db: SupabaseClient,
+  userId: string,
+  { nombre, plansHref, now = Date.now() }: { nombre: string; plansHref: string; now?: number }
+): Promise<BotMessage[]> {
+  const { plans, recs } = await loadBotData(db, userId);
   const messages: BotMessage[] = [];
-  for (const item of agenda) {
-    const ins = insByEvent.get(item.evento.id);
-    if (ins) messages.push(...planMessages(item, ins, nombre, now));
-  }
-  for (const rec of recs) {
-    const e = eventById.get(rec.evento_id); // si el plan ya ha terminado, no sale en v_eventos
-    if (e) messages.push(recommendationMessage(rec, e, Math.min(recAt.get(rec.id) ?? now, now)));
-  }
+  for (const { item, ins } of plans) messages.push(...planMessages(item, ins, nombre, now));
+  for (const { rec, evento, at } of recs) messages.push(recommendationMessage(rec, evento, Math.min(at, now)));
   messages.sort((a, b) => a.at - b.at);
 
   if (messages.length === 0) {

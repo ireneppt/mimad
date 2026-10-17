@@ -8,7 +8,7 @@ const PUBLIC_PATHS = ["/login", "/registro", "/simple/login", "/simple/registro"
 // Un invitado puede curiosear, pero esto necesita cuenta
 const ACCOUNT_ONLY_PATHS = [
   "/agenda", "/perfil", "/notificaciones", "/crear-evento", "/entidad", "/acompanamiento", "/whatsapp",
-  "/simple/agenda", "/simple/perfil", "/simple/familia",
+  "/simple/agenda", "/simple/perfil", "/simple/familia", "/simple/avisos",
 ];
 
 // Lo único que ve una cuenta de entidad (además de las páginas públicas)

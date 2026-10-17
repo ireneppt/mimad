@@ -34,8 +34,8 @@ function daysBetween(from: string, to: string): number {
   return Math.round((Date.parse(`${to}T12:00:00Z`) - Date.parse(`${from}T12:00:00Z`)) / 86_400_000);
 }
 
-// Próxima vez que ocurre el plan (o null si ya ha pasado)
-function nextOccurrence(e: Evento): Omit<AgendaItem, "evento"> | null {
+// Próxima vez que ocurre el plan (o null si ya ha pasado). También lo usan los avisos (lib/bot)
+export function nextOccurrence(e: Evento): Omit<AgendaItem, "evento"> | null {
   const now = nowInMadrid();
   if (!e.fecha_inicio) {
     // "Cada jueves, 16:00 - 17:30": el próximo jueves (hoy, si aún no ha empezado)

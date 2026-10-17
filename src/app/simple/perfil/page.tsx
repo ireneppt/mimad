@@ -16,7 +16,7 @@ import { INTERESTS } from "@/lib/interests";
 import { getCurrentProfile } from "@/lib/profile";
 import { getPendingRecommendations, whenInWords } from "@/lib/simplePlans";
 import { joinPlan } from "../planes/actions";
-import { setWhatsapp, switchToDefault } from "./actions";
+import { setAppNotices, setWhatsapp, switchToDefault } from "./actions";
 import { HomeEditor, InterestsEditor, NameEditor, PasswordEditor } from "./Editors";
 import LogoutConfirm from "./LogoutConfirm";
 
@@ -28,6 +28,7 @@ const SAVED: Record<string, string> = {
   gustos: "Hemos guardado lo que te gusta.",
   contrasena: "Hemos cambiado tu contraseña.",
   avisos: "Hemos guardado tu elección de avisos.",
+  "avisos-app": "Hemos guardado tu elección de avisos en la app.",
 };
 
 // "Mi cuenta" de la versión simplificada (diseño perfil-simplificada.png):
@@ -195,6 +196,31 @@ export default async function SimpleProfilePage({
         <DataRow href="?editar=casa" icon={<MapPin size={28} />} label="Dónde vivo" value={perfil.municipio ?? "Sin elegir"} />
         <DataRow href="?editar=gustos" icon={<Sparkles size={28} />} label="Lo que me gusta" value={gustos.length ? gustos.join(", ") : "Sin elegir"} />
         <DataRow href="?editar=contrasena" icon={<Lock size={28} />} label="Mi contraseña" value="Cambiarla por otra nueva" plain />
+      </section>
+
+      <section className="flex scroll-mt-4 flex-col gap-3" aria-labelledby="avisos-app-titulo" id="avisos-app">
+        <h2 id="avisos-app-titulo" className="text-[1.75rem] font-bold">Avisos en la app</h2>
+        <p className="text-xl text-gris">Te avisamos cuando tu familia te recomienda un plan y te recordamos tus planes.</p>
+        {[
+          { value: "si", label: "Sí, quiero avisos", on: perfil.avisos_app !== false },
+          { value: "no", label: "No, gracias", on: perfil.avisos_app === false },
+        ].map((o) => (
+          <form key={o.value} action={setAppNotices}>
+            <input type="hidden" name="avisos" value={o.value} />
+            <button
+              type="submit"
+              aria-pressed={o.on}
+              className={`flex min-h-16 w-full items-center gap-4 rounded-2xl border-2 px-5 text-left text-xl font-bold ${
+                o.on ? "border-coral-texto bg-crema" : "border-slate-500 bg-white"
+              }`}
+            >
+              <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 ${o.on ? "border-coral-texto" : "border-slate-500"}`} aria-hidden="true">
+                {o.on && <span className="h-3.5 w-3.5 rounded-full bg-coral-texto" />}
+              </span>
+              {o.label}
+            </button>
+          </form>
+        ))}
       </section>
 
       <section className="flex flex-col gap-3" aria-labelledby="avisos">

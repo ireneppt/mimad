@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { CircleHelp, Volume2, VolumeX } from "lucide-react";
+import { NoticesBell } from "./Notices";
 
 type Props = {
   defaultHref: string; // la misma pantalla en la versión por defecto
@@ -77,6 +78,8 @@ export default function SimpleShell({ defaultHref, step, total, title, intro, he
             <p className="text-2xl font-bold leading-tight">MiMad</p>
             <p className="text-lg text-gris">Versión simplificada</p>
           </div>
+          {/* Campana de avisos (solo con sesión y avisos activados) */}
+          <NoticesBell />
         </div>
         <Link
           href={defaultHref}

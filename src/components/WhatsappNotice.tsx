@@ -87,7 +87,8 @@ export default function WhatsappNotice() {
   if (!notice || off || inChat) return null;
 
   return (
-    <div role="status" className="aviso-entrada fixed inset-x-0 top-2 z-50 mx-auto w-[min(414px,calc(100%-16px))]">
+    // data-wa-notice: los avisos de la app (components/simple/Notices.tsx) se colocan debajo
+    <div role="status" data-wa-notice className="aviso-entrada fixed inset-x-0 top-2 z-50 mx-auto w-[min(414px,calc(100%-16px))]">
       <div className="relative rounded-3xl border border-slate-200 bg-white/95 shadow-xl backdrop-blur">
         <Link href="/whatsapp" onClick={dismiss} className="flex gap-3 p-4 pr-14">
           <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-green-600 text-white" aria-hidden="true">

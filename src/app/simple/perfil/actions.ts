@@ -81,6 +81,11 @@ export async function updatePassword(_prev: ProfileState, form: FormData): Promi
   redirect(DONE("contrasena"));
 }
 
+// Avisos dentro de la app (campana y aviso emergente)
+export async function setAppNotices(form: FormData) {
+  await update({ avisos_app: form.get("avisos") === "si" }, "avisos-app");
+}
+
 export async function setWhatsapp(form: FormData) {
   await update({ avisos_whatsapp: form.get("avisos") === "si" }, "avisos");
 }
