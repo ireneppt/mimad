@@ -3,7 +3,7 @@
 import type { Evento } from "./data";
 import type { PlanWindow } from "./simplePlans";
 
-export type Que = "pasear" | "aprender" | "musica" | "gente" | "sorpresa";
+export type Que = "pasear" | "aprender" | "musica" | "gente" | "sorpresa" | "distinto";
 
 export const QUE: Record<Que, { label: string; eco: string; categorias: string[]; fuentes?: string[] }> = {
   pasear: {
@@ -28,6 +28,8 @@ export const QUE: Record<Que, { label: string; eco: string; categorias: string[]
     fuentes: ["juntos_contra_soledad"], // talleres para conocer gente y no sentirse solo
   },
   sorpresa: { label: "Me da igual, sorpréndeme", eco: "¡Vale, te sorprendo!", categorias: [] },
+  // Planes que NO son de sus gustos (para salir de lo de siempre); ver getCandidates
+  distinto: { label: "Algo distinto a lo de siempre", eco: "¡Vale, algo distinto a lo de siempre!", categorias: [] },
 };
 
 export const CUANDO: { id: PlanWindow; label: string }[] = [
@@ -43,7 +45,7 @@ export const parseCuando = (s?: string): PlanWindow | null => CUANDO.find((c) =>
 // ¿Este plan es del tipo que ha elegido?
 export function matchesQue(que: Que, e: Evento): boolean {
   const o = QUE[que];
-  if (que === "sorpresa") return true;
+  if (que === "sorpresa" || que === "distinto") return true;
   return (e.categoria != null && o.categorias.includes(e.categoria)) || (o.fuentes ?? []).includes(e.fuente);
 }
 

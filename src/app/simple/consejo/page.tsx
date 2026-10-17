@@ -3,7 +3,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import {
   Accessibility, ArrowLeft, CalendarDays, Check, Clock, Dices, Euro, Hammer, HeartHandshake, Info, MapPin, Music, Shuffle, Sun,
-  Trees, Users,
+  Sparkles, Trees, Users,
 } from "lucide-react";
 import SimpleShell from "@/components/simple/SimpleShell";
 import { PrimarySubmit } from "@/components/simple/ui";
@@ -18,14 +18,14 @@ import { getOrigin } from "@/lib/origin";
 import { getMyCompanions } from "@/lib/companion";
 import { whatsappHref } from "@/lib/phoneLinks";
 import { siteUrl } from "@/lib/siteUrl";
-import { fromWhere, getPendingRecommendations, getSimplePlans, whenInWords, whyThisPlan, windowFor } from "@/lib/simplePlans";
+import { fromWhere, getPendingRecommendations, whenInWords, whyThisPlan, windowFor } from "@/lib/simplePlans";
 import { CUANDO, QUE, dayLabel, matchesQue, parseCuando, parseQue, type Que } from "@/lib/consejo";
-import { recommend } from "@/lib/assistant";
+import { getCandidates, recommend } from "@/lib/assistant";
 import { joinPlan } from "../planes/actions";
 
 export const metadata = { title: "Pedir consejo · MiMad simplificada" };
 
-const ICONS: Record<Que, typeof Trees> = { pasear: Trees, aprender: Hammer, musica: Music, gente: Users, sorpresa: Dices };
+const ICONS: Record<Que, typeof Trees> = { pasear: Trees, aprender: Hammer, musica: Music, gente: Users, sorpresa: Dices, distinto: Sparkles };
 
 // "Pedir consejo" (diseños cons-1/2/3 y consejo-simplificada-pasos.png): dos preguntas con
 // botones grandes y un plan real recomendado. Tres toques hasta un plan.
@@ -59,7 +59,7 @@ export default async function AdvicePage({
         </Bubble>
         <div className="grid grid-cols-2 gap-3">
           {(Object.keys(QUE) as Que[])
-            .filter((q) => q !== "sorpresa")
+            .filter((q) => q !== "sorpresa" && q !== "distinto")
             .map((q) => {
               const Icon = ICONS[q];
               return (
@@ -74,10 +74,16 @@ export default async function AdvicePage({
           <Dices size={28} className="text-coral-texto" aria-hidden="true" />
           {QUE.sorpresa.label}
         </Link>
+        {/* Para salir de sus gustos: planes de otras cosas */}
+        <Link href="/simple/consejo?que=distinto" className="flex h-16 items-center justify-center gap-3 rounded-2xl border-2 border-slate-500 bg-white text-xl font-bold">
+          <Sparkles size={28} className="text-coral-texto" aria-hidden="true" />
+          {QUE.distinto.label}
+        </Link>
       </>,
       <ol>
         <li>Toca lo que te apetece hacer: pasear, aprender algo, música y baile o conocer gente.</li>
         <li>Si no lo sabes, toca <strong>Me da igual, sorpréndeme</strong>.</li>
+        <li>Si quieres probar cosas nuevas, toca <strong>Algo distinto a lo de siempre</strong>.</li>
       </ol>
     );
   }
@@ -129,20 +135,31 @@ export default async function AdvicePage({
     getSources(),
     perfil ? getMyCompanions(supabase, perfil.id) : Promise.resolve([]),
   ]);
-  const plans = await getSimplePlans(supabase, {
+  const persona = { id: perfil?.id ?? null, nombre: perfil?.nombre ?? null, intereses: perfil?.intereses ?? [], simplificada: true };
+  const cuandoTexto = CUANDO.find((c) => c.id === cuando)!.label.toLowerCase();
+  const mensaje =
+    que === "distinto"
+      ? `Quiero algo diferente a lo de siempre, que no sea de mis gustos, ${cuandoTexto}.`
+      : que === "sorpresa"
+        ? `Me da igual, sorpréndeme ${cuandoTexto}: mezcla algún plan de mis gustos con otros de cosas distintas.`
+        : `Quiero ${QUE[que].label.toLowerCase()}, ${cuandoTexto}.`;
+  // Los mismos candidatos que el asistente: lo que elige manda sobre sus gustos
+  // ("Sorpréndeme" mezcla sus gustos con otras cosas; "Algo distinto", fuera de sus gustos)
+  const plans = await getCandidates(supabase, {
     home: origin,
     when: cuando,
+    persona,
     recomendaciones,
-    intereses: perfil?.intereses ?? [],
     filter: (e) => matchesQue(que, e),
+    mensaje,
   }).then((ps) => ps.filter((p) => matchesQue(que, p.evento)));
 
   // El asistente (Claude si hay clave; si no, reglas) elige el mejor orden y explica por qué.
   // La respuesta se guarda 30 min, así que "Enséñame otro plan" no vuelve a preguntar.
   const consejo = await recommend({
-    mensaje: `Quiero ${QUE[que].label.toLowerCase()}, ${CUANDO.find((c) => c.id === cuando)!.label.toLowerCase()}.`,
+    mensaje,
     candidatos: plans,
-    persona: { id: perfil?.id ?? null, nombre: perfil?.nombre ?? null, intereses: perfil?.intereses ?? [], simplificada: true },
+    persona,
     origen: origin.kind,
   });
   const elegidos = consejo.elegidos.map((x) => x.plan);
@@ -232,7 +249,7 @@ export default async function AdvicePage({
           <strong className="text-coral-texto">¿Por qué este?</strong>{" "}
           {porque.get(e.id) ?? (
             <>
-              {que !== "sorpresa" && `Es para ${QUE[que].label.toLowerCase()}. `}
+              {que !== "sorpresa" && que !== "distinto" && `Es para ${QUE[que].label.toLowerCase()}. `}
               {whyThisPlan(plan, { minutes: minutos, from: origin.kind })}
             </>
           )}

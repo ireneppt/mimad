@@ -9,7 +9,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { isAccessible, type Evento } from "./data";
 import { walkingMinutes } from "./format";
-import { INTERESTS } from "./interests";
+import { categoriesForInterests, INTERESTS } from "./interests";
 import { matchesQue, type Que } from "./consejo";
 import { getSimplePlans, whenInWords, whyThisPlan, type Plan, type PlanWindow, type Recomendacion } from "./simplePlans";
 import type { OriginKind } from "./origin";
@@ -136,6 +136,13 @@ export async function getCandidates(
     // Si hay pocos de ese tema, se completa con otros para que Claude diga "lo más parecido"
     if (delTema.length >= MAX_ELEGIDOS) return delTema;
     return interleave(delTema, await buscar([]), MAX_CANDIDATOS);
+  }
+  if (otraCosa && opts.persona.intereses.length) {
+    // "Algo diferente": fuera de sus gustos (si casi no hay, de todo)
+    const suyos = new Set(categoriesForInterests(opts.persona.intereses));
+    const fuera = (e: Evento) => !e.categoria || !suyos.has(e.categoria);
+    const distintos = (await buscar([], fuera)).filter((p) => fuera(p.evento));
+    return distintos.length >= MAX_ELEGIDOS ? distintos : interleave(distintos, await buscar([]), MAX_CANDIDATOS);
   }
   if (otraCosa || opts.persona.intereses.length === 0) return buscar([]);
   // Sin tema: mitad según sus gustos, mitad de todo (para que Claude pueda salirse de sus gustos)
