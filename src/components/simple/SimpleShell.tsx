@@ -1,7 +1,7 @@
 "use client";
 
 // Estructura común de las pantallas de la versión simplificada (diseños simplificada-*.png):
-// botón "Versión por defecto", "Escuchar las instrucciones", "Necesito ayuda" y la barra de pasos.
+// "Escuchar las instrucciones", "Necesito ayuda", la barra de pasos y, al final, "Versión por defecto".
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState, type ReactNode } from "react";
@@ -85,12 +85,6 @@ export default function SimpleShell({ defaultHref, step, total, title, intro, he
           {/* Campana de avisos (solo con sesión y avisos activados) */}
           <NoticesBell />
         </div>
-        <Link
-          href={defaultHref}
-          className="flex h-14 items-center justify-center rounded-2xl border-2 border-slate-500 text-lg font-medium"
-        >
-          Versión por defecto
-        </Link>
         <div className="flex gap-3">
           <button type="button" onClick={toggleSpeech} className={toolClass} aria-pressed={speaking}>
             {speaking ? <VolumeX size={28} aria-hidden="true" /> : <Volume2 size={28} aria-hidden="true" />}
@@ -143,6 +137,14 @@ export default function SimpleShell({ defaultHref, step, total, title, intro, he
           </p>
         </div>
       )}
+
+      {/* Abajo del todo: casi nunca se usa y así no se toca sin querer */}
+      <Link
+        href={defaultHref}
+        className="mt-auto flex h-14 items-center justify-center rounded-2xl border-2 border-slate-500 text-lg font-medium"
+      >
+        Versión por defecto
+      </Link>
     </main>
   );
 }

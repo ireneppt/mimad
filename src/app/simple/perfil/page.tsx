@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Avatar from "@/components/Avatar";
 import { displayPhone, telHref } from "@/lib/phoneLinks";
 import type { ReactNode } from "react";
 import {
@@ -70,8 +71,8 @@ export default async function SimpleProfilePage({
   const familiarIds = (vinculos ?? []).map((v) => v.familiar as string);
   const [{ data: familiares }, recomendaciones] = await Promise.all([
     familiarIds.length
-      ? supabase.from("mm_perfiles").select("id, nombre, telefono").in("id", familiarIds)
-      : Promise.resolve({ data: [] as { id: string; nombre: string; telefono: string | null }[] }),
+      ? supabase.from("mm_perfiles").select("id, nombre, telefono, foto_url").in("id", familiarIds)
+      : Promise.resolve({ data: [] as { id: string; nombre: string; telefono: string | null; foto_url: string | null }[] }),
     getPendingRecommendations(supabase, perfil.id),
   ]);
   const recEvents = await getEventsByIds(supabase, recomendaciones.map((r) => r.evento_id));
@@ -140,9 +141,14 @@ export default async function SimpleProfilePage({
             {(familiares ?? []).map((f) => (
               <div key={f.id} className="flex flex-col gap-4 rounded-3xl border-2 border-coral/50 bg-crema p-5">
                 <div className="flex items-center gap-4">
-                  <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-white text-3xl font-bold text-coral-texto" aria-hidden="true">
-                    {f.nombre.charAt(0).toUpperCase()}
-                  </span>
+                  {/* Su foto; si no tiene, la inicial */}
+                  {f.foto_url ? (
+                    <Avatar url={f.foto_url} name={f.nombre} size={64} className="ring-4 ring-white" />
+                  ) : (
+                    <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-white text-3xl font-bold text-coral-texto" aria-hidden="true">
+                      {f.nombre.charAt(0).toUpperCase()}
+                    </span>
+                  )}
                   <p className="text-2xl font-bold">{f.nombre}</p>
                 </div>
                 <p className="text-xl leading-snug">{f.nombre} ve tus planes y te puede recomendar planes nuevos.</p>
