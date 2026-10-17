@@ -5,7 +5,8 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Check, ChevronDown } from "lucide-react";
-import { TRANSLATE_LANGUAGES } from "@/lib/languages";
+import { parseLanguage, TRANSLATE_LANGUAGES } from "@/lib/languages";
+import { makeT } from "@/lib/i18n";
 import { setLanguage } from "@/lib/languageActions";
 
 const OPTIONS = [{ id: "es", short: "ES", label: "Español", flag: "es" }, ...TRANSLATE_LANGUAGES];
@@ -22,6 +23,7 @@ export default function LanguageMenu({ current }: { current: string | null }) {
   const [pending, startTransition] = useTransition();
   const box = useRef<HTMLDivElement>(null);
   const selected = OPTIONS.find((o) => o.id === current) ?? OPTIONS[0];
+  const t = makeT(parseLanguage(current));
 
   // Se cierra al tocar fuera o con Escape
   useEffect(() => {
@@ -50,7 +52,7 @@ export default function LanguageMenu({ current }: { current: string | null }) {
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
         aria-haspopup="true"
-        aria-label={`Idioma: ${selected.label}. Cambiar idioma · Language`}
+        aria-label={`${t("Idioma")}: ${selected.label}. ${t("Cambiar idioma")} · Language`}
         className="flex h-11 w-11 items-center justify-center gap-0.5 rounded-full bg-slate-100 text-sm font-bold transition-all duration-200 group-data-[compact=true]:h-9 group-data-[compact=true]:w-9 disabled:opacity-60"
         disabled={pending}
       >
@@ -59,7 +61,7 @@ export default function LanguageMenu({ current }: { current: string | null }) {
       </button>
       {open && (
         <div className="absolute right-0 top-full z-[600] mt-2 w-60 rounded-2xl border border-slate-200 bg-white p-2 shadow-xl">
-          <p className="px-3 pb-2 pt-1 text-sm text-gris">Los planes se traducen a tu idioma al abrirlos · Plans are translated when you open them</p>
+          <p className="px-3 pb-2 pt-1 text-sm text-gris">{t("Elige tu idioma. Los planes para personas extranjeras se traducen solos.")}</p>
           <ul className="flex flex-col">
             {OPTIONS.map((o) => (
               <li key={o.id}>

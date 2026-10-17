@@ -1,0 +1,2132 @@
+{
+  "¿Ya tienes cuenta?": {
+    "en": "Already have an account?",
+    "fr": "Tu as déjà un compte ?",
+    "ar": "هل لديك حساب؟",
+    "ro": "Ai deja cont?",
+    "zh": "已经有账号了吗？",
+    "uk": "Уже маєш обліковий запис?",
+    "pt": "Já tens conta?",
+    "de": "Hast du schon ein Konto?"
+  },
+  "(abre la ficha del dataset en otra pestaña)": {
+    "en": "(opens the dataset page in another tab)",
+    "fr": "(ouvre la fiche du dataset dans un nouvel onglet)",
+    "ar": "(يفتح صفحة مجموعة البيانات في تبويب آخر)",
+    "ro": "(deschide fișa setului de date într-o filă nouă)",
+    "zh": "（在新标签页中打开数据集页面）",
+    "uk": "(відкриває сторінку набору даних в новій вкладці)",
+    "pt": "(abre a ficha do conjunto de dados noutro separador)",
+    "de": "(öffnet die Datensatzseite in einem neuen Tab)"
+  },
+  "(se abre en otra pestaña)": {
+    "en": "(opens in another tab)",
+    "fr": "(s'ouvre dans un nouvel onglet)",
+    "ar": "(يفتح في تبويب آخر)",
+    "ro": "(se deschide într-o filă nouă)",
+    "zh": "（在新标签页中打开）",
+    "uk": "(відкривається в новій вкладці)",
+    "pt": "(abre noutro separador)",
+    "de": "(öffnet sich in einem neuen Tab)"
+  },
+  "{n} personas de MiMad se han apuntado": {
+    "en": "{n} people from MiMad have signed up",
+    "fr": "{n} personnes de MiMad se sont inscrites",
+    "ar": "سجّل {n} أشخاص من MiMad",
+    "ro": "{n} persoane din MiMad s-au înscris",
+    "zh": "MiMad 已有 {n} 人报名",
+    "uk": "{n} людей із MiMad записалися",
+    "pt": "{n} pessoas do MiMad inscreveram-se",
+    "de": "{n} Personen von MiMad haben sich angemeldet"
+  },
+  "1 persona de MiMad se ha apuntado": {
+    "en": "1 person from MiMad has signed up",
+    "fr": "1 personne de MiMad s'est inscrite",
+    "ar": "سجّل شخص واحد من MiMad",
+    "ro": "1 persoană din MiMad s-a înscris",
+    "zh": "MiMad 已有 1 人报名",
+    "uk": "1 людина з MiMad записалася",
+    "pt": "1 pessoa do MiMad inscreveu-se",
+    "de": "1 Person von MiMad hat sich angemeldet"
+  },
+  "A {distancia} {desde}": {
+    "en": "{distancia} from {desde}",
+    "fr": "À {distancia} de {desde}",
+    "ar": "على بعد {distancia} من {desde}",
+    "ro": "La {distancia} de {desde}",
+    "zh": "距{desde} {distancia}",
+    "uk": "За {distancia} від {desde}",
+    "pt": "A {distancia} de {desde}",
+    "de": "{distancia} von {desde} entfernt"
+  },
+  "Accesibilidad": {
+    "en": "Accessibility",
+    "fr": "Accessibilité",
+    "ar": "إمكانية الوصول",
+    "ro": "Accesibilitate",
+    "zh": "无障碍",
+    "uk": "Доступність",
+    "pt": "Acessibilidade",
+    "de": "Barrierefreiheit"
+  },
+  "Accesible": {
+    "en": "Accessible",
+    "fr": "Accessible",
+    "ar": "مهيّأ لذوي الإعاقة",
+    "ro": "Accesibil",
+    "zh": "无障碍设施",
+    "uk": "Доступно",
+    "pt": "Acessível",
+    "de": "Barrierefrei"
+  },
+  "Actividad": {
+    "en": "Activity",
+    "fr": "Activité",
+    "ar": "نشاط",
+    "ro": "Activitate",
+    "zh": "活动",
+    "uk": "Захід",
+    "pt": "Atividade",
+    "de": "Aktivität"
+  },
+  "Actividad de {tipo}. Los datos abiertos no traen más detalles: consulta la web oficial.": {
+    "en": "{tipo} activity. The open data doesn't include more details: check the official website.",
+    "fr": "Activité de {tipo}. Les données ouvertes ne donnent pas plus de détails : consulte le site officiel.",
+    "ar": "نشاط من نوع {tipo}. البيانات المفتوحة لا تتضمن تفاصيل أكثر: راجع الموقع الرسمي.",
+    "ro": "Activitate de {tipo}. Datele deschise nu oferă mai multe detalii: consultă site-ul oficial.",
+    "zh": "{tipo}活动。开放数据没有更多详情：请查看官方网站。",
+    "uk": "Захід типу «{tipo}». Відкриті дані не містять більше подробиць: перевір офіційний сайт.",
+    "pt": "Atividade de {tipo}. Os dados abertos não trazem mais detalhes: consulta o site oficial.",
+    "de": "Aktivität: {tipo}. Die offenen Daten enthalten keine weiteren Details: Schau auf der offiziellen Website nach."
+  },
+  "Actividad en {idioma}": {
+    "en": "Activity in {idioma}",
+    "fr": "Activité en {idioma}",
+    "ar": "نشاط باللغة {idioma}",
+    "ro": "Activitate în {idioma}",
+    "zh": "{idioma}活动",
+    "uk": "Захід мовою: {idioma}",
+    "pt": "Atividade em {idioma}",
+    "de": "Aktivität auf {idioma}"
+  },
+  "Actividades gratuitas de los CEPI, los centros de participación e integración de la Comunidad de Madrid: clases de español, ayuda con trámites, empleo y actividades para conocer gente. Son de este mes: pregunta en el centro el día y la hora.": {
+    "en": "Free activities at the CEPIs, the participation and integration centres of the Community of Madrid: Spanish classes, help with paperwork, jobs and activities to meet people. They're for this month: ask at the centre for the day and time.",
+    "fr": "Activités gratuites des CEPI, les centres de participation et d'intégration de la Communauté de Madrid : cours d'espagnol, aide pour les démarches, emploi et activités pour rencontrer du monde. Elles sont prévues ce mois-ci : demande au centre le jour et l'heure.",
+    "ar": "أنشطة مجانية في مراكز CEPI، مراكز المشاركة والاندماج في مجتمع مدريد: دروس إسبانية، مساعدة في الإجراءات الإدارية، عمل وأنشطة للتعرّف على الناس. هي لهذا الشهر: اسأل في المركز عن اليوم والساعة.",
+    "ro": "Activități gratuite ale CEPI, centrele de participare și integrare ale Comunității Madrid: cursuri de spaniolă, ajutor cu formalitățile, locuri de muncă și activități pentru a cunoaște oameni. Sunt din această lună: întreabă la centru ziua și ora.",
+    "zh": "CEPI（马德里自治区参与和融入中心）的免费活动：西班牙语课程、办理手续帮助、就业以及结交朋友的活动。这些活动为本月举办：请到中心询问日期和时间。",
+    "uk": "Безкоштовні заходи в CEPI, центрах участі та інтеграції Автономної спільноти Мадрид: уроки іспанської, допомога з оформленням документів, робота та заходи, щоб знайти нових людей. Вони на цей місяць: запитай у центрі день і час.",
+    "pt": "Atividades gratuitas dos CEPI, os centros de participação e integração da Comunidade de Madrid: aulas de espanhol, ajuda com trâmites, emprego e atividades para conhecer pessoas. São deste mês: pergunta no centro o dia e a hora.",
+    "de": "Kostenlose Angebote der CEPI, der Zentren für Teilhabe und Integration der Comunidad de Madrid: Spanischkurse, Hilfe bei Behördengängen, Jobs und Aktivitäten, um Leute kennenzulernen. Sie gelten für diesen Monat: Frag im Zentrum nach Tag und Uhrzeit."
+  },
+  "actualizado el {fecha}": {
+    "en": "updated on {fecha}",
+    "fr": "mis à jour le {fecha}",
+    "ar": "تم التحديث في {fecha}",
+    "ro": "actualizat la {fecha}",
+    "zh": "更新于 {fecha}",
+    "uk": "оновлено {fecha}",
+    "pt": "atualizado em {fecha}",
+    "de": "aktualisiert am {fecha}"
+  },
+  "Agenda": {
+    "en": "Agenda",
+    "fr": "Agenda",
+    "ar": "الأجندة",
+    "ro": "Agendă",
+    "zh": "日程",
+    "uk": "Календар",
+    "pt": "Agenda",
+    "de": "Kalender"
+  },
+  "Andando": {
+    "en": "On foot",
+    "fr": "À pied",
+    "ar": "سيرًا على الأقدام",
+    "ro": "Pe jos",
+    "zh": "步行",
+    "uk": "Пішки",
+    "pt": "A pé",
+    "de": "Zu Fuß"
+  },
+  "Añadir al calendario del móvil": {
+    "en": "Add to phone calendar",
+    "fr": "Ajouter au calendrier du téléphone",
+    "ar": "أضف إلى تقويم الهاتف",
+    "ro": "Adaugă în calendarul telefonului",
+    "zh": "添加到手机日历",
+    "uk": "Додати до календаря телефону",
+    "pt": "Adicionar ao calendário do telemóvel",
+    "de": "Zum Handykalender hinzufügen"
+  },
+  "Aprender español": {
+    "en": "Learn Spanish",
+    "fr": "Apprendre l'espagnol",
+    "ar": "تعلّم الإسبانية",
+    "ro": "Învață spaniola",
+    "zh": "学习西班牙语",
+    "uk": "Вчити іспанську",
+    "pt": "Aprender espanhol",
+    "de": "Spanisch lernen"
+  },
+  "Apuntarme igualmente": {
+    "en": "Sign me up anyway",
+    "fr": "M'inscrire quand même",
+    "ar": "سجّلني على أي حال",
+    "ro": "Mă înscriu oricum",
+    "zh": "仍然报名",
+    "uk": "Усе одно записатися",
+    "pt": "Inscrever-me mesmo assim",
+    "de": "Trotzdem anmelden"
+  },
+  "árabe": {
+    "en": "Arabic",
+    "fr": "arabe",
+    "ar": "العربية",
+    "ro": "arabă",
+    "zh": "阿拉伯语",
+    "uk": "арабська",
+    "pt": "árabe",
+    "de": "Arabisch"
+  },
+  "Asistente: pide recomendaciones": {
+    "en": "Assistant: ask for recommendations",
+    "fr": "Assistant : demande des recommandations",
+    "ar": "المساعد: اطلب توصيات",
+    "ro": "Asistent: cere recomandări",
+    "zh": "助手：获取推荐",
+    "uk": "Асистент: попроси рекомендації",
+    "pt": "Assistente: pede recomendações",
+    "de": "Assistent: Empfehlungen erhalten"
+  },
+  "asociaciones": {
+    "en": "associations",
+    "fr": "associations",
+    "ar": "جمعيات",
+    "ro": "asociații",
+    "zh": "协会",
+    "uk": "асоціації",
+    "pt": "associações",
+    "de": "Vereine"
+  },
+  "Aún no has elegido tus intereses.": {
+    "en": "You haven't chosen your interests yet.",
+    "fr": "Tu n'as pas encore choisi tes centres d'intérêt.",
+    "ar": "لم تختر اهتماماتك بعد.",
+    "ro": "Nu ți-ai ales încă interesele.",
+    "zh": "你还没有选择兴趣。",
+    "uk": "Ти ще не обрав(-ла) свої інтереси.",
+    "pt": "Ainda não escolheste os teus interesses.",
+    "de": "Du hast noch keine Interessen ausgewählt."
+  },
+  "Avisos": {
+    "en": "Alerts",
+    "fr": "Alertes",
+    "ar": "تنبيهات",
+    "ro": "Notificări",
+    "zh": "通知",
+    "uk": "Сповіщення",
+    "pt": "Avisos",
+    "de": "Hinweise"
+  },
+  "Baile": {
+    "en": "Dance",
+    "fr": "Danse",
+    "ar": "رقص",
+    "ro": "Dans",
+    "zh": "舞蹈",
+    "uk": "Танці",
+    "pt": "Dança",
+    "de": "Tanz"
+  },
+  "Buscar actividades": {
+    "en": "Search activities",
+    "fr": "Chercher des activités",
+    "ar": "ابحث عن أنشطة",
+    "ro": "Caută activități",
+    "zh": "搜索活动",
+    "uk": "Шукати заходи",
+    "pt": "Procurar atividades",
+    "de": "Aktivitäten suchen"
+  },
+  "Buscar actividades, talleres…": {
+    "en": "Search activities, workshops…",
+    "fr": "Chercher des activités, des ateliers…",
+    "ar": "ابحث عن أنشطة، ورش عمل…",
+    "ro": "Caută activități, ateliere…",
+    "zh": "搜索活动、工作坊…",
+    "uk": "Шукати заходи, майстер-класи…",
+    "pt": "Procurar atividades, workshops…",
+    "de": "Aktivitäten, Workshops suchen…"
+  },
+  "Cambiar idioma": {
+    "en": "Change language",
+    "fr": "Changer de langue",
+    "ar": "تغيير اللغة",
+    "ro": "Schimbă limba",
+    "zh": "切换语言",
+    "uk": "Змінити мову",
+    "pt": "Mudar de idioma",
+    "de": "Sprache ändern"
+  },
+  "Cancelar": {
+    "en": "Cancel",
+    "fr": "Annuler",
+    "ar": "إلغاء",
+    "ro": "Anulează",
+    "zh": "取消",
+    "uk": "Скасувати",
+    "pt": "Cancelar",
+    "de": "Abbrechen"
+  },
+  "Cargando…": {
+    "en": "Loading…",
+    "fr": "Chargement…",
+    "ar": "جارٍ التحميل…",
+    "ro": "Se încarcă…",
+    "zh": "加载中…",
+    "uk": "Завантаження…",
+    "pt": "A carregar…",
+    "de": "Wird geladen…"
+  },
+  "Carreras": {
+    "en": "Races",
+    "fr": "Courses",
+    "ar": "سباقات",
+    "ro": "Curse",
+    "zh": "赛跑",
+    "uk": "Забіги",
+    "pt": "Corridas",
+    "de": "Läufe"
+  },
+  "Cerca de {lugar} hay pocos planes: te enseñamos los más cercanos de toda la Comunidad de Madrid.": {
+    "en": "There are few plans near {lugar}: we're showing you the closest ones across the whole Community of Madrid.",
+    "fr": "Il y a peu de plans près de {lugar} : on te montre les plus proches de toute la Communauté de Madrid.",
+    "ar": "هناك خطط قليلة قرب {lugar}: نعرض لك الأقرب من كل مجتمع مدريد.",
+    "ro": "Există puține activități lângă {lugar}: îți arătăm cele mai apropiate din toată Comunitatea Madrid.",
+    "zh": "{lugar}附近的活动很少：为你显示整个马德里自治区内最近的活动。",
+    "uk": "Поблизу {lugar} мало планів: показуємо найближчі з усієї Автономної спільноти Мадрид.",
+    "pt": "Perto de {lugar} há poucos planos: mostramos-te os mais próximos de toda a Comunidade de Madrid.",
+    "de": "In der Nähe von {lugar} gibt es wenige Angebote: Wir zeigen dir die nächstgelegenen in der ganzen Comunidad de Madrid."
+  },
+  "Cerca de {lugar} hay pocos planes: te enseñamos los más cercanos, hasta a {km} km.": {
+    "en": "There are few plans near {lugar}: we're showing you the closest ones, up to {km} km away.",
+    "fr": "Il y a peu de plans près de {lugar} : on te montre les plus proches, jusqu'à {km} km.",
+    "ar": "هناك خطط قليلة قرب {lugar}: نعرض لك الأقرب، حتى مسافة {km} كم.",
+    "ro": "Există puține activități lângă {lugar}: îți arătăm cele mai apropiate, până la {km} km.",
+    "zh": "{lugar}附近的活动很少：为你显示最近的活动，最远 {km} 公里。",
+    "uk": "Поблизу {lugar} мало планів: показуємо найближчі, до {km} км.",
+    "pt": "Perto de {lugar} há poucos planos: mostramos-te os mais próximos, até {km} km.",
+    "de": "In der Nähe von {lugar} gibt es wenige Angebote: Wir zeigen dir die nächstgelegenen, bis zu {km} km entfernt."
+  },
+  "Cerca de mí": {
+    "en": "Near me",
+    "fr": "Près de moi",
+    "ar": "بالقرب مني",
+    "ro": "Lângă mine",
+    "zh": "我附近",
+    "uk": "Поруч зі мною",
+    "pt": "Perto de mim",
+    "de": "In meiner Nähe"
+  },
+  "Charlas": {
+    "en": "Talks",
+    "fr": "Conférences",
+    "ar": "محاضرات",
+    "ro": "Conferințe",
+    "zh": "讲座",
+    "uk": "Лекції",
+    "pt": "Palestras",
+    "de": "Vorträge"
+  },
+  "chino": {
+    "en": "Chinese",
+    "fr": "chinois",
+    "ar": "الصينية",
+    "ro": "chineză",
+    "zh": "中文",
+    "uk": "китайська",
+    "pt": "chinês",
+    "de": "Chinesisch"
+  },
+  "Ciclismo": {
+    "en": "Cycling",
+    "fr": "Cyclisme",
+    "ar": "ركوب الدراجات",
+    "ro": "Ciclism",
+    "zh": "骑行",
+    "uk": "Велоспорт",
+    "pt": "Ciclismo",
+    "de": "Radsport"
+  },
+  "Cine": {
+    "en": "Cinema",
+    "fr": "Cinéma",
+    "ar": "سينما",
+    "ro": "Cinema",
+    "zh": "电影",
+    "uk": "Кіно",
+    "pt": "Cinema",
+    "de": "Kino"
+  },
+  "Circo y magia": {
+    "en": "Circus and magic",
+    "fr": "Cirque et magie",
+    "ar": "سيرك وسحر",
+    "ro": "Circ și magie",
+    "zh": "马戏与魔术",
+    "uk": "Цирк і магія",
+    "pt": "Circo e magia",
+    "de": "Zirkus und Magie"
+  },
+  "Club de lectura": {
+    "en": "Book club",
+    "fr": "Club de lecture",
+    "ar": "نادي القراءة",
+    "ro": "Club de lectură",
+    "zh": "读书会",
+    "uk": "Книжковий клуб",
+    "pt": "Clube de leitura",
+    "de": "Leseclub"
+  },
+  "Código postal": {
+    "en": "Postal code",
+    "fr": "Code postal",
+    "ar": "الرمز البريدي",
+    "ro": "Cod poștal",
+    "zh": "邮政编码",
+    "uk": "Поштовий індекс",
+    "pt": "Código postal",
+    "de": "Postleitzahl"
+  },
+  "Código postal (28…)": {
+    "en": "Postal code (28…)",
+    "fr": "Code postal (28…)",
+    "ar": "الرمز البريدي (28…)",
+    "ro": "Cod poștal (28…)",
+    "zh": "邮政编码（28…）",
+    "uk": "Поштовий індекс (28…)",
+    "pt": "Código postal (28…)",
+    "de": "Postleitzahl (28…)"
+  },
+  "Coincide con {plan} ({cuando}), que ya está en tu agenda.": {
+    "en": "It overlaps with {plan} ({cuando}), which is already in your agenda.",
+    "fr": "Cela coïncide avec {plan} ({cuando}), qui est déjà dans ton agenda.",
+    "ar": "يتزامن مع {plan} ({cuando})، وهو موجود بالفعل في أجندتك.",
+    "ro": "Se suprapune cu {plan} ({cuando}), care este deja în agenda ta.",
+    "zh": "与{plan}（{cuando}）时间冲突，该活动已在你的日程中。",
+    "uk": "Збігається з {plan} ({cuando}), який уже є у твоєму розкладі.",
+    "pt": "Coincide com {plan} ({cuando}), que já está na tua agenda.",
+    "de": "Überschneidet sich mit {plan} ({cuando}), das schon in deinem Kalender steht."
+  },
+  "Cómo llegar": {
+    "en": "Get directions",
+    "fr": "Comment y aller",
+    "ar": "كيف تصل",
+    "ro": "Cum ajungi",
+    "zh": "如何前往",
+    "uk": "Як дістатися",
+    "pt": "Como chegar",
+    "de": "Anfahrt"
+  },
+  "conductores": {
+    "en": "drivers",
+    "fr": "conducteurs",
+    "ar": "السائقون",
+    "ro": "șoferi",
+    "zh": "司机",
+    "uk": "водії",
+    "pt": "condutores",
+    "de": "Fahrer"
+  },
+  "Consultar el lugar": {
+    "en": "View the place",
+    "fr": "Voir le lieu",
+    "ar": "اطّلع على المكان",
+    "ro": "Vezi locul",
+    "zh": "查看地点",
+    "uk": "Переглянути місце",
+    "pt": "Ver o local",
+    "de": "Ort ansehen"
+  },
+  "Consultar horario": {
+    "en": "View opening hours",
+    "fr": "Voir les horaires",
+    "ar": "اطّلع على المواعيد",
+    "ro": "Vezi programul",
+    "zh": "查看时间表",
+    "uk": "Переглянути розклад",
+    "pt": "Ver horário",
+    "de": "Öffnungszeiten ansehen"
+  },
+  "consumidores": {
+    "en": "consumers",
+    "fr": "consommateurs",
+    "ar": "المستهلكون",
+    "ro": "consumatori",
+    "zh": "消费者",
+    "uk": "споживачі",
+    "pt": "consumidores",
+    "de": "Verbraucher"
+  },
+  "Contra la soledad": {
+    "en": "Against loneliness",
+    "fr": "Contre la solitude",
+    "ar": "ضد الوحدة",
+    "ro": "Împotriva singurătății",
+    "zh": "对抗孤独",
+    "uk": "Проти самотності",
+    "pt": "Contra a solidão",
+    "de": "Gegen Einsamkeit"
+  },
+  "Convivencia y ocio": {
+    "en": "Community and leisure",
+    "fr": "Vivre ensemble et loisirs",
+    "ar": "التعايش والترفيه",
+    "ro": "Conviețuire și timp liber",
+    "zh": "共处与休闲",
+    "uk": "Спільнота й дозвілля",
+    "pt": "Convívio e lazer",
+    "de": "Miteinander und Freizeit"
+  },
+  "Coros": {
+    "en": "Choirs",
+    "fr": "Chorales",
+    "ar": "الجوقات",
+    "ro": "Coruri",
+    "zh": "合唱团",
+    "uk": "Хори",
+    "pt": "Coros",
+    "de": "Chöre"
+  },
+  "Crea tu cuenta para inscribirte": {
+    "en": "Create your account to sign up",
+    "fr": "Crée ton compte pour t’inscrire",
+    "ar": "أنشئ حسابك للتسجيل",
+    "ro": "Creează-ți contul ca să te înscrii",
+    "zh": "创建账号即可报名",
+    "uk": "Створи акаунт, щоб записатися",
+    "pt": "Cria a tua conta para te inscreveres",
+    "de": "Erstelle dein Konto, um dich anzumelden"
+  },
+  "Cuándo": {
+    "en": "When",
+    "fr": "Quand",
+    "ar": "متى",
+    "ro": "Când",
+    "zh": "时间",
+    "uk": "Коли",
+    "pt": "Quando",
+    "de": "Wann"
+  },
+  "Cuentacuentos": {
+    "en": "Storytelling",
+    "fr": "Contes",
+    "ar": "حكايات",
+    "ro": "Povești pentru copii",
+    "zh": "故事会",
+    "uk": "Читання казок",
+    "pt": "Hora do conto",
+    "de": "Märchenstunde"
+  },
+  "Cultura": {
+    "en": "Culture",
+    "fr": "Culture",
+    "ar": "الثقافة",
+    "ro": "Cultură",
+    "zh": "文化",
+    "uk": "Культура",
+    "pt": "Cultura",
+    "de": "Kultur"
+  },
+  "Datos abiertos de esta lista": {
+    "en": "Open data for this list",
+    "fr": "Données ouvertes de cette liste",
+    "ar": "البيانات المفتوحة لهذه القائمة",
+    "ro": "Date deschise din această listă",
+    "zh": "此列表的开放数据",
+    "uk": "Відкриті дані цього списку",
+    "pt": "Dados abertos desta lista",
+    "de": "Offene Daten dieser Liste"
+  },
+  "Datos actualizados el {fecha}": {
+    "en": "Data updated on {fecha}",
+    "fr": "Données mises à jour le {fecha}",
+    "ar": "تم تحديث البيانات في {fecha}",
+    "ro": "Date actualizate la {fecha}",
+    "zh": "数据更新于{fecha}",
+    "uk": "Дані оновлено {fecha}",
+    "pt": "Dados atualizados em {fecha}",
+    "de": "Daten aktualisiert am {fecha}"
+  },
+  "de {zona}": {
+    "en": "from {zona}",
+    "fr": "de {zona}",
+    "ar": "من {zona}",
+    "ro": "din {zona}",
+    "zh": "距{zona}",
+    "uk": "від {zona}",
+    "pt": "de {zona}",
+    "de": "von {zona}"
+  },
+  "de donde estás": {
+    "en": "from where you are",
+    "fr": "d’où tu es",
+    "ar": "من مكانك",
+    "ro": "de unde ești",
+    "zh": "距你所在位置",
+    "uk": "від місця, де ти є",
+    "pt": "de onde estás",
+    "de": "von deinem Standort"
+  },
+  "de tu casa": {
+    "en": "from your home",
+    "fr": "de chez toi",
+    "ar": "من بيتك",
+    "ro": "de acasă",
+    "zh": "距你家",
+    "uk": "від твого дому",
+    "pt": "da tua casa",
+    "de": "von deinem Zuhause"
+  },
+  "de tu código postal": {
+    "en": "from your postal code",
+    "fr": "de ton code postal",
+    "ar": "من رمزك البريدي",
+    "ro": "de la codul tău poștal",
+    "zh": "距你的邮政编码",
+    "uk": "від твого поштового індексу",
+    "pt": "do teu código postal",
+    "de": "von deiner Postleitzahl"
+  },
+  "Dejar de ver {zona} · volver a mi ubicación": {
+    "en": "Stop viewing {zona} · back to my location",
+    "fr": "Ne plus voir {zona} · revenir à ma position",
+    "ar": "إيقاف عرض {zona} · العودة إلى موقعي",
+    "ro": "Nu mai vedea {zona} · înapoi la locația mea",
+    "zh": "不再查看{zona} · 返回我的位置",
+    "uk": "Не показувати {zona} · повернутися до мого місця",
+    "pt": "Deixar de ver {zona} · voltar à minha localização",
+    "de": "{zona} nicht mehr anzeigen · zurück zu meinem Standort"
+  },
+  "Del {inicio} al {fin}": {
+    "en": "From {inicio} to {fin}",
+    "fr": "Du {inicio} au {fin}",
+    "ar": "من {inicio} إلى {fin}",
+    "ro": "De la {inicio} până la {fin}",
+    "zh": "从{inicio}到{fin}",
+    "uk": "З {inicio} по {fin}",
+    "pt": "De {inicio} a {fin}",
+    "de": "Vom {inicio} bis {fin}"
+  },
+  "del centro de Madrid": {
+    "en": "from central Madrid",
+    "fr": "du centre de Madrid",
+    "ar": "من وسط Madrid",
+    "ro": "din centrul orașului Madrid",
+    "zh": "距Madrid市中心",
+    "uk": "від центру Madrid",
+    "pt": "do centro de Madrid",
+    "de": "vom Zentrum von Madrid"
+  },
+  "Deporte": {
+    "en": "Sports",
+    "fr": "Sport",
+    "ar": "الرياضة",
+    "ro": "Sport",
+    "zh": "体育",
+    "uk": "Спорт",
+    "pt": "Desporto",
+    "de": "Sport"
+  },
+  "Destacado": {
+    "en": "Featured",
+    "fr": "À la une",
+    "ar": "مميّز",
+    "ro": "Recomandat",
+    "zh": "精选",
+    "uk": "Рекомендоване",
+    "pt": "Destaque",
+    "de": "Empfohlen"
+  },
+  "Digital": {
+    "en": "Digital",
+    "fr": "Numérique",
+    "ar": "رقمي",
+    "ro": "Digital",
+    "zh": "数字",
+    "uk": "Цифрове",
+    "pt": "Digital",
+    "de": "Digital"
+  },
+  "Distancias desde {lugar}": {
+    "en": "Distances from {lugar}",
+    "fr": "Distances depuis {lugar}",
+    "ar": "المسافات من {lugar}",
+    "ro": "Distanțe de la {lugar}",
+    "zh": "距{lugar}的距离",
+    "uk": "Відстані від {lugar}",
+    "pt": "Distâncias a partir de {lugar}",
+    "de": "Entfernungen ab {lugar}"
+  },
+  "Distrito o municipio": {
+    "en": "District or municipality",
+    "fr": "District ou commune",
+    "ar": "الحي أو البلدية",
+    "ro": "District sau municipiu",
+    "zh": "区或市镇",
+    "uk": "Район або муніципалітет",
+    "pt": "Distrito ou concelho",
+    "de": "Bezirk oder Gemeinde"
+  },
+  "donde estás ahora": {
+    "en": "where you are now",
+    "fr": "là où tu es maintenant",
+    "ar": "حيث أنت الآن",
+    "ro": "unde ești acum",
+    "zh": "你现在所在的位置",
+    "uk": "там, де ти зараз",
+    "pt": "onde estás agora",
+    "de": "wo du gerade bist"
+  },
+  "Dónde estoy ahora": {
+    "en": "Where I am now",
+    "fr": "Où je suis maintenant",
+    "ar": "أين أنا الآن",
+    "ro": "Unde sunt acum",
+    "zh": "我现在在哪里",
+    "uk": "Де я зараз",
+    "pt": "Onde estou agora",
+    "de": "Wo ich gerade bin"
+  },
+  "Duración: {d}": {
+    "en": "Duration: {d}",
+    "fr": "Durée : {d}",
+    "ar": "المدة: {d}",
+    "ro": "Durată: {d}",
+    "zh": "时长：{d}",
+    "uk": "Тривалість: {d}",
+    "pt": "Duração: {d}",
+    "de": "Dauer: {d}"
+  },
+  "Durante {mes}": {
+    "en": "During {mes}",
+    "fr": "Pendant {mes}",
+    "ar": "خلال {mes}",
+    "ro": "În {mes}",
+    "zh": "{mes}期间",
+    "uk": "Протягом {mes}",
+    "pt": "Durante {mes}",
+    "de": "Während {mes}"
+  },
+  "el centro de Madrid": {
+    "en": "central Madrid",
+    "fr": "le centre de Madrid",
+    "ar": "وسط Madrid",
+    "ro": "centrul orașului Madrid",
+    "zh": "Madrid市中心",
+    "uk": "центр Madrid",
+    "pt": "o centro de Madrid",
+    "de": "das Zentrum von Madrid"
+  },
+  "El código postal se guarda como tu casa. «Dónde estoy ahora» solo dura 3 horas y no se guarda.": {
+    "en": "Your postal code is saved as your home. “Where I am now” only lasts 3 hours and isn't saved.",
+    "fr": "Ton code postal est enregistré comme ton domicile. « Où je suis maintenant » ne dure que 3 heures et n’est pas enregistré.",
+    "ar": "يُحفظ الرمز البريدي كمنزلك. «أين أنا الآن» يدوم 3 ساعات فقط ولا يُحفظ.",
+    "ro": "Codul poștal se salvează ca acasă la tine. „Unde sunt acum” ține doar 3 ore și nu se salvează.",
+    "zh": "邮政编码会保存为你的家。“我现在在哪里”只保留3小时，不会被保存。",
+    "uk": "Поштовий індекс зберігається як твій дім. «Де я зараз» діє лише 3 години й не зберігається.",
+    "pt": "O código postal fica guardado como a tua casa. “Onde estou agora” só dura 3 horas e não fica guardado.",
+    "de": "Die Postleitzahl wird als dein Zuhause gespeichert. „Wo ich gerade bin“ gilt nur 3 Stunden und wird nicht gespeichert."
+  },
+  "Elegir día": {
+    "en": "Choose a day",
+    "fr": "Choisir un jour",
+    "ar": "اختر اليوم",
+    "ro": "Alege ziua",
+    "zh": "选择日期",
+    "uk": "Обрати день",
+    "pt": "Escolher dia",
+    "de": "Tag wählen"
+  },
+  "Elige tu idioma. Los planes para personas extranjeras se traducen solos.": {
+    "en": "Choose your language. Plans for people from abroad are translated automatically.",
+    "fr": "Choisis ta langue. Les activités pour les personnes étrangères sont traduites automatiquement.",
+    "ar": "اختر لغتك. تُترجم الأنشطة الموجّهة للأجانب تلقائيًا.",
+    "ro": "Alege-ți limba. Activitățile pentru persoanele străine se traduc automat.",
+    "zh": "选择你的语言。面向外国人的活动会自动翻译。",
+    "uk": "Обери свою мову. Заходи для іноземців перекладаються автоматично.",
+    "pt": "Escolhe o teu idioma. Os planos para pessoas estrangeiras são traduzidos automaticamente.",
+    "de": "Wähle deine Sprache. Pläne für Menschen aus dem Ausland werden automatisch übersetzt."
+  },
+  "Elige un idioma.": {
+    "en": "Choose a language.",
+    "fr": "Choisis une langue.",
+    "ar": "اختر لغة.",
+    "ro": "Alege o limbă.",
+    "zh": "选择一种语言。",
+    "uk": "Обери мову.",
+    "pt": "Escolhe um idioma.",
+    "de": "Wähle eine Sprache."
+  },
+  "Elígelos en tu perfil": {
+    "en": "Choose them in your profile",
+    "fr": "Choisis-les dans ton profil",
+    "ar": "اخترها من ملفك الشخصي",
+    "ro": "Alege-le în profilul tău",
+    "zh": "在你的个人资料中选择",
+    "uk": "Обери їх у своєму профілі",
+    "pt": "Escolhe-os no teu perfil",
+    "de": "Wähle sie in deinem Profil aus"
+  },
+  "Empleo y formación": {
+    "en": "Jobs and training",
+    "fr": "Emploi et formation",
+    "ar": "العمل والتدريب",
+    "ro": "Locuri de muncă și formare",
+    "zh": "就业与培训",
+    "uk": "Робота й навчання",
+    "pt": "Emprego e formação",
+    "de": "Arbeit und Weiterbildung"
+  },
+  "En los distritos": {
+    "en": "In the districts",
+    "fr": "Dans les districts",
+    "ar": "في الأحياء",
+    "ro": "În districte",
+    "zh": "在各区",
+    "uk": "У районах",
+    "pt": "Nos distritos",
+    "de": "In den Bezirken"
+  },
+  "En metro o autobús": {
+    "en": "By metro or bus",
+    "fr": "En métro ou en bus",
+    "ar": "بالمترو أو الحافلة",
+    "ro": "Cu metroul sau autobuzul",
+    "zh": "乘地铁或公交",
+    "uk": "Метро або автобус",
+    "pt": "De metro ou autocarro",
+    "de": "Mit U-Bahn oder Bus"
+  },
+  "Entidad verificada": {
+    "en": "Verified organisation",
+    "fr": "Organisme vérifié",
+    "ar": "جهة موثّقة",
+    "ro": "Entitate verificată",
+    "zh": "已验证机构",
+    "uk": "Перевірена організація",
+    "pt": "Entidade verificada",
+    "de": "Geprüfte Organisation"
+  },
+  "Entra en tu cuenta": {
+    "en": "Log in to your account",
+    "fr": "Connecte-toi à ton compte",
+    "ar": "سجّل الدخول إلى حسابك",
+    "ro": "Intră în cont",
+    "zh": "登录你的账号",
+    "uk": "Увійди у свій обліковий запис",
+    "pt": "Entra na tua conta",
+    "de": "Melde dich in deinem Konto an"
+  },
+  "Entra en tu cuenta para traducir.": {
+    "en": "Log in to your account to translate.",
+    "fr": "Connecte-toi à ton compte pour traduire.",
+    "ar": "سجّل الدخول إلى حسابك للترجمة.",
+    "ro": "Intră în cont ca să traduci.",
+    "zh": "登录账号即可翻译。",
+    "uk": "Увійди в обліковий запис, щоб перекладати.",
+    "pt": "Entra na tua conta para traduzir.",
+    "de": "Melde dich an, um zu übersetzen."
+  },
+  "Espacio accesible": {
+    "en": "Accessible space",
+    "fr": "Espace accessible",
+    "ar": "مكان يسهل الوصول إليه",
+    "ro": "Spațiu accesibil",
+    "zh": "无障碍场所",
+    "uk": "Доступний простір",
+    "pt": "Espaço acessível",
+    "de": "Barrierefreier Raum"
+  },
+  "español": {
+    "en": "Spanish",
+    "fr": "espagnol",
+    "ar": "الإسبانية",
+    "ro": "spaniolă",
+    "zh": "西班牙语",
+    "uk": "іспанська",
+    "pt": "espanhol",
+    "de": "Spanisch"
+  },
+  "Esta semana": {
+    "en": "This week",
+    "fr": "Cette semaine",
+    "ar": "هذا الأسبوع",
+    "ro": "Săptămâna aceasta",
+    "zh": "本周",
+    "uk": "Цього тижня",
+    "pt": "Esta semana",
+    "de": "Diese Woche"
+  },
+  "Estás aquí": {
+    "en": "You are here",
+    "fr": "Tu es ici",
+    "ar": "أنت هنا",
+    "ro": "Ești aici",
+    "zh": "你在这里",
+    "uk": "Ти тут",
+    "pt": "Estás aqui",
+    "de": "Du bist hier"
+  },
+  "Este plan ya no está.": {
+    "en": "This plan is no longer available.",
+    "fr": "Ce plan n'existe plus.",
+    "ar": "هذه الخطة لم تعد متاحة.",
+    "ro": "Acest plan nu mai există.",
+    "zh": "这个活动已不存在。",
+    "uk": "Цього плану вже немає.",
+    "pt": "Este plano já não existe.",
+    "de": "Diesen Plan gibt es nicht mehr."
+  },
+  "Explorar": {
+    "en": "Explore",
+    "fr": "Explorer",
+    "ar": "استكشف",
+    "ro": "Explorează",
+    "zh": "探索",
+    "uk": "Досліджуй",
+    "pt": "Explorar",
+    "de": "Entdecken"
+  },
+  "Exposiciones": {
+    "en": "Exhibitions",
+    "fr": "Expositions",
+    "ar": "معارض",
+    "ro": "Expoziții",
+    "zh": "展览",
+    "uk": "Виставки",
+    "pt": "Exposições",
+    "de": "Ausstellungen"
+  },
+  "familias": {
+    "en": "families",
+    "fr": "familles",
+    "ar": "عائلات",
+    "ro": "familii",
+    "zh": "家庭",
+    "uk": "сім'ї",
+    "pt": "famílias",
+    "de": "Familien"
+  },
+  "Fiestas": {
+    "en": "Festivals",
+    "fr": "Fêtes",
+    "ar": "مهرجانات",
+    "ro": "Sărbători",
+    "zh": "节庆",
+    "uk": "Свята",
+    "pt": "Festas",
+    "de": "Feste"
+  },
+  "Filtrar por intereses": {
+    "en": "Filter by interests",
+    "fr": "Filtrer par centres d'intérêt",
+    "ar": "تصفية حسب الاهتمامات",
+    "ro": "Filtrează după interese",
+    "zh": "按兴趣筛选",
+    "uk": "Фільтр за інтересами",
+    "pt": "Filtrar por interesses",
+    "de": "Nach Interessen filtern"
+  },
+  "Filtros": {
+    "en": "Filters",
+    "fr": "Filtres",
+    "ar": "عوامل التصفية",
+    "ro": "Filtre",
+    "zh": "筛选",
+    "uk": "Фільтри",
+    "pt": "Filtros",
+    "de": "Filter"
+  },
+  "Flamenco": {
+    "en": "Flamenco",
+    "fr": "Flamenco",
+    "ar": "فلامنكو",
+    "ro": "Flamenco",
+    "zh": "弗拉门戈",
+    "uk": "Фламенко",
+    "pt": "Flamenco",
+    "de": "Flamenco"
+  },
+  "francés": {
+    "en": "French",
+    "fr": "français",
+    "ar": "الفرنسية",
+    "ro": "franceză",
+    "zh": "法语",
+    "uk": "французька",
+    "pt": "francês",
+    "de": "Französisch"
+  },
+  "Fuente:": {
+    "en": "Source:",
+    "fr": "Source :",
+    "ar": "المصدر:",
+    "ro": "Sursa:",
+    "zh": "来源：",
+    "uk": "Джерело:",
+    "pt": "Fonte:",
+    "de": "Quelle:"
+  },
+  "Gastronomía": {
+    "en": "Food",
+    "fr": "Gastronomie",
+    "ar": "فنون الطهي",
+    "ro": "Gastronomie",
+    "zh": "美食",
+    "uk": "Гастрономія",
+    "pt": "Gastronomia",
+    "de": "Gastronomie"
+  },
+  "Gratis": {
+    "en": "Free",
+    "fr": "Gratuit",
+    "ar": "مجاني",
+    "ro": "Gratuit",
+    "zh": "免费",
+    "uk": "Безкоштовно",
+    "pt": "Grátis",
+    "de": "Kostenlos"
+  },
+  "Guardar": {
+    "en": "Save",
+    "fr": "Enregistrer",
+    "ar": "حفظ",
+    "ro": "Salvează",
+    "zh": "保存",
+    "uk": "Зберегти",
+    "pt": "Guardar",
+    "de": "Speichern"
+  },
+  "Has traducido muchos planes seguidos. Prueba dentro de un rato.": {
+    "en": "You've translated a lot of plans in a row. Try again in a while.",
+    "fr": "Tu as traduit beaucoup de plans d'affilée. Réessaie dans un moment.",
+    "ar": "لقد ترجمت خططًا كثيرة متتالية. جرّب بعد قليل.",
+    "ro": "Ai tradus multe planuri la rând. Încearcă din nou peste puțin timp.",
+    "zh": "你连续翻译了很多活动，过一会儿再试。",
+    "uk": "Забагато перекладів поспіль. Спробуй трохи пізніше.",
+    "pt": "Traduziste muitos planos seguidos. Tenta de novo daqui a pouco.",
+    "de": "Du hast viele Pläne hintereinander übersetzt. Versuch es in einer Weile noch einmal."
+  },
+  "Hasta el {fecha}": {
+    "en": "Until {fecha}",
+    "fr": "Jusqu'au {fecha}",
+    "ar": "حتى {fecha}",
+    "ro": "Până la {fecha}",
+    "zh": "截至 {fecha}",
+    "uk": "До {fecha}",
+    "pt": "Até {fecha}",
+    "de": "Bis {fecha}"
+  },
+  "Hoy": {
+    "en": "Today",
+    "fr": "Aujourd'hui",
+    "ar": "اليوم",
+    "ro": "Astăzi",
+    "zh": "今天",
+    "uk": "Сьогодні",
+    "pt": "Hoje",
+    "de": "Heute"
+  },
+  "Humor": {
+    "en": "Comedy",
+    "fr": "Humour",
+    "ar": "كوميديا",
+    "ro": "Umor",
+    "zh": "幽默喜剧",
+    "uk": "Гумор",
+    "pt": "Humor",
+    "de": "Comedy"
+  },
+  "Idioma": {
+    "en": "Language",
+    "fr": "Langue",
+    "ar": "اللغة",
+    "ro": "Limbă",
+    "zh": "语言",
+    "uk": "Мова",
+    "pt": "Idioma",
+    "de": "Sprache"
+  },
+  "Idiomas": {
+    "en": "Languages",
+    "fr": "Langues",
+    "ar": "اللغات",
+    "ro": "Limbi",
+    "zh": "语言",
+    "uk": "Мови",
+    "pt": "Idiomas",
+    "de": "Sprachen"
+  },
+  "inglés": {
+    "en": "English",
+    "fr": "anglais",
+    "ar": "الإنجليزية",
+    "ro": "engleză",
+    "zh": "英语",
+    "uk": "англійська",
+    "pt": "inglês",
+    "de": "Englisch"
+  },
+  "Inicia sesión": {
+    "en": "Log in",
+    "fr": "Se connecter",
+    "ar": "تسجيل الدخول",
+    "ro": "Autentifică-te",
+    "zh": "登录",
+    "uk": "Увійти",
+    "pt": "Iniciar sessão",
+    "de": "Anmelden"
+  },
+  "Inicio · MiMad": {
+    "en": "Home · MiMad",
+    "fr": "Accueil · MiMad",
+    "ar": "الرئيسية · MiMad",
+    "ro": "Acasă · MiMad",
+    "zh": "首页 · MiMad",
+    "uk": "Головна · MiMad",
+    "pt": "Início · MiMad",
+    "de": "Start · MiMad"
+  },
+  "Inscribirme": {
+    "en": "Sign me up",
+    "fr": "M'inscrire",
+    "ar": "سجّلني",
+    "ro": "Mă înscriu",
+    "zh": "我要报名",
+    "uk": "Записатися",
+    "pt": "Inscrever-me",
+    "de": "Mich anmelden"
+  },
+  "Instalación accesible para movilidad reducida": {
+    "en": "Accessible facility for reduced mobility",
+    "fr": "Lieu accessible aux personnes à mobilité réduite",
+    "ar": "مرفق مهيأ لذوي الحركة المحدودة",
+    "ro": "Locație accesibilă pentru persoane cu mobilitate redusă",
+    "zh": "适合行动不便人士的无障碍设施",
+    "uk": "Доступний заклад для людей з обмеженою мобільністю",
+    "pt": "Instalação acessível para mobilidade reduzida",
+    "de": "Barrierefreie Einrichtung für eingeschränkte Mobilität"
+  },
+  "Integración": {
+    "en": "Integration",
+    "fr": "Intégration",
+    "ar": "الاندماج",
+    "ro": "Integrare",
+    "zh": "融入",
+    "uk": "Інтеграція",
+    "pt": "Integração",
+    "de": "Integration"
+  },
+  "Intereses": {
+    "en": "Interests",
+    "fr": "Centres d'intérêt",
+    "ar": "الاهتمامات",
+    "ro": "Interese",
+    "zh": "兴趣",
+    "uk": "Інтереси",
+    "pt": "Interesses",
+    "de": "Interessen"
+  },
+  "Jazz y soul": {
+    "en": "Jazz and soul",
+    "fr": "Jazz et soul",
+    "ar": "جاز وسول",
+    "ro": "Jazz și soul",
+    "zh": "爵士与灵魂乐",
+    "uk": "Джаз і соул",
+    "pt": "Jazz e soul",
+    "de": "Jazz und Soul"
+  },
+  "jóvenes": {
+    "en": "young people",
+    "fr": "jeunes",
+    "ar": "شباب",
+    "ro": "tineri",
+    "zh": "青年",
+    "uk": "молодь",
+    "pt": "jovens",
+    "de": "Jugendliche"
+  },
+  "La actividad": {
+    "en": "The activity",
+    "fr": "L'activité",
+    "ar": "النشاط",
+    "ro": "Activitatea",
+    "zh": "活动",
+    "uk": "Захід",
+    "pt": "A atividade",
+    "de": "Die Aktivität"
+  },
+  "La traducción no está disponible ahora mismo.": {
+    "en": "Translation isn't available right now.",
+    "fr": "La traduction n'est pas disponible pour le moment.",
+    "ar": "الترجمة غير متاحة الآن.",
+    "ro": "Traducerea nu este disponibilă acum.",
+    "zh": "翻译暂时不可用。",
+    "uk": "Переклад зараз недоступний.",
+    "pt": "A tradução não está disponível neste momento.",
+    "de": "Die Übersetzung ist gerade nicht verfügbar."
+  },
+  "Las distancias se cuentan desde el centro de Madrid. Añade tu código postal en tu perfil para verlas desde tu casa.": {
+    "en": "Distances are measured from the centre of Madrid. Add your postcode to your profile to see them from your home.",
+    "fr": "Les distances sont calculées depuis le centre de Madrid. Ajoute ton code postal dans ton profil pour les voir depuis chez toi.",
+    "ar": "تُحسب المسافات من وسط Madrid. أضف رمزك البريدي في ملفك الشخصي لتراها من منزلك.",
+    "ro": "Distanțele se calculează de la centrul din Madrid. Adaugă codul poștal în profil ca să le vezi de acasă.",
+    "zh": "距离从 Madrid 市中心起算。在个人资料中添加你的邮政编码，即可查看离你家的距离。",
+    "uk": "Відстані рахуються від центру Madrid. Додай поштовий індекс у профілі, щоб бачити їх від свого дому.",
+    "pt": "As distâncias contam-se a partir do centro de Madrid. Acrescenta o teu código postal ao perfil para as veres a partir de casa.",
+    "de": "Die Entfernungen werden ab dem Zentrum von Madrid berechnet. Trage deine Postleitzahl in deinem Profil ein, um sie von deinem Zuhause aus zu sehen."
+  },
+  "Las distancias se cuentan desde el centro de Madrid. Crea una cuenta para verlas desde tu casa.": {
+    "en": "Distances are measured from the centre of Madrid. Create an account to see them from your home.",
+    "fr": "Les distances sont calculées depuis le centre de Madrid. Crée un compte pour les voir depuis chez toi.",
+    "ar": "تُحسب المسافات من وسط Madrid. أنشئ حسابًا لتراها من منزلك.",
+    "ro": "Distanțele se calculează de la centrul din Madrid. Creează un cont ca să le vezi de acasă.",
+    "zh": "距离从 Madrid 市中心起算。创建账号，即可查看离你家的距离。",
+    "uk": "Відстані рахуються від центру Madrid. Створи обліковий запис, щоб бачити їх від свого дому.",
+    "pt": "As distâncias contam-se a partir do centro de Madrid. Cria uma conta para as veres a partir de casa.",
+    "de": "Die Entfernungen werden ab dem Zentrum von Madrid berechnet. Erstelle ein Konto, um sie von deinem Zuhause aus zu sehen."
+  },
+  "Lectura": {
+    "en": "Reading",
+    "fr": "Lecture",
+    "ar": "القراءة",
+    "ro": "Lectură",
+    "zh": "阅读",
+    "uk": "Читання",
+    "pt": "Leitura",
+    "de": "Lesen"
+  },
+  "Leer más": {
+    "en": "Read more",
+    "fr": "Lire la suite",
+    "ar": "اقرأ المزيد",
+    "ro": "Citește mai mult",
+    "zh": "查看更多",
+    "uk": "Читати далі",
+    "pt": "Ler mais",
+    "de": "Mehr lesen"
+  },
+  "Leer menos": {
+    "en": "Read less",
+    "fr": "Lire moins",
+    "ar": "اقرأ أقل",
+    "ro": "Citește mai puțin",
+    "zh": "收起",
+    "uk": "Читати менше",
+    "pt": "Ler menos",
+    "de": "Weniger lesen"
+  },
+  "Líneas y horarios en Google Maps": {
+    "en": "Lines and schedules on Google Maps",
+    "fr": "Lignes et horaires sur Google Maps",
+    "ar": "الخطوط والمواعيد على Google Maps",
+    "ro": "Linii și orare în Google Maps",
+    "zh": "在 Google Maps 查看线路和时刻",
+    "uk": "Лінії та розклад у Google Maps",
+    "pt": "Linhas e horários no Google Maps",
+    "de": "Linien und Fahrpläne in Google Maps"
+  },
+  "Lista": {
+    "en": "List",
+    "fr": "Liste",
+    "ar": "قائمة",
+    "ro": "Listă",
+    "zh": "列表",
+    "uk": "Список",
+    "pt": "Lista",
+    "de": "Liste"
+  },
+  "Literatura": {
+    "en": "Literature",
+    "fr": "Littérature",
+    "ar": "الأدب",
+    "ro": "Literatură",
+    "zh": "文学",
+    "uk": "Література",
+    "pt": "Literatura",
+    "de": "Literatur"
+  },
+  "Madrid, mejor en compañía.": {
+    "en": "Madrid, better together.",
+    "fr": "Madrid, c'est mieux à plusieurs.",
+    "ar": "مدريد أجمل مع الرفقة.",
+    "ro": "Madrid, mai frumos în companie.",
+    "zh": "马德里,有伴更精彩。",
+    "uk": "Мадрид краще разом.",
+    "pt": "Madrid, melhor em companhia.",
+    "de": "Madrid ist zusammen schöner."
+  },
+  "Mañana": {
+    "en": "Tomorrow",
+    "fr": "Demain",
+    "ar": "غدًا",
+    "ro": "Mâine",
+    "zh": "明天",
+    "uk": "Завтра",
+    "pt": "Amanhã",
+    "de": "Morgen"
+  },
+  "Mapa": {
+    "en": "Map",
+    "fr": "Carte",
+    "ar": "خريطة",
+    "ro": "Hartă",
+    "zh": "地图",
+    "uk": "Карта",
+    "pt": "Mapa",
+    "de": "Karte"
+  },
+  "mayores": {
+    "en": "seniors",
+    "fr": "personnes âgées",
+    "ar": "كبار السن",
+    "ro": "persoane în vârstă",
+    "zh": "老年人",
+    "uk": "літні люди",
+    "pt": "idosos",
+    "de": "Senioren"
+  },
+  "Mensajes de la organización": {
+    "en": "Messages from the organization",
+    "fr": "Messages de l'organisation",
+    "ar": "رسائل من الجهة المنظِّمة",
+    "ro": "Mesaje de la organizație",
+    "zh": "主办方消息",
+    "uk": "Повідомлення від організаторів",
+    "pt": "Mensagens da organização",
+    "de": "Nachrichten der Organisation"
+  },
+  "MiMad, inicio": {
+    "en": "MiMad, home",
+    "fr": "MiMad, accueil",
+    "ar": "MiMad، الرئيسية",
+    "ro": "MiMad, acasă",
+    "zh": "MiMad,首页",
+    "uk": "MiMad, головна",
+    "pt": "MiMad, início",
+    "de": "MiMad, Start"
+  },
+  "mujeres": {
+    "en": "women",
+    "fr": "femmes",
+    "ar": "نساء",
+    "ro": "femei",
+    "zh": "女性",
+    "uk": "жінки",
+    "pt": "mulheres",
+    "de": "Frauen"
+  },
+  "Música": {
+    "en": "Music",
+    "fr": "Musique",
+    "ar": "الموسيقى",
+    "ro": "Muzică",
+    "zh": "音乐",
+    "uk": "Музика",
+    "pt": "Música",
+    "de": "Musik"
+  },
+  "Música clásica": {
+    "en": "Classical music",
+    "fr": "Musique classique",
+    "ar": "الموسيقى الكلاسيكية",
+    "ro": "Muzică clasică",
+    "zh": "古典音乐",
+    "uk": "Класична музика",
+    "pt": "Música clássica",
+    "de": "Klassische Musik"
+  },
+  "Naturaleza": {
+    "en": "Nature",
+    "fr": "Nature",
+    "ar": "الطبيعة",
+    "ro": "Natură",
+    "zh": "自然",
+    "uk": "Природа",
+    "pt": "Natureza",
+    "de": "Natur"
+  },
+  "niños": {
+    "en": "children",
+    "fr": "enfants",
+    "ar": "أطفال",
+    "ro": "copii",
+    "zh": "儿童",
+    "uk": "діти",
+    "pt": "crianças",
+    "de": "Kinder"
+  },
+  "No hay planes con estos filtros": {
+    "en": "No plans match these filters",
+    "fr": "Aucun plan avec ces filtres",
+    "ar": "لا توجد أنشطة بهذه المرشحات",
+    "ro": "Niciun plan cu aceste filtre",
+    "zh": "没有符合这些筛选条件的活动",
+    "uk": "Немає заходів за цими фільтрами",
+    "pt": "Não há planos com estes filtros",
+    "de": "Keine Aktivitäten mit diesen Filtern"
+  },
+  "No se ha podido traducir.": {
+    "en": "Couldn't translate.",
+    "fr": "Traduction impossible.",
+    "ar": "لم نتمكن من الترجمة.",
+    "ro": "Nu s-a putut traduce.",
+    "zh": "无法翻译。",
+    "uk": "Не вдалося перекласти.",
+    "pt": "Não foi possível traduzir.",
+    "de": "Übersetzung nicht möglich."
+  },
+  "No se ha podido traducir. Prueba otra vez.": {
+    "en": "Couldn't translate. Try again.",
+    "fr": "Traduction impossible. Réessaie.",
+    "ar": "لم نتمكن من الترجمة. حاول مرة أخرى.",
+    "ro": "Nu s-a putut traduce. Încearcă din nou.",
+    "zh": "无法翻译。请再试一次。",
+    "uk": "Не вдалося перекласти. Спробуй ще раз.",
+    "pt": "Não foi possível traduzir. Tenta outra vez.",
+    "de": "Übersetzung nicht möglich. Versuch es noch einmal."
+  },
+  "No se ha podido traducir. Revisa la conexión.": {
+    "en": "Couldn't translate. Check your connection.",
+    "fr": "Traduction impossible. Vérifie ta connexion.",
+    "ar": "لم نتمكن من الترجمة. تحقق من الاتصال.",
+    "ro": "Nu s-a putut traduce. Verifică conexiunea.",
+    "zh": "无法翻译。请检查网络连接。",
+    "uk": "Не вдалося перекласти. Перевір з’єднання.",
+    "pt": "Não foi possível traduzir. Verifica a ligação.",
+    "de": "Übersetzung nicht möglich. Prüfe deine Verbindung."
+  },
+  "Notificaciones": {
+    "en": "Notifications",
+    "fr": "Notifications",
+    "ar": "الإشعارات",
+    "ro": "Notificări",
+    "zh": "通知",
+    "uk": "Сповіщення",
+    "pt": "Notificações",
+    "de": "Benachrichtigungen"
+  },
+  "Notificaciones: {n} sin leer": {
+    "en": "Notifications: {n} unread",
+    "fr": "Notifications\\u00a0: {n} non lues",
+    "ar": "الإشعارات: {n} غير مقروءة",
+    "ro": "Notificări: {n} necitite",
+    "zh": "通知:{n} 条未读",
+    "uk": "Сповіщення: {n} непрочитаних",
+    "pt": "Notificações: {n} por ler",
+    "de": "Benachrichtigungen: {n} ungelesen"
+  },
+  "O cuenta las distancias desde…": {
+    "en": "Or measure distances from…",
+    "fr": "Ou calcule les distances depuis…",
+    "ar": "أو احسب المسافات من…",
+    "ro": "Sau calculează distanțele de la…",
+    "zh": "或从以下位置计算距离…",
+    "uk": "Або рахуй відстані від…",
+    "pt": "Ou conta as distâncias a partir de…",
+    "de": "Oder berechne die Entfernungen ab…"
+  },
+  "Panel": {
+    "en": "Dashboard",
+    "fr": "Tableau de bord",
+    "ar": "لوحة التحكم",
+    "ro": "Panou",
+    "zh": "面板",
+    "uk": "Панель",
+    "pt": "Painel",
+    "de": "Übersicht"
+  },
+  "Para {publico}": {
+    "en": "For {publico}",
+    "fr": "Pour {publico}",
+    "ar": "لـ{publico}",
+    "ro": "Pentru {publico}",
+    "zh": "适合{publico}",
+    "uk": "Для {publico}",
+    "pt": "Para {publico}",
+    "de": "Für {publico}"
+  },
+  "Para recién llegados": {
+    "en": "For newcomers",
+    "fr": "Pour les nouveaux arrivants",
+    "ar": "للقادمين الجدد",
+    "ro": "Pentru nou-veniți",
+    "zh": "适合新来的人",
+    "uk": "Для новоприбулих",
+    "pt": "Para recém-chegados",
+    "de": "Für Neuankömmlinge"
+  },
+  "Para ti": {
+    "en": "For you",
+    "fr": "Pour toi",
+    "ar": "لك",
+    "ro": "Pentru tine",
+    "zh": "为你推荐",
+    "uk": "Для тебе",
+    "pt": "Para ti",
+    "de": "Für dich"
+  },
+  "para traducir el plan a tu idioma.": {
+    "en": "to translate the plan into your language.",
+    "fr": "pour traduire le plan dans ta langue.",
+    "ar": "لترجمة النشاط إلى لغتك.",
+    "ro": "pentru a traduce planul în limba ta.",
+    "zh": "用于将活动翻译成你的语言。",
+    "uk": "щоб перекласти захід твоєю мовою.",
+    "pt": "para traduzir o plano para a tua língua.",
+    "de": "um die Aktivität in deine Sprache zu übersetzen."
+  },
+  "Perfil": {
+    "en": "Profile",
+    "fr": "Profil",
+    "ar": "الملف الشخصي",
+    "ro": "Profil",
+    "zh": "个人资料",
+    "uk": "Профіль",
+    "pt": "Perfil",
+    "de": "Profil"
+  },
+  "personas con mascotas": {
+    "en": "people with pets",
+    "fr": "personnes avec des animaux",
+    "ar": "أصحاب الحيوانات الأليفة",
+    "ro": "persoane cu animale de companie",
+    "zh": "有宠物的人",
+    "uk": "люди з домашніми тваринами",
+    "pt": "pessoas com animais de estimação",
+    "de": "Menschen mit Haustieren"
+  },
+  "personas migrantes": {
+    "en": "migrants",
+    "fr": "personnes migrantes",
+    "ar": "المهاجرون",
+    "ro": "persoane migrante",
+    "zh": "移民",
+    "uk": "мігранти",
+    "pt": "pessoas migrantes",
+    "de": "Menschen mit Migrationshintergrund"
+  },
+  "Planes de esta semana": {
+    "en": "This week's plans",
+    "fr": "Plans de cette semaine",
+    "ar": "أنشطة هذا الأسبوع",
+    "ro": "Planurile din această săptămână",
+    "zh": "本周活动",
+    "uk": "Заходи цього тижня",
+    "pt": "Planos desta semana",
+    "de": "Aktivitäten diese Woche"
+  },
+  "Planes de hoy": {
+    "en": "Today's plans",
+    "fr": "Plans d'aujourd'hui",
+    "ar": "أنشطة اليوم",
+    "ro": "Planurile de azi",
+    "zh": "今日活动",
+    "uk": "Заходи сьогодні",
+    "pt": "Planos de hoje",
+    "de": "Aktivitäten heute"
+  },
+  "Planes de idiomas": {
+    "en": "Language plans",
+    "fr": "Plans de langues",
+    "ar": "أنشطة اللغات",
+    "ro": "Planuri de limbi",
+    "zh": "语言类活动",
+    "uk": "Мовні заходи",
+    "pt": "Planos de idiomas",
+    "de": "Sprachaktivitäten"
+  },
+  "Planes de mañana": {
+    "en": "Tomorrow's plans",
+    "fr": "Plans de demain",
+    "ar": "أنشطة الغد",
+    "ro": "Planurile de mâine",
+    "zh": "明日活动",
+    "uk": "Заходи на завтра",
+    "pt": "Planos de amanhã",
+    "de": "Aktivitäten morgen"
+  },
+  "Planes del {dia}": {
+    "en": "Plans for {dia}",
+    "fr": "Plans du {dia}",
+    "ar": "أنشطة يوم {dia}",
+    "ro": "Planurile din {dia}",
+    "zh": "{dia}的活动",
+    "uk": "Заходи на {dia}",
+    "pt": "Planos de {dia}",
+    "de": "Aktivitäten am {dia}"
+  },
+  "Por ejemplo «Chamberí» o «Alcalá de Henares». No cambia tu casa y se quita sola en 3 horas.": {
+    "en": "For example “Chamberí” or “Alcalá de Henares”. It doesn't change your home and clears itself after 3 hours.",
+    "fr": "Par exemple «\\u00a0Chamberí\\u00a0» ou «\\u00a0Alcalá de Henares\\u00a0». Ça ne change pas ton domicile et ça s'efface tout seul au bout de 3 heures.",
+    "ar": "مثلًا «Chamberí» أو «Alcalá de Henares». لا يغيّر عنوان سكنك ويُزال تلقائيًا بعد 3 ساعات.",
+    "ro": "De exemplu „Chamberí” sau „Alcalá de Henares”. Nu îți schimbă domiciliul și dispare singură după 3 ore.",
+    "zh": "例如“Chamberí”或“Alcalá de Henares”。不会更改你的住址,3 小时后自动清除。",
+    "uk": "Наприклад, «Chamberí» або «Alcalá de Henares». Це не змінює твою домашню адресу й зникає саме через 3 години.",
+    "pt": "Por exemplo “Chamberí” ou “Alcalá de Henares”. Não altera a tua casa e desaparece sozinha ao fim de 3 horas.",
+    "de": "Zum Beispiel „Chamberí“ oder „Alcalá de Henares“. Das ändert deine Wohnadresse nicht und wird nach 3 Stunden automatisch entfernt."
+  },
+  "portugués": {
+    "en": "Portuguese",
+    "fr": "portugais",
+    "ar": "البرتغالية",
+    "ro": "portugheză",
+    "zh": "葡萄牙语",
+    "uk": "португальська",
+    "pt": "português",
+    "de": "Portugiesisch"
+  },
+  "Precio": {
+    "en": "Price",
+    "fr": "Prix",
+    "ar": "السعر",
+    "ro": "Preț",
+    "zh": "价格",
+    "uk": "Ціна",
+    "pt": "Preço",
+    "de": "Preis"
+  },
+  "Pregunta el día y la hora en el centro": {
+    "en": "Ask for the day and time at the center",
+    "fr": "Demande le jour et l'heure au centre",
+    "ar": "اسأل عن اليوم والساعة في المركز",
+    "ro": "Întreabă ziua și ora la centru",
+    "zh": "请在中心询问日期和时间",
+    "uk": "Запитай день і час у центрі",
+    "pt": "Pergunta o dia e a hora no centro",
+    "de": "Frag im Zentrum nach Tag und Uhrzeit"
+  },
+  "Preparando actividades cerca de ti. Espera un momento, por favor.": {
+    "en": "Getting activities near you ready. Just a moment, please.",
+    "fr": "Nous préparons des activités près de chez toi. Un instant, s'il te plaît.",
+    "ar": "نجهّز لك أنشطة قريبة منك. انتظر لحظة من فضلك.",
+    "ro": "Pregătim activități lângă tine. Așteaptă un moment, te rog.",
+    "zh": "正在为你准备附近的活动。请稍等。",
+    "uk": "Готуємо заходи поруч із тобою. Зачекай трохи, будь ласка.",
+    "pt": "A preparar atividades perto de ti. Espera um momento, por favor.",
+    "de": "Wir bereiten Aktivitäten in deiner Nähe vor. Einen Moment bitte."
+  },
+  "Principal": {
+    "en": "Main",
+    "fr": "Principal",
+    "ar": "الرئيسية",
+    "ro": "Principal",
+    "zh": "主页",
+    "uk": "Головна",
+    "pt": "Principal",
+    "de": "Start"
+  },
+  "Próximas quedadas": {
+    "en": "Upcoming meetups",
+    "fr": "Prochains rendez-vous",
+    "ar": "لقاءات قادمة",
+    "ro": "Următoarele întâlniri",
+    "zh": "即将举行的聚会",
+    "uk": "Найближчі зустрічі",
+    "pt": "Próximos encontros",
+    "de": "Nächste Treffen"
+  },
+  "Prueba a quitar algún filtro o a buscar más lejos.": {
+    "en": "Try removing a filter or searching farther away.",
+    "fr": "Essaie de retirer un filtre ou de chercher plus loin.",
+    "ar": "جرّب إزالة أحد الفلاتر أو البحث في نطاق أبعد.",
+    "ro": "Încearcă să elimini un filtru sau să cauți mai departe.",
+    "zh": "试试去掉一些筛选条件,或者搜索更远的地方。",
+    "uk": "Спробуй прибрати якийсь фільтр або пошукати далі.",
+    "pt": "Experimenta remover algum filtro ou procurar mais longe.",
+    "de": "Versuch, einen Filter zu entfernen oder weiter weg zu suchen."
+  },
+  "Prueba a quitar algún filtro.": {
+    "en": "Try removing a filter.",
+    "fr": "Essaie de retirer un filtre.",
+    "ar": "جرّب إزالة أحد الفلاتر.",
+    "ro": "Încearcă să elimini un filtru.",
+    "zh": "试试去掉一些筛选条件。",
+    "uk": "Спробуй прибрати якийсь фільтр.",
+    "pt": "Experimenta remover algum filtro.",
+    "de": "Versuch, einen Filter zu entfernen."
+  },
+  "Publicar un plan": {
+    "en": "Post a plan",
+    "fr": "Publier un plan",
+    "ar": "انشر خطة",
+    "ro": "Publică un plan",
+    "zh": "发布活动",
+    "uk": "Опублікувати захід",
+    "pt": "Publicar um plano",
+    "de": "Plan veröffentlichen"
+  },
+  "Público": {
+    "en": "Audience",
+    "fr": "Public",
+    "ar": "الجمهور",
+    "ro": "Public",
+    "zh": "适合人群",
+    "uk": "Аудиторія",
+    "pt": "Público",
+    "de": "Zielgruppe"
+  },
+  "Quitar": {
+    "en": "Remove",
+    "fr": "Retirer",
+    "ar": "إزالة",
+    "ro": "Elimină",
+    "zh": "移除",
+    "uk": "Прибрати",
+    "pt": "Remover",
+    "de": "Entfernen"
+  },
+  "Quitar ubicación": {
+    "en": "Remove location",
+    "fr": "Retirer la position",
+    "ar": "إزالة الموقع",
+    "ro": "Elimină locația",
+    "zh": "移除位置",
+    "uk": "Прибрати локацію",
+    "pt": "Remover localização",
+    "de": "Standort entfernen"
+  },
+  "Recién llegados": {
+    "en": "Newcomers",
+    "fr": "Nouveaux arrivants",
+    "ar": "الوافدون الجدد",
+    "ro": "Nou-veniți",
+    "zh": "新来的人",
+    "uk": "Новоприбулі",
+    "pt": "Recém-chegados",
+    "de": "Neuangekommene"
+  },
+  "rumano": {
+    "en": "Romanian",
+    "fr": "roumain",
+    "ar": "الرومانية",
+    "ro": "română",
+    "zh": "罗马尼亚语",
+    "uk": "румунська",
+    "pt": "romeno",
+    "de": "Rumänisch"
+  },
+  "Ruta a pie en Google Maps": {
+    "en": "Walking route on Google Maps",
+    "fr": "Itinéraire à pied sur Google Maps",
+    "ar": "مسار المشي على Google Maps",
+    "ro": "Traseu pe jos în Google Maps",
+    "zh": "在 Google Maps 上查看步行路线",
+    "uk": "Пішохідний маршрут у Google Maps",
+    "pt": "Percurso a pé no Google Maps",
+    "de": "Fußweg in Google Maps"
+  },
+  "Sé la primera persona de MiMad en apuntarte": {
+    "en": "Be the first person on MiMad to sign up",
+    "fr": "Sois la première personne sur MiMad à t'inscrire",
+    "ar": "كن أول شخص في MiMad يسجّل",
+    "ro": "Fii prima persoană din MiMad care se înscrie",
+    "zh": "成为 MiMad 上第一个报名的人",
+    "uk": "Стань першою людиною в MiMad, яка запишеться",
+    "pt": "Sê a primeira pessoa no MiMad a inscrever-te",
+    "de": "Sei die erste Person bei MiMad, die sich anmeldet"
+  },
+  "Se repite cada semana": {
+    "en": "Repeats every week",
+    "fr": "Se répète chaque semaine",
+    "ar": "يتكرر كل أسبوع",
+    "ro": "Se repetă în fiecare săptămână",
+    "zh": "每周重复",
+    "uk": "Повторюється щотижня",
+    "pt": "Repete-se todas as semanas",
+    "de": "Wiederholt sich jede Woche"
+  },
+  "Sobre el plan": {
+    "en": "About the plan",
+    "fr": "À propos du plan",
+    "ar": "عن الخطة",
+    "ro": "Despre plan",
+    "zh": "关于活动",
+    "uk": "Про захід",
+    "pt": "Sobre o plano",
+    "de": "Über den Plan"
+  },
+  "Solo la entidad que organiza el plan puede escribir aquí.": {
+    "en": "Only the organization hosting the plan can write here.",
+    "fr": "Seule l'entité qui organise le plan peut écrire ici.",
+    "ar": "الجهة المنظِّمة للخطة وحدها يمكنها الكتابة هنا.",
+    "ro": "Doar entitatea care organizează planul poate scrie aici.",
+    "zh": "只有组织该活动的机构才能在这里留言。",
+    "uk": "Писати тут може лише організація, яка проводить захід.",
+    "pt": "Só a entidade que organiza o plano pode escrever aqui.",
+    "de": "Nur die Organisation, die den Plan veranstaltet, kann hier schreiben."
+  },
+  "Talleres": {
+    "en": "Workshops",
+    "fr": "Ateliers",
+    "ar": "ورشات",
+    "ro": "Ateliere",
+    "zh": "工作坊",
+    "uk": "Майстер-класи",
+    "pt": "Workshops",
+    "de": "Workshops"
+  },
+  "Te has apuntado · Está en tu agenda": {
+    "en": "You've signed up · It's in your calendar",
+    "fr": "Tu es inscrit·e · C'est dans ton agenda",
+    "ar": "تم تسجيلك · أصبحت في أجندتك",
+    "ro": "Te-ai înscris · Este în agenda ta",
+    "zh": "你已报名 · 已加入你的日程",
+    "uk": "Тебе записано · Це вже в твоєму календарі",
+    "pt": "Inscreveste-te · Está na tua agenda",
+    "de": "Du bist angemeldet · Es steht in deinem Kalender"
+  },
+  "Teatro": {
+    "en": "Theater",
+    "fr": "Théâtre",
+    "ar": "مسرح",
+    "ro": "Teatru",
+    "zh": "戏剧",
+    "uk": "Театр",
+    "pt": "Teatro",
+    "de": "Theater"
+  },
+  "Teatro y cine": {
+    "en": "Theater and film",
+    "fr": "Théâtre et cinéma",
+    "ar": "المسرح والسينما",
+    "ro": "Teatru și film",
+    "zh": "戏剧和电影",
+    "uk": "Театр і кіно",
+    "pt": "Teatro e cinema",
+    "de": "Theater und Kino"
+  },
+  "Tecnología": {
+    "en": "Technology",
+    "fr": "Technologie",
+    "ar": "التكنولوجيا",
+    "ro": "Tehnologie",
+    "zh": "科技",
+    "uk": "Технології",
+    "pt": "Tecnologia",
+    "de": "Technologie"
+  },
+  "ti": {
+    "en": "you",
+    "fr": "toi",
+    "ar": "لك",
+    "ro": "tine",
+    "zh": "你",
+    "uk": "тобі",
+    "pt": "ti",
+    "de": "dich"
+  },
+  "Tipo de actividad": {
+    "en": "Type of activity",
+    "fr": "Type d'activité",
+    "ar": "نوع النشاط",
+    "ro": "Tip de activitate",
+    "zh": "活动类型",
+    "uk": "Тип активності",
+    "pt": "Tipo de atividade",
+    "de": "Art der Aktivität"
+  },
+  "Toca para volver a tu ubicación": {
+    "en": "Tap to go back to your location",
+    "fr": "Touche pour revenir à ta position",
+    "ar": "اضغط للعودة إلى موقعك",
+    "ro": "Atinge pentru a reveni la locația ta",
+    "zh": "点击回到你的位置",
+    "uk": "Торкнись, щоб повернутися до своєї локації",
+    "pt": "Toca para voltares à tua localização",
+    "de": "Tippe, um zu deinem Standort zurückzukehren"
+  },
+  "todo el mundo": {
+    "en": "everyone",
+    "fr": "tout le monde",
+    "ar": "الجميع",
+    "ro": "toată lumea",
+    "zh": "所有人",
+    "uk": "усі",
+    "pt": "toda a gente",
+    "de": "alle"
+  },
+  "Traducción automática con IA (Claude). El original en español es el que vale.": {
+    "en": "Automatic AI translation (Claude). The Spanish original is the one that counts.",
+    "fr": "Traduction automatique par IA (Claude). L'original en espagnol fait foi.",
+    "ar": "ترجمة آلية بالذكاء الاصطناعي (Claude). النص الأصلي بالإسبانية هو المعتمد.",
+    "ro": "Traducere automată cu IA (Claude). Originalul în spaniolă este cel valabil.",
+    "zh": "AI 自动翻译(Claude)。以西班牙语原文为准。",
+    "uk": "Автоматичний переклад за допомогою ШІ (Claude). Чинним є оригінал іспанською.",
+    "pt": "Tradução automática com IA (Claude). O original em espanhol é o que vale.",
+    "de": "Automatische Übersetzung mit KI (Claude). Maßgeblich ist das spanische Original."
+  },
+  "Traduciendo…": {
+    "en": "Translating…",
+    "fr": "Traduction en cours…",
+    "ar": "جارٍ الترجمة…",
+    "ro": "Se traduce…",
+    "zh": "正在翻译…",
+    "uk": "Перекладаємо…",
+    "pt": "A traduzir…",
+    "de": "Wird übersetzt…"
+  },
+  "Traducir": {
+    "en": "Translate",
+    "fr": "Traduire",
+    "ar": "ترجمة",
+    "ro": "Traduce",
+    "zh": "翻译",
+    "uk": "Перекласти",
+    "pt": "Traduzir",
+    "de": "Übersetzen"
+  },
+  "Traducir este plan": {
+    "en": "Translate this plan",
+    "fr": "Traduire ce plan",
+    "ar": "ترجم هذه الخطة",
+    "ro": "Traduce acest plan",
+    "zh": "翻译此活动",
+    "uk": "Перекласти цей захід",
+    "pt": "Traduzir este plano",
+    "de": "Diesen Plan übersetzen"
+  },
+  "Trámites y orientación": {
+    "en": "Paperwork and guidance",
+    "fr": "Démarches et orientation",
+    "ar": "إجراءات وإرشاد",
+    "ro": "Formalități și orientare",
+    "zh": "手续与指引",
+    "uk": "Документи та орієнтація",
+    "pt": "Burocracias e orientação",
+    "de": "Behördengänge und Orientierung"
+  },
+  "tu casa": {
+    "en": "your home",
+    "fr": "chez toi",
+    "ar": "بيتك",
+    "ro": "acasă la tine",
+    "zh": "你家",
+    "uk": "твій дім",
+    "pt": "a tua casa",
+    "de": "dein Zuhause"
+  },
+  "Tu casa": {
+    "en": "Your home",
+    "fr": "Chez toi",
+    "ar": "بيتك",
+    "ro": "Acasă la tine",
+    "zh": "你家",
+    "uk": "Твій дім",
+    "pt": "A tua casa",
+    "de": "Dein Zuhause"
+  },
+  "tu código postal": {
+    "en": "your postal code",
+    "fr": "ton code postal",
+    "ar": "رمزك البريدي",
+    "ro": "codul tău poștal",
+    "zh": "你的邮政编码",
+    "uk": "твій поштовий індекс",
+    "pt": "o teu código postal",
+    "de": "deine Postleitzahl"
+  },
+  "Tú también vas": {
+    "en": "You're going too",
+    "fr": "Toi aussi, tu y vas",
+    "ar": "ستحضر أنت أيضًا",
+    "ro": "Mergi și tu",
+    "zh": "你也去",
+    "uk": "Ти теж ідеш",
+    "pt": "Tu também vais",
+    "de": "Du gehst auch hin"
+  },
+  "Tu ubicación": {
+    "en": "Your location",
+    "fr": "Ta position",
+    "ar": "موقعك",
+    "ro": "Locația ta",
+    "zh": "你的位置",
+    "uk": "Твоя локація",
+    "pt": "A tua localização",
+    "de": "Dein Standort"
+  },
+  "Unos {n} minutos · ruta en Google Maps": {
+    "en": "About {n} minutes · route on Google Maps",
+    "fr": "Environ {n} minutes · itinéraire sur Google Maps",
+    "ar": "حوالي {n} دقيقة · مسار على Google Maps",
+    "ro": "Aproximativ {n} minute · traseu în Google Maps",
+    "zh": "大约 {n} 分钟 · Google Maps 路线",
+    "uk": "Приблизно {n} хв · маршрут у Google Maps",
+    "pt": "Cerca de {n} minutos · rota no Google Maps",
+    "de": "Etwa {n} Minuten · Route in Google Maps"
+  },
+  "Usar": {
+    "en": "Use",
+    "fr": "Utiliser",
+    "ar": "استخدم",
+    "ro": "Folosește",
+    "zh": "使用",
+    "uk": "Використати",
+    "pt": "Usar",
+    "de": "Verwenden"
+  },
+  "Ver": {
+    "en": "View",
+    "fr": "Voir",
+    "ar": "عرض",
+    "ro": "Vezi",
+    "zh": "查看",
+    "uk": "Дивитися",
+    "pt": "Ver",
+    "de": "Ansehen"
+  },
+  "Ver la web oficial": {
+    "en": "View the official website",
+    "fr": "Voir le site officiel",
+    "ar": "عرض الموقع الرسمي",
+    "ro": "Vezi site-ul oficial",
+    "zh": "查看官网",
+    "uk": "Відкрити офіційний сайт",
+    "pt": "Ver o site oficial",
+    "de": "Offizielle Website öffnen"
+  },
+  "Ver mapa": {
+    "en": "View map",
+    "fr": "Voir la carte",
+    "ar": "عرض الخريطة",
+    "ro": "Vezi harta",
+    "zh": "查看地图",
+    "uk": "Дивитися мапу",
+    "pt": "Ver mapa",
+    "de": "Karte ansehen"
+  },
+  "Ver más planes": {
+    "en": "See more plans",
+    "fr": "Voir plus de plans",
+    "ar": "عرض المزيد من الخطط",
+    "ro": "Vezi mai multe planuri",
+    "zh": "查看更多活动",
+    "uk": "Більше заходів",
+    "pt": "Ver mais planos",
+    "de": "Mehr Pläne ansehen"
+  },
+  "Ver planes en otra zona": {
+    "en": "See plans in another area",
+    "fr": "Voir des activités dans une autre zone",
+    "ar": "عرض الأنشطة في منطقة أخرى",
+    "ro": "Vezi activități în altă zonă",
+    "zh": "查看其他区域的活动",
+    "uk": "Дивитися заходи в іншому районі",
+    "pt": "Ver atividades em outra zona",
+    "de": "Aktivitäten in einer anderen Gegend ansehen"
+  },
+  "Ver todos los planes": {
+    "en": "See all plans",
+    "fr": "Voir toutes les activités",
+    "ar": "عرض جميع الأنشطة",
+    "ro": "Vezi toate activitățile",
+    "zh": "查看所有活动",
+    "uk": "Дивитися всі заходи",
+    "pt": "Ver todas as atividades",
+    "de": "Alle Aktivitäten ansehen"
+  },
+  "Versión simplificada": {
+    "en": "Simplified version",
+    "fr": "Version simplifiée",
+    "ar": "نسخة مبسّطة",
+    "ro": "Versiune simplificată",
+    "zh": "简化版",
+    "uk": "Спрощена версія",
+    "pt": "Versão simplificada",
+    "de": "Vereinfachte Version"
+  },
+  "Viendo planes en": {
+    "en": "Showing plans in",
+    "fr": "Activités affichées à",
+    "ar": "عرض الأنشطة في",
+    "ro": "Activități afișate în",
+    "zh": "正在查看以下地区的活动",
+    "uk": "Показано заходи в",
+    "pt": "Mostrando atividades em",
+    "de": "Aktivitäten werden angezeigt in"
+  },
+  "Visitas y rutas": {
+    "en": "Visits and routes",
+    "fr": "Visites et parcours",
+    "ar": "زيارات ومسارات",
+    "ro": "Vizite și trasee",
+    "zh": "参观与路线",
+    "uk": "Відвідування та маршрути",
+    "pt": "Visitas e rotas",
+    "de": "Besuche und Routen"
+  },
+  "Vista": {
+    "en": "View",
+    "fr": "Affichage",
+    "ar": "العرض",
+    "ro": "Vizualizare",
+    "zh": "视图",
+    "uk": "Вигляд",
+    "pt": "Visualização",
+    "de": "Ansicht"
+  },
+  "Voluntariado": {
+    "en": "Volunteering",
+    "fr": "Bénévolat",
+    "ar": "التطوع",
+    "ro": "Voluntariat",
+    "zh": "志愿服务",
+    "uk": "Волонтерство",
+    "pt": "Voluntariado",
+    "de": "Ehrenamt"
+  },
+  "Volver a usar mi casa": {
+    "en": "Use my home again",
+    "fr": "Utiliser à nouveau mon domicile",
+    "ar": "استخدام منزلي مرة أخرى",
+    "ro": "Folosește din nou locuința mea",
+    "zh": "重新使用我的住所",
+    "uk": "Знову використовувати мою домашню адресу",
+    "pt": "Voltar a usar minha casa",
+    "de": "Meinen Wohnort wieder verwenden"
+  },
+  "y te recomendaremos planes.": {
+    "en": "and we'll recommend plans.",
+    "fr": "et nous te recommanderons des activités.",
+    "ar": "وسنقترح عليك أنشطة.",
+    "ro": "și îți vom recomanda activități.",
+    "zh": "我们会为你推荐活动。",
+    "uk": "і ми порекомендуємо тобі заходи.",
+    "pt": "e vamos recomendar atividades para você.",
+    "de": "und wir empfehlen dir Aktivitäten."
+  },
+  "Ya ha empezado: consulta los días y horarios en la web oficial": {
+    "en": "It has already started: check the days and times on the official website",
+    "fr": "C'est déjà commencé : consulte les jours et horaires sur le site officiel",
+    "ar": "بدأ بالفعل: اطّلع على الأيام والمواعيد على الموقع الرسمي",
+    "ro": "A început deja: consultă zilele și orele pe site-ul oficial",
+    "zh": "已经开始：请在官方网站查看日期和时间",
+    "uk": "Вже почалося: перевір дні та години на офіційному сайті",
+    "pt": "Já começou: consulte os dias e horários no site oficial",
+    "de": "Hat schon begonnen: Tage und Zeiten findest du auf der offiziellen Website"
+  },
+  "Ya no voy": {
+    "en": "I'm not going anymore",
+    "fr": "Je n'y vais plus",
+    "ar": "لن أذهب بعد الآن",
+    "ro": "Nu mai merg",
+    "zh": "我不去了",
+    "uk": "Я більше не йду",
+    "pt": "Não vou mais",
+    "de": "Ich gehe nicht mehr hin"
+  }
+}

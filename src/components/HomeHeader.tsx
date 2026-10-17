@@ -4,14 +4,14 @@
 // El buscador va aparte (SearchBox), encima de «Lista / Mapa».
 import Image from "next/image";
 import Link from "next/link";
-import { cookies } from "next/headers";
 import { Bell, Globe } from "lucide-react";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import LocationChip from "@/components/LocationChip";
 import LanguageMenu from "@/components/LanguageMenu";
 import ShrinkOnScroll from "@/components/ShrinkOnScroll";
 import { switchToSimple } from "@/app/(app)/actions";
-import { LANG_COOKIE, parseLanguage } from "@/lib/languages";
+import { getLang } from "@/lib/i18n/server";
+import { makeT } from "@/lib/i18n";
 import type { Perfil } from "@/lib/profile";
 import type { OriginKind } from "@/lib/origin";
 import { getZones } from "@/lib/zones";
@@ -36,25 +36,25 @@ export default async function HomeHeader({
   zone?: string; // zona elegida en "Ver planes en otra zona"
   newcomers?: { active: boolean; href: string }; // "Recién llegados" (solo en Inicio)
 }) {
-  const [{ count: unread }, zones, store] = await Promise.all([
+  const [{ count: unread }, zones, lang] = await Promise.all([
     perfil ? db.from("mm_notificaciones").select("*", { count: "exact", head: true }).eq("leida", false) : Promise.resolve({ count: 0 }),
     getZones(),
-    cookies(),
+    getLang(),
   ]);
-  const lang = parseLanguage(store.get(LANG_COOKIE)?.value);
+  const t = makeT(lang);
   const place = [perfil?.municipio ?? "Madrid", perfil?.barrio].filter(Boolean).join(", ");
 
   return (
     <>
       <ShrinkOnScroll className="sticky top-0 z-[700] flex items-center gap-2.5 border-b border-slate-200/70 bg-white/95 px-5 py-2.5 backdrop-blur transition-[padding] duration-200 data-[compact=true]:py-1.5 data-[compact=true]:shadow-sm">
-        <Link href="/" aria-label="MiMad, inicio" className="shrink-0">
+        <Link href="/" aria-label={t("MiMad, inicio")} className="shrink-0">
           <Image src="/icono.svg" alt="" width={40} height={40} priority className="h-10 w-10 transition-all duration-200 group-data-[compact=true]:h-8 group-data-[compact=true]:w-8" />
         </Link>
-        <LocationChip place={place} kind={originKind} zone={zone} zones={zones.map((z) => z.name)} loggedIn={!!perfil} />
+        <LocationChip place={place} kind={originKind} zone={zone} zones={zones.map((z) => z.name)} loggedIn={!!perfil} lang={lang} />
         <LanguageMenu current={lang} />
         <Link
           href="/notificaciones"
-          aria-label={unread ? `Notificaciones: ${unread} sin leer` : "Notificaciones"}
+          aria-label={unread ? t("Notificaciones: {n} sin leer", { n: unread }) : t("Notificaciones")}
           className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-slate-100 transition-all duration-200 group-data-[compact=true]:h-9 group-data-[compact=true]:w-9"
         >
           <Bell size={20} aria-hidden="true" />
@@ -66,7 +66,7 @@ export default async function HomeHeader({
         <form action={switchToSimple}>
           <button type="submit" role="switch" aria-checked="false" className={`${tile} bg-gradient-to-br from-coral/10 to-ambar/10 ring-coral/25`}>
             <span className="bg-degradado flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-sm font-bold text-white" aria-hidden="true">Aa</span>
-            <span className="min-w-0 flex-1 text-[15px] font-semibold leading-tight">Versión simplificada</span>
+            <span className="min-w-0 flex-1 text-[15px] font-semibold leading-tight">{t("Versión simplificada")}</span>
             <Switch on={false} />
           </button>
         </form>
@@ -82,7 +82,7 @@ export default async function HomeHeader({
             <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-sky-600 to-emerald-600 text-white" aria-hidden="true">
               <Globe size={20} />
             </span>
-            <span className="min-w-0 flex-1 text-[15px] font-semibold leading-tight">Recién llegados</span>
+            <span className="min-w-0 flex-1 text-[15px] font-semibold leading-tight">{t("Recién llegados")}</span>
             <Switch on={newcomers.active} />
           </Link>
         )}

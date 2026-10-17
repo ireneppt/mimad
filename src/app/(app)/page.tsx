@@ -14,6 +14,9 @@ import {
 import EventCard from "@/components/EventCard";
 import Welcome from "@/components/Welcome";
 import HomeHeader from "@/components/HomeHeader";
+import { getLang } from "@/lib/i18n/server";
+import { translateTitles } from "@/lib/translate";
+import { makeT } from "@/lib/i18n";
 import SearchBox from "@/components/SearchBox";
 import ViewToggle from "@/components/ViewToggle";
 
@@ -45,6 +48,8 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
   const supabase = await createClient();
   const [perfil, fuentes] = await Promise.all([getCurrentProfile(supabase), getSources()]);
   const origin = await getOrigin(perfil, { allowZone: true });
+  const lang = await getLang();
+  const t = makeT(lang);
 
   const search = (params.q ?? "").trim().slice(0, 60);
   const intereses = perfil?.intereses ?? [];
@@ -136,6 +141,9 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
   }
   const shown = events.slice(0, limit);
   const photos = listPhotos(shown);
+  // En otro idioma: los títulos de los planes para personas extranjeras (CEPI, idiomas), traducidos
+  const titles: Record<string, string> =
+    lang !== "es" ? await translateTitles(shown.filter((e) => isNewcomerPlan(e) || isLanguagePlan(e)).map((e) => [e.id, e.titulo]), lang) : {};
 
   const usedSources = [...new Set(shown.map((e) => e.fuente))].map((id) => fuentes[id]).filter(Boolean);
 
@@ -174,7 +182,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
   const moreHref = () => href({ n: limit + PAGE });
 
   // "Planes del viernes 7 de noviembre", "Planes de hoy"…
-  const dayTitle = pickedDay ? `Planes del ${formatDayLong(pickedDay)}` : DAY_CHIPS.find((c) => c.id === day)?.title ?? null;
+  const dayTitle = pickedDay ? t("Planes del {dia}", { dia: formatDayLong(pickedDay, lang) }) : t(DAY_CHIPS.find((c) => c.id === day)?.title ?? "") || null;
   const dayChip = (on: boolean) =>
     `flex h-9 shrink-0 items-center gap-1.5 rounded-full px-3.5 text-sm font-medium ${on ? "bg-tinta text-white" : "border border-slate-200 bg-white"}`;
 
@@ -199,7 +207,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
           hidden={{ f: [...active].join(","), ...(picked.length ? { i: picked.join(",") } : {}), ...(dayParam ? { d: dayParam } : {}), ...(group ? { g: group } : {}) }} />
         <ViewToggle current="lista" search={search} />
 
-        <nav aria-label="Filtros" className="sin-barra -mx-5 flex gap-2 overflow-x-auto px-5 pb-1">
+        <nav aria-label={t("Filtros")} className="sin-barra -mx-5 flex gap-2 overflow-x-auto px-5 pb-1">
           {/* Los activos primero: así se ven (y se pueden quitar) aunque la fila se desplace */}
           {chips.filter((c) => !c.hidden).sort((a, b) => Number(active.has(b.id)) - Number(active.has(a.id))).map((c) => {
             const on = active.has(c.id);
@@ -217,7 +225,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
                   const Icon = chipIcon[c.id];
                   return Icon ? <Icon size={16} aria-hidden="true" /> : null;
                 })()}
-                {c.label}
+                {t(c.label)}
               </Link>
             );
           })}
@@ -231,29 +239,29 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
             }`}
           >
             <Sparkles size={16} aria-hidden="true" />
-            Intereses{picked.length ? ` · ${picked.length}` : ""}
+            {t("Intereses")}{picked.length ? ` · ${picked.length}` : ""}
             <ChevronDown size={16} className={interestsOpen ? "rotate-180" : ""} aria-hidden="true" />
           </Link>
         </nav>
 
         {/* Cuándo: tocar el elegido otra vez lo quita (vuelven las próximas dos semanas) */}
-        <nav aria-label="Cuándo" className="sin-barra -mx-5 -mt-2 flex gap-2 overflow-x-auto px-5 pb-1">
+        <nav aria-label={t("Cuándo")} className="sin-barra -mx-5 -mt-2 flex gap-2 overflow-x-auto px-5 pb-1">
           {DAY_CHIPS.map((c) => {
             const on = day === c.id;
             return (
               <Link key={c.id} href={href({ d: on ? null : c.id, n: 0 })} aria-pressed={on} scroll={false} className={dayChip(on)}>
-                {c.label}
+                {t(c.label)}
               </Link>
             );
           })}
           <DayPicker value={pickedDay} today={today} baseHref={href({ d: null, n: 0 })} param="d" todayHref={href({ d: "hoy", n: 0 })} className={dayChip(!!pickedDay)}>
             <CalendarDays size={16} aria-hidden="true" />
-            {pickedDay ? formatDayLong(pickedDay).replace(/ de .*/, "") : "Elegir día"}
+            {pickedDay ? (lang === "es" ? formatDayLong(pickedDay).replace(/ de .*/, "") : formatDayLong(pickedDay, lang)) : t("Elegir día")}
           </DayPicker>
         </nav>
 
         {interestsOpen && (
-          <nav aria-label="Filtrar por intereses" className="-mt-2 flex flex-wrap gap-2 rounded-3xl bg-white p-3 ring-1 ring-slate-200">
+          <nav aria-label={t("Filtrar por intereses")} className="-mt-2 flex flex-wrap gap-2 rounded-3xl bg-white p-3 ring-1 ring-slate-200">
             {INTERESTS.map(({ id, label, icon: Icon }) => {
               const on = picked.includes(id);
               return (
@@ -266,25 +274,24 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
                     on ? "bg-degradado text-white" : "bg-slate-50 text-tinta ring-1 ring-slate-200"
                   }`}
                 >
-                  <Icon size={17} className={on ? "" : "text-coral-texto"} aria-hidden="true" /> {label}
+                  <Icon size={17} className={on ? "" : "text-coral-texto"} aria-hidden="true" /> {t(label)}
                 </Link>
               );
             })}
             {picked.length > 0 && (
               <Link href={href({ i: [] })} scroll={false} className="flex h-11 items-center px-3 text-base font-medium text-coral-texto underline">
-                Quitar
+                {t("Quitar")}
               </Link>
             )}
           </nav>
         )}
 
         {newcomers && (
-          <section aria-label="Recién llegados" className="-mt-2 flex flex-col gap-3 rounded-3xl bg-white p-4 ring-1 ring-slate-200">
+          <section aria-label={t("Recién llegados")} className="-mt-2 flex flex-col gap-3 rounded-3xl bg-white p-4 ring-1 ring-slate-200">
             <p className="text-base leading-relaxed">
-              Actividades gratuitas de los <strong>CEPI</strong>, los centros de participación e integración de la Comunidad de Madrid: clases de
-              español, ayuda con trámites, empleo y actividades para conocer gente. Son de este mes: pregunta en el centro el día y la hora.
+              {t("Actividades gratuitas de los CEPI, los centros de participación e integración de la Comunidad de Madrid: clases de español, ayuda con trámites, empleo y actividades para conocer gente. Son de este mes: pregunta en el centro el día y la hora.")}
             </p>
-            <nav aria-label="Tipo de actividad" className="flex flex-wrap gap-2">
+            <nav aria-label={t("Tipo de actividad")} className="flex flex-wrap gap-2">
               {NEWCOMER_GROUPS.map(({ id, label, icon: Icon }) => {
                 const on = group === id;
                 return (
@@ -297,7 +304,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
                       on ? "bg-degradado text-white" : "bg-slate-50 text-tinta ring-1 ring-slate-200"
                     }`}
                   >
-                    <Icon size={17} className={on ? "" : "text-coral-texto"} aria-hidden="true" /> {label}
+                    <Icon size={17} className={on ? "" : "text-coral-texto"} aria-hidden="true" /> {t(label)}
                   </Link>
                 );
               })}
@@ -307,51 +314,51 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
 
         {active.has("para-ti") && intereses.length === 0 && !picked.length && (
           <p className="rounded-2xl bg-crema p-4 text-base">
-            Aún no has elegido tus intereses. <Link href="/perfil" className="font-semibold text-coral-texto underline">Elígelos en tu perfil</Link> y te recomendaremos planes.
+            {t("Aún no has elegido tus intereses.")} <Link href="/perfil" className="font-semibold text-coral-texto underline">{t("Elígelos en tu perfil")}</Link> {t("y te recomendaremos planes.")}
           </p>
         )}
 
         {widened && shown.length > 0 && (
           <p role="status" className="rounded-2xl bg-crema p-4 text-base">
-            Cerca de {origin.zone ?? "ti"} hay pocos planes: te enseñamos los más cercanos{radius ? `, hasta a ${radius} km` : " de toda la Comunidad de Madrid"}.
+            {radius ? t("Cerca de {lugar} hay pocos planes: te enseñamos los más cercanos, hasta a {km} km.", { lugar: origin.zone ?? t("ti"), km: radius }) : t("Cerca de {lugar} hay pocos planes: te enseñamos los más cercanos de toda la Comunidad de Madrid.", { lugar: origin.zone ?? t("ti") })}
           </p>
         )}
 
         <div className="flex items-baseline justify-between">
-          <h1 className="text-3xl font-bold">{search ? `«${search}»` : (dayTitle ?? (newcomers ? "Para recién llegados" : languages ? "Planes de idiomas" : "Próximas quedadas"))}</h1>
-          <Link href="/mapa" className="text-lg font-semibold text-coral-texto">Ver mapa</Link>
+          <h1 className="text-3xl font-bold">{search ? `«${search}»` : (dayTitle ?? t(newcomers ? "Para recién llegados" : languages ? "Planes de idiomas" : "Próximas quedadas"))}</h1>
+          <Link href="/mapa" className="text-lg font-semibold text-coral-texto">{t("Ver mapa")}</Link>
         </div>
 
         {shown.length === 0 ? (
           <div className="flex flex-col items-center gap-3 rounded-3xl bg-white p-8 text-center">
-            <p className="text-xl font-semibold">No hay planes con estos filtros</p>
-            <p className="text-base text-gris">Prueba a quitar algún filtro{active.has("cerca") ? " o a buscar más lejos" : ""}.</p>
-            <Link href="/?f=" className="mt-2 rounded-2xl border border-slate-300 px-5 py-3 font-medium">Ver todos los planes</Link>
+            <p className="text-xl font-semibold">{t("No hay planes con estos filtros")}</p>
+            <p className="text-base text-gris">{active.has("cerca") ? t("Prueba a quitar algún filtro o a buscar más lejos.") : t("Prueba a quitar algún filtro.")}</p>
+            <Link href="/?f=" className="mt-2 rounded-2xl border border-slate-300 px-5 py-3 font-medium">{t("Ver todos los planes")}</Link>
           </div>
         ) : (
           <div className="flex flex-col gap-5">
             {shown.map((e, i) => (
-              <EventCard key={e.id} evento={e} photo={photos[i]} fuente={fuentes[e.fuente]} distanceKm={origin.kind !== "centro" ? withKm(e) : undefined} onDay={range?.from} />
+              <EventCard key={e.id} evento={e} photo={photos[i]} fuente={fuentes[e.fuente]} distanceKm={origin.kind !== "centro" ? withKm(e) : undefined} onDay={range?.from} lang={lang} title={titles[e.id]} />
             ))}
           </div>
         )}
 
         {events.length > shown.length && (
           <Link href={moreHref()} scroll={false} className="flex h-14 items-center justify-center rounded-2xl border border-slate-300 bg-white text-lg font-medium">
-            Ver más planes
+            {t("Ver más planes")}
           </Link>
         )}
 
         {usedSources.length > 0 && (
           <section aria-labelledby="fuentes" className="flex flex-col gap-2 rounded-2xl bg-white p-4">
             <h2 id="fuentes" className="flex items-center gap-2 text-base font-semibold">
-              <Database size={18} aria-hidden="true" /> Datos abiertos de esta lista
+              <Database size={18} aria-hidden="true" /> {t("Datos abiertos de esta lista")}
             </h2>
             <ul className="flex flex-col gap-1 text-sm text-gris">
               {usedSources.map((f) => (
                 <li key={f.id}>
                   <a href={f.url_ficha} target="_blank" rel="noopener noreferrer" className="underline">{f.nombre}</a> · {f.organismo}
-                  {f.ultima_carga && ` · actualizado el ${new Date(f.ultima_carga).toLocaleDateString("es-ES", { day: "numeric", month: "short", timeZone: "Europe/Madrid" })}`}
+                  {f.ultima_carga && ` · ${t("actualizado el {fecha}", { fecha: new Date(f.ultima_carga).toLocaleDateString(lang === "es" ? "es-ES" : lang, { day: "numeric", month: "short", timeZone: "Europe/Madrid" }) })}`}
                 </li>
               ))}
             </ul>

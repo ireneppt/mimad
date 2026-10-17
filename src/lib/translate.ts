@@ -77,3 +77,36 @@ export function translateWithinLimit(userId: string): boolean {
   uso.set(userId, recent);
   return true;
 }
+
+// Títulos de una lista de planes (los de personas extranjeras en el Inicio): una sola
+// llamada por página, guardada una semana. Si falla, se quedan en español.
+const translateTitlesNow = async (items: [string, string][], lang: TranslateLanguage): Promise<Record<string, string>> => {
+  if (!items.length || !process.env.ANTHROPIC_API_KEY) return {};
+  const idioma = TRANSLATE_LANGUAGES.find((l) => l.id === lang)!.name;
+  try {
+    const response = await new Anthropic().beta.messages.create({
+      model: MODEL,
+      max_tokens: 3000,
+      system:
+        `Traduces títulos de actividades de Madrid del español al ${idioma}, para personas extranjeras. Traducción fiel, corta y clara. ` +
+        "Deja sin traducir los nombres propios (centros, lugares, programas con nombre propio). Devuelve los títulos en el mismo orden.",
+      messages: [{ role: "user", content: JSON.stringify(items.map(([, titulo]) => titulo)) }],
+      output_config: {
+        effort: "low",
+        format: {
+          type: "json_schema",
+          schema: { type: "object", properties: { titulos: { type: "array", items: { type: "string" } } }, required: ["titulos"], additionalProperties: false },
+        },
+      },
+    });
+    const text = response.content.flatMap((b) => (b.type === "text" ? [b.text] : [])).join("");
+    const { titulos } = JSON.parse(text) as { titulos: string[] };
+    console.info(`[traducir] títulos ${lang}: ${items.length} (${response.usage.input_tokens}+${response.usage.output_tokens} tokens)`);
+    return Object.fromEntries(items.flatMap(([id], i) => (titulos[i] ? [[id, titulos[i]]] : [])));
+  } catch (err) {
+    console.error("[traducir] no se han podido traducir los títulos:", err);
+    return {};
+  }
+};
+
+export const translateTitles = unstable_cache(translateTitlesNow, ["traduccion-titulos-v1"], { revalidate: 7 * 24 * 3600 });
