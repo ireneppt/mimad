@@ -2,6 +2,7 @@
 // el degradado de la marca con el icono de su tipo.
 import type { ReactNode } from "react";
 import { categoryInfo } from "@/lib/categories";
+import EventPhoto from "./EventPhoto";
 
 export default function EventImage({
   src, categoria, className = "", iconSize = 56, children, credit,
@@ -17,18 +18,14 @@ export default function EventImage({
   return (
     <div className={`relative overflow-hidden ${src ? "bg-slate-100" : "bg-degradado"} ${className}`}>
       {src ? (
-        // Fotos de otras webs (esmadrid.com) o ya reducidas en el móvil: sin optimizador
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={src} alt="" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover" />
+        // La foto va aparte (componente de navegador) para poder detectar si no carga
+        <EventPhoto src={src} categoria={categoria} iconSize={iconSize} credit={credit} />
       ) : (
         <span className="absolute inset-0 flex items-center justify-center" aria-hidden="true">
           <Icon size={iconSize} className="text-white/90" />
         </span>
       )}
       {children}
-      {src && credit && (
-        <span className="absolute bottom-1.5 right-2 rounded bg-black/45 px-1.5 py-0.5 text-[11px] text-white">{credit}</span>
-      )}
     </div>
   );
 }

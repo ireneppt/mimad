@@ -95,8 +95,36 @@ function score(e: Evento, km: number | null, gusto: string | null, todos = false
   return s;
 }
 
+// ¿Se puede ofrecer este plan en la ventana elegida? (público, filtro y que no haya pasado ya).
+// La consulta ya trae solo lo que cae en esas fechas; esto afina lo que la consulta no puede.
+function availableIn(when: PlanWindow, opts: { todos?: boolean; filter?: (e: Evento) => boolean }) {
+  const [from, to] = windowFor(when);
+  // Días de la semana que cubre la ventana (para los talleres semanales); null = toda la semana
+  const days = when === "semana" ? null : [...new Set([from, to])].map(weekdayOf);
+  const now = nowIso();
+  return (e: Evento): boolean => {
+    const publico = e.publico ?? "";
+    if (!opts.todos && NOT_FOR_SENIORS.test(publico) && !/mayores/i.test(publico)) return false;
+    if (opts.filter && !opts.filter(e)) return false;
+    if (!e.fecha_inicio) {
+      // Talleres semanales: en "Hoy", "Mañana" o el fin de semana, solo los de esos días
+      if (days && !days.some((d) => plain(e.horario ?? "").includes(plain(d)))) return false;
+      // Hoy: si ya ha empezado ("Cada viernes, 12:00 - 13:30" a las 13:05), no se ofrece
+      const start = (e.horario ?? "").match(/(\d{1,2}):(\d{2})/);
+      if (when === "hoy" && start && `${from}T${start[1].padStart(2, "0")}:${start[2]}` < now) return false;
+      return true;
+    }
+    // Plan de un solo día que ya ha empezado
+    const oneDay = !e.fecha_fin || e.fecha_fin.slice(0, 10) === e.fecha_inicio.slice(0, 10);
+    if (oneDay && e.fecha_inicio.slice(11, 16) !== "00:00" && e.fecha_inicio.slice(0, 16) < now) return false;
+    return true;
+  };
+}
+
 // Máximo de planes que se enseñan: pocos y buenos, para no abrumar
 export const MAX_PLANS = 10;
+// "Cerca de casa": hasta unos 4 km (lo que se busca para los planes cercanos)
+export const NEARBY_KM = 4;
 
 export async function getSimplePlans(
   db: SupabaseClient,
@@ -116,7 +144,7 @@ export async function getSimplePlans(
   const end = `${to}T23:59:59`;
 
   // Caja de unos 4 km alrededor de casa (1º de latitud ≈ 111 km)
-  const km = 4;
+  const km = NEARBY_KM;
   const dLat = km / 111;
   const dLon = km / (111 * Math.cos((home.lat * Math.PI) / 180));
 
@@ -131,26 +159,8 @@ export async function getSimplePlans(
     .limit(400);
   if (error) throw new Error(`No se pudieron cargar los planes: ${error.message}`);
 
-  // Días de la semana que cubre la ventana (para los talleres semanales); null = toda la semana
-  const days = when === "semana" ? null : [...new Set([from, to])].map(weekdayOf);
-  const now = nowIso();
-  const nearby = ((data ?? []) as Evento[]).filter((e) => {
-    const publico = e.publico ?? "";
-    if (!todos && NOT_FOR_SENIORS.test(publico) && !/mayores/i.test(publico)) return false;
-    if (filter && !filter(e)) return false;
-    if (!e.fecha_inicio) {
-      // Talleres semanales: en "Hoy", "Mañana" o el fin de semana, solo los de esos días
-      if (days && !days.some((d) => plain(e.horario ?? "").includes(plain(d)))) return false;
-      // Hoy: si ya ha empezado ("Cada viernes, 12:00 - 13:30" a las 13:05), no se ofrece
-      const start = (e.horario ?? "").match(/(\d{1,2}):(\d{2})/);
-      if (when === "hoy" && start && `${from}T${start[1].padStart(2, "0")}:${start[2]}` < now) return false;
-      return true;
-    }
-    // Plan de un solo día que ya ha empezado
-    const oneDay = !e.fecha_fin || e.fecha_fin.slice(0, 10) === e.fecha_inicio.slice(0, 10);
-    if (oneDay && e.fecha_inicio.slice(11, 16) !== "00:00" && e.fecha_inicio.slice(0, 16) < now) return false;
-    return true;
-  });
+  const available = availableIn(when, { todos, filter });
+  const nearby = ((data ?? []) as Evento[]).filter(available);
 
   // Los recomendados por la familia van siempre primero, aunque sean de otro día
   const recIds = [...new Set(recomendaciones.map((r) => r.evento_id))];
@@ -169,6 +179,78 @@ export async function getSimplePlans(
     .sort((a, b) => score(b.evento, b.km, b.gusto, todos) - score(a.evento, a.km, a.gusto, todos) || a.evento.id.localeCompare(b.evento.id));
 
   return [...recommended, ...mixKinds(rest, max <= MAX_PLANS ? MAX_PER_KIND : 6)].slice(0, Math.max(max, recommended.length));
+}
+
+// Primera hora "HH:MM" de un texto ("Cada jueves, 16:00 - 17:30" → "16:00"); "00:00" = sin hora
+function firstTime(s: string | null | undefined): string | null {
+  const m = (s ?? "").match(/(\d{1,2}):(\d{2})/);
+  const t = m ? `${m[1].padStart(2, "0")}:${m[2]}` : null;
+  return t === "00:00" ? null : t;
+}
+
+// Cuándo empieza un plan dentro de la ventana, para ordenar por hora: "2026-10-17T18:00".
+// Sin hora conocida, al final de su día ("…T99:99").
+function startKey(e: Evento, from: string, to: string): string {
+  if (!e.fecha_inicio) {
+    // Taller semanal: el primer día de la ventana que le toca
+    let day = from;
+    for (let d = from; d <= to; d = addDays(d, 1)) {
+      if (plain(e.horario ?? "").includes(plain(weekdayOf(d)))) {
+        day = d;
+        break;
+      }
+    }
+    return `${day}T${firstTime(e.horario) ?? "99:99"}`;
+  }
+  const day = e.fecha_inicio.slice(0, 10) > from ? e.fecha_inicio.slice(0, 10) : from; // ya empezado: cuenta desde hoy
+  const time = firstTime(e.horario) ?? firstTime(e.fecha_inicio.slice(11, 16));
+  return `${day}T${time ?? "99:99"}`;
+}
+
+// Hasta cuántos "Otros planes en Madrid" se preparan (se enseñan poco a poco en la pantalla)
+export const MAX_OTHER_PLANS = 60;
+
+// "Otros planes en Madrid": los de la ventana que NO están cerca de casa (a más de NEARBY_KM),
+// menos los que ya salen arriba (exclude), con las mismas reglas que los cercanos y por hora.
+export async function getOtherPlans(
+  db: SupabaseClient,
+  opts: {
+    home: { lat: number; lon: number };
+    when: PlanWindow;
+    exclude: string[];
+    recomendaciones: Recomendacion[];
+    intereses: string[];
+    max?: number;
+  }
+): Promise<Plan[]> {
+  const { home, when, exclude, recomendaciones, intereses, max = MAX_OTHER_PLANS } = opts;
+  const [from, to] = windowFor(when);
+  const start = `${from}T00:00:00`;
+  const end = `${to}T23:59:59`;
+
+  // Sin la descripción (no se enseña en la lista y es lo que más pesa).
+  // Dos consultas (cada una trae como mucho 1000 filas): los que empiezan en estos días,
+  // del más temprano al más tarde, y los que ya estaban en marcha (exposiciones, talleres semanales).
+  const columns =
+    "id, fuente, titulo, categoria, fecha_inicio, fecha_fin, horario, recurrente, lugar, direccion, municipio, distrito, lat, lon, url, gratuito, precio, accesibilidad, publico, idioma, imagen";
+  const base = () => db.from("v_eventos").select(columns).neq("fuente", "cepi_actividades"); // CEPI: otro perfil
+  const [starting, ongoing] = await Promise.all([
+    base().gte("fecha_inicio", start).lte("fecha_inicio", end).order("fecha_inicio").limit(1000),
+    base().or(`fecha_inicio.is.null,and(fecha_inicio.lt.${start},fecha_fin.gte.${start})`).limit(1000),
+  ]);
+  const error = starting.error ?? ongoing.error;
+  if (error) throw new Error(`No se pudieron cargar los otros planes: ${error.message}`);
+
+  const skip = new Set(exclude);
+  const available = availableIn(when, {});
+  return ([...(starting.data ?? []), ...(ongoing.data ?? [])] as Omit<Evento, "descripcion">[])
+    .map((e) => ({ ...e, descripcion: null }) as Evento)
+    .filter((e) => !skip.has(e.id) && available(e))
+    .map((e) => ({ e, key: startKey(e, from, to) }))
+    .sort((a, b) => a.key.localeCompare(b.key) || a.e.titulo.localeCompare(b.e.titulo))
+    .map(({ e }) => buildPlan(e, { home, intereses, recomendaciones }))
+    .filter((p) => p.km == null || p.km > NEARBY_KM) // los cercanos van en "Planes cerca de ti"
+    .slice(0, max);
 }
 
 // Tipo de plan, para no enseñar seguidos varios casi iguales (p. ej. cinco talleres contra la soledad)
