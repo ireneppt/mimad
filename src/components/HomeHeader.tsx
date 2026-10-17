@@ -8,20 +8,23 @@ import LocationChip from "@/components/LocationChip";
 import { switchToSimple } from "@/app/(app)/actions";
 import type { Perfil } from "@/lib/profile";
 import type { OriginKind } from "@/lib/origin";
+import { getZones } from "@/lib/zones";
 
 export default async function HomeHeader({
-  db, perfil, originKind, search, searchAction, hidden = {},
+  db, perfil, originKind, zone, search, searchAction, hidden = {},
 }: {
   db: SupabaseClient;
   perfil: Perfil | null;
   originKind: OriginKind;
+  zone?: string; // zona elegida en "Ver planes en otra zona"
   search: string;
   searchAction: "/" | "/mapa"; // a qué pantalla va el buscador
   hidden?: Record<string, string>; // filtros que se conservan al buscar
 }) {
-  const { count: unread } = perfil
-    ? await db.from("mm_notificaciones").select("*", { count: "exact", head: true }).eq("leida", false)
-    : { count: 0 };
+  const [{ count: unread }, zones] = await Promise.all([
+    perfil ? db.from("mm_notificaciones").select("*", { count: "exact", head: true }).eq("leida", false) : Promise.resolve({ count: 0 }),
+    getZones(db),
+  ]);
   const place = [perfil?.municipio ?? "Madrid", perfil?.barrio].filter(Boolean).join(", ");
 
   return (
@@ -30,7 +33,7 @@ export default async function HomeHeader({
         <Link href="/" aria-label="MiMad, inicio" className="shrink-0">
           <Image src="/icono.svg" alt="" width={56} height={56} priority />
         </Link>
-        <LocationChip place={place} kind={originKind} loggedIn={!!perfil} />
+        <LocationChip place={place} kind={originKind} zone={zone} zones={zones.map((z) => z.name)} loggedIn={!!perfil} />
         <Link
           href="/notificaciones"
           aria-label={unread ? `Notificaciones: ${unread} sin leer` : "Notificaciones"}

@@ -7,7 +7,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { CalendarX2, ChevronLeft, ChevronRight, CircleAlert, Clock, LoaderCircle, MapPin, Plus, Repeat, Route, Users } from "lucide-react";
-import { categoryInfo } from "@/lib/categories";
+import { categoryPhoto } from "@/lib/categoryPhotos";
 import { leaveEvent } from "../evento/[id]/actions";
 import type { AgendaPlan } from "./types";
 
@@ -272,7 +272,6 @@ function PlanRow({ plan: p, color, canLeave }: { plan: AgendaPlan; color: string
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [confirm, setConfirm] = useState(false);
-  const Icon = categoryInfo(p.category).icon;
   const d = new Date(`${p.date}T12:00:00Z`);
   const directions = p.lat != null && p.lon != null ? `https://www.google.com/maps/dir/?${new URLSearchParams({ api: "1", destination: `${p.lat},${p.lon}`, travelmode: "walking" })}` : null;
 
@@ -287,14 +286,8 @@ function PlanRow({ plan: p, color, canLeave }: { plan: AgendaPlan; color: string
       <div className="relative flex min-w-0 flex-1 flex-col gap-3 overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 pl-5">
         <span className="absolute inset-y-0 left-0 w-1.5" style={{ background: color }} aria-hidden="true" />
         <div className="flex gap-3">
-          {p.image ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={p.image} alt="" loading="lazy" className="h-14 w-14 shrink-0 rounded-xl object-cover" />
-          ) : (
-            <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl text-white" style={{ background: color }} aria-hidden="true">
-              <Icon size={26} />
-            </span>
-          )}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={p.image || categoryPhoto(p.category, p.title)} alt="" loading="lazy" className="h-14 w-14 shrink-0 rounded-xl object-cover ring-2" style={{ ["--tw-ring-color" as string]: color }} />
           <div className="min-w-0">
             <h4 className="text-lg font-bold leading-snug">
               <Link href={`/evento/${encodeURIComponent(p.id)}`} className="hover:underline">{p.title}</Link>

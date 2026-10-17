@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { ChevronRight, ShieldAlert, ShieldCheck, Users } from "lucide-react";
 import Avatar from "@/components/Avatar";
-import { categoryInfo } from "@/lib/categories";
+import { categoryPhoto } from "@/lib/categoryPhotos";
 import { STATUS_LABELS, type EntityEventWithCount } from "@/lib/entityEvents";
 
 const MONTHS = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
@@ -49,7 +49,6 @@ export function Attendance({ apuntados, plazas, big = false }: { apuntados: numb
 }
 
 export function EventRow({ e }: { e: EntityEventWithCount }) {
-  const { icon: Icon } = categoryInfo(e.categoria);
   const d = new Date(`${e.fecha_inicio.slice(0, 10)}T12:00:00Z`);
   return (
     <li>
@@ -58,14 +57,8 @@ export function EventRow({ e }: { e: EntityEventWithCount }) {
           <span className="text-2xl font-bold">{d.getUTCDate()}</span>
           <span className="text-xs font-semibold text-gris">{WEEKDAYS[d.getUTCDay()]} · {MONTHS[d.getUTCMonth()]}</span>
         </span>
-        {e.foto_url ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={e.foto_url} alt="" loading="lazy" className="h-12 w-12 shrink-0 rounded-xl object-cover" />
-        ) : (
-          <span className="bg-degradado flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-white" aria-hidden="true">
-            <Icon size={22} />
-          </span>
-        )}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={e.foto_url || categoryPhoto(e.categoria, e.titulo)} alt="" loading="lazy" className="h-12 w-12 shrink-0 rounded-xl object-cover" />
         <span className="flex min-w-0 flex-1 flex-col gap-1">
           <span className="truncate text-lg font-semibold leading-tight">{e.titulo}</span>
           <span className="flex flex-wrap items-center gap-2">

@@ -3,6 +3,7 @@ import { ArrowLeft, ArrowRight, Check } from "lucide-react";
 import { Map as MapIcon } from "lucide-react";
 import SimpleShell from "@/components/simple/SimpleShell";
 import { photoCredit } from "@/components/EventImage";
+import { listPhotos } from "@/lib/categoryPhotos";
 import { createClient } from "@/lib/supabase/server";
 import { getEvent, getSources, isAccessible, type Fuente } from "@/lib/data";
 import { formatDistance, walkingMinutes } from "@/lib/format";
@@ -68,8 +69,10 @@ export default async function SimplePlansPage({
   const href = (w: When) => `/simple/planes?cuando=${w}`;
   const when_ = when === "semana" ? "esta semana" : WHEN_LABELS[when].toLowerCase(); // "hoy", "mañana", "esta semana"
   const toView = (plan: Plan, withReason: boolean) => planView(plan, { fuentes, inscritos, origin, withReason });
-  const nearbyViews = nearby.map((p) => toView(p, true));
-  const otherViews = others.map((p) => toView(p, false));
+  // Fotos de tipo para los planes sin foto propia, sin repetir la de la tarjeta de al lado
+  const photos = listPhotos([...nearby, ...others].map((p) => p.evento));
+  const nearbyViews = nearby.map((p, i) => ({ ...toView(p, true), foto: photos[i] }));
+  const otherViews = others.map((p, i) => ({ ...toView(p, false), foto: photos[nearby.length + i] }));
   const total = nearbyViews.length + otherViews.length;
   const capitalized = `${when_[0].toUpperCase()}${when_.slice(1)}`;
 

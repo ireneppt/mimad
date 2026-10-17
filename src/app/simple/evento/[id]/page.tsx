@@ -14,6 +14,7 @@ import { getMyCompanions } from "@/lib/companion";
 import { siteUrl } from "@/lib/siteUrl";
 
 import SourceTag from "@/components/SourceTag";
+import EventImage, { photoCredit } from "@/components/EventImage";
 import { createClient } from "@/lib/supabase/server";
 import { accessibilityLabels, getEvent, getSources, isAccessible, type Evento } from "@/lib/data";
 import { categoryInfo } from "@/lib/categories";
@@ -63,7 +64,7 @@ export default async function SimpleEventPage({
   const plan = buildPlan(evento, { home, intereses: perfil?.intereses ?? [], recomendaciones });
   const minutos = plan.km != null ? walkingMinutes(plan.km) : null;
   const apuntada = inscritos.includes(evento.id);
-  const { label, icon: CategoryIcon } = categoryInfo(evento.categoria);
+  const { label } = categoryInfo(evento.categoria);
   const here = `/simple/evento/${encodeURIComponent(evento.id)}?volver=${encodeURIComponent(volver)}`;
   // "Me apunto" a un plan que coincide con otro de su agenda: se pregunta qué prefiere
   const conflicto = query.con && !apuntada ? await getEvent(supabase, query.con) : null;
@@ -115,9 +116,8 @@ export default async function SimpleEventPage({
         </p>
       )}
 
-      {/* Los datos abiertos no traen imagen: fondo de marca con el icono de la categoría */}
-      <div className="bg-degradado relative flex h-40 items-center justify-center rounded-3xl">
-        <CategoryIcon size={72} className="text-white" aria-hidden="true" />
+      {/* Foto del plan o, si no tiene, una de las de su tipo (la misma que en la lista) */}
+      <EventImage src={evento.imagen} categoria={evento.categoria} title={evento.titulo} className="h-48 rounded-3xl" iconSize={72} credit={photoCredit(evento.fuente)}>
         <span className="absolute left-4 top-4 flex items-center gap-2 rounded-full bg-white px-4 py-1.5 text-lg font-bold text-coral-texto">
           {plan.recomendadoPor ? (
             <>
@@ -127,7 +127,7 @@ export default async function SimpleEventPage({
             label
           )}
         </span>
-      </div>
+      </EventImage>
 
       <div className="flex flex-col gap-3">
         <InfoBox icon={<Clock size={30} />} title="Cuándo">

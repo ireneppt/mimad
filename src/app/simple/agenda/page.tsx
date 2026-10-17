@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { ArrowLeft, ChevronRight, Clock, Info, MapPin, Plus, Route, TriangleAlert } from "lucide-react";
 import SimpleShell from "@/components/simple/SimpleShell";
+import EventImage, { photoCredit } from "@/components/EventImage";
 import LeaveConfirm from "@/components/simple/LeaveConfirm";
 import { createClient } from "@/lib/supabase/server";
-import { categoryInfo } from "@/lib/categories";
 import { getCurrentProfile } from "@/lib/profile";
 import { dateTile, fullDate, getMyAgenda, overlappingIds, relativeDay, relativeWhen, type AgendaItem } from "@/lib/simpleAgenda";
 
@@ -92,7 +92,6 @@ function OverlapBadge() {
 
 function NextPlan({ item, overlaps }: { item: AgendaItem; overlaps: boolean }) {
   const e = item.evento;
-  const { icon: CategoryIcon } = categoryInfo(e.categoria);
   const place = e.lugar ?? e.direccion;
 
   return (
@@ -102,10 +101,8 @@ function NextPlan({ item, overlaps }: { item: AgendaItem; overlaps: boolean }) {
           <span className="block text-lg font-bold uppercase tracking-wide">Tu próximo plan es</span>
           <span className="block text-[2.5rem] font-bold leading-tight">{relativeDay(item.date)}</span>
         </p>
-        {/* Los datos abiertos no traen imagen: icono de la categoría */}
-        <div className="flex h-28 items-center justify-center rounded-2xl bg-white/15" aria-hidden="true">
-          <CategoryIcon size={60} />
-        </div>
+        {/* Foto del plan o, si no tiene, una de las de su tipo */}
+        <EventImage src={e.imagen} categoria={e.categoria} title={e.titulo} className="h-36 rounded-2xl" iconSize={60} credit={photoCredit(e.fuente)} />
         {overlaps && <OverlapBadge />}
         <h2 className="text-[1.75rem] font-bold leading-tight">{e.titulo}</h2>
         <ul className="flex flex-col gap-2 text-xl leading-snug">

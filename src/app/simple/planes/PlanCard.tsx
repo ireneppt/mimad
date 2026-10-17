@@ -1,4 +1,4 @@
-// Tarjeta de un plan en la lista de la versión simplificada: foto (si la tiene),
+// Tarjeta de un plan en la lista de la versión simplificada: su foto (o una de su tipo),
 // cuándo, dónde, precio, accesibilidad, "Me apunto" y de dónde viene el dato.
 import Link from "next/link";
 import { Accessibility, Check, Clock, Euro, Heart, Info, MapPin, Sparkles } from "lucide-react";
@@ -16,6 +16,7 @@ export type PlanView = {
   categoria: string | null;
   imagen: string | null;
   credito: string | null; // "Foto: esmadrid.com"
+  foto?: string; // foto de su tipo si no tiene propia (elegida para no repetir la de al lado)
   cuando: string;
   lugar: string | null;
   distancia: string | null; // "A 9 minutos andando" o "A 6,2 km de tu casa"
@@ -38,8 +39,8 @@ export default function PlanCard({ plan, back }: { plan: PlanView; back: string 
 
   return (
     <article id={planAnchor(plan.id)} className="scroll-mt-4 overflow-hidden rounded-3xl border-2 border-slate-300 bg-white">
-      {/* Foto del plan si la tiene; si no (o si no carga), degradado con el icono de su tipo */}
-      <EventImage src={plan.imagen} categoria={plan.categoria} className="h-44" iconSize={64} credit={plan.credito}>
+      {/* Foto del plan si la tiene; si no (o si no carga), una de las fotos de su tipo */}
+      <EventImage src={plan.imagen} categoria={plan.categoria} title={plan.titulo} fallback={plan.foto} className="h-44" iconSize={64} credit={plan.credito}>
         {plan.recomendadoPor ? (
           <span className="absolute left-4 top-4 flex items-center gap-2 rounded-full bg-white px-4 py-1.5 text-lg font-bold text-coral-texto shadow">
             <Heart size={20} aria-hidden="true" /> Te lo recomienda {plan.recomendadoPor}

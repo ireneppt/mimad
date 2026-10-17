@@ -33,7 +33,7 @@ export default async function MapPage({ searchParams }: { searchParams: Promise<
   const params = await searchParams;
   const supabase = await createClient();
   const [perfil, fuentes] = await Promise.all([getCurrentProfile(supabase), getSources(supabase)]);
-  const origin = await getOrigin(perfil);
+  const origin = await getOrigin(perfil, { allowZone: true });
   const search = (params.q ?? "").trim().slice(0, 60);
   const show: Show =
     params.ver === "sitios" || params.ver === "todo" ? params.ver : params.ver === "planes" ? "planes" : params.lugares === "1" ? "todo" : "planes";
@@ -127,6 +127,7 @@ export default async function MapPage({ searchParams }: { searchParams: Promise<
         db={supabase}
         perfil={perfil}
         originKind={origin.kind}
+        zone={origin.zone}
         search={search}
         searchAction="/mapa"
         hidden={{ d: picked ?? day, ...(show !== "planes" ? { ver: show } : {}) }}
