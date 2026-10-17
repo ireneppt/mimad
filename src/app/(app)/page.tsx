@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Accessibility, CalendarDays, ChevronDown, Database, Globe, Languages, Sparkles } from "lucide-react";
+import { Accessibility, CalendarDays, ChevronDown, Database, Languages, Sparkles } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { distanceKm, getEvents, getSources, hasEnded, sortByRelevance, type EventFilters, type Evento } from "@/lib/data";
 import { formatDayLong, isPickableDay } from "@/lib/format";
@@ -183,16 +183,16 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
     { id: "gratis", label: "Gratis" },
     { id: "accesible", label: "Accesible" },
     { id: "idiomas", label: "Idiomas" },
-    { id: "recien", label: "Recién llegados" },
   ];
-  const chipIcon = { accesible: Accessibility, idiomas: Languages, recien: Globe } as Partial<Record<Filter, typeof Globe>>;
+  const chipIcon = { accesible: Accessibility, idiomas: Languages } as Partial<Record<Filter, typeof Languages>>;
 
   return (
     <main className="flex flex-col">
       <Welcome mode={params.bienvenida} nombre={perfil?.nombre} />
 
       <HomeHeader db={supabase} perfil={perfil} originKind={origin.kind}
-        zone={origin.zone} search={search} searchAction="/" hidden={{ f: [...active].join(","), ...(picked.length ? { i: picked.join(",") } : {}), ...(dayParam ? { d: dayParam } : {}), ...(group ? { g: group } : {}) }} />
+        zone={origin.zone} search={search} searchAction="/" hidden={{ f: [...active].join(","), ...(picked.length ? { i: picked.join(",") } : {}), ...(dayParam ? { d: dayParam } : {}), ...(group ? { g: group } : {}) }}
+        newcomers={{ active: newcomers, href: toggleHref("recien") }} />
 
       <div className="flex flex-col gap-5 bg-fondo px-5 pb-8 pt-5">
         <ViewToggle current="lista" search={search} />

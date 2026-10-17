@@ -17,7 +17,8 @@ import RecommendSlot from "@/components/RecommendSlot";
 import RouteMapLazy from "@/components/simple/RouteMapLazy";
 import JoinButton from "./JoinButton";
 import EventImage, { photoCredit } from "@/components/EventImage";
-import { TRANSLATE_LANGUAGES } from "@/lib/translate";
+import { cookies } from "next/headers";
+import { LANG_COOKIE, parseLanguage, TRANSLATE_LANGUAGES } from "@/lib/languages";
 import TranslatePlan from "./TranslatePlan";
 import { timeAgo } from "@/lib/companion";
 
@@ -142,7 +143,7 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
           <h2 id="sobre" className="text-2xl font-bold">Sobre el plan</h2>
           <Description evento={evento} label={label} />
           {/* Para personas extranjeras: los datos abiertos solo vienen en español */}
-          <TranslatePlan eventoId={evento.id} languages={TRANSLATE_LANGUAGES} loggedIn={!!perfil} />
+          <TranslatePlan eventoId={evento.id} languages={TRANSLATE_LANGUAGES} loggedIn={!!perfil} preferred={parseLanguage((await cookies()).get(LANG_COOKIE)?.value)} />
           {evento.url && (
             <a href={evento.url} target="_blank" rel="noopener noreferrer" className="flex w-fit items-center gap-1.5 text-base font-medium text-coral-texto underline">
               Ver la web oficial <ExternalLink size={16} aria-hidden="true" />

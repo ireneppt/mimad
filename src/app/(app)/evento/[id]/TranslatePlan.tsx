@@ -2,18 +2,36 @@
 
 // «Traducir»: para personas extranjeras. Elige idioma y Claude traduce el título, el horario
 // y la descripción (los datos abiertos solo vienen en español). Se enseña debajo del original.
-import { useState } from "react";
+// Si ha elegido idioma en la cabecera (cookie), se traduce sola al abrir el plan.
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Languages, LoaderCircle } from "lucide-react";
 
 type Lang = { id: string; label: string; rtl?: boolean };
 type Translation = { titulo: string; horario: string | null; descripcion: string | null };
 
-export default function TranslatePlan({ eventoId, languages, loggedIn }: { eventoId: string; languages: readonly Lang[]; loggedIn: boolean }) {
-  const [lang, setLang] = useState(languages[0].id);
+export default function TranslatePlan({
+  eventoId, languages, loggedIn, preferred,
+}: {
+  eventoId: string;
+  languages: readonly Lang[];
+  loggedIn: boolean;
+  preferred: string | null; // idioma elegido en la cabecera
+}) {
+  const [lang, setLang] = useState(preferred ?? languages[0].id);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
   const [result, setResult] = useState<{ lang: Lang; t: Translation }>();
+
+  // Idioma elegido en la cabecera: se traduce sola (una vez) al abrir el plan
+  const started = useRef(false);
+  useEffect(() => {
+    if (preferred && loggedIn && !started.current) {
+      started.current = true;
+      void translate();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [preferred, loggedIn]);
 
   async function translate() {
     setBusy(true);

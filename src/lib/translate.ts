@@ -7,23 +7,10 @@ import "server-only";
 import Anthropic from "@anthropic-ai/sdk";
 import { unstable_cache } from "next/cache";
 import { createPublicClient } from "./supabase/public";
+import { TRANSLATE_LANGUAGES, type TranslateLanguage } from "./languages";
 
-export const TRANSLATE_LANGUAGES = [
-  { id: "en", label: "English", name: "inglés" },
-  { id: "fr", label: "Français", name: "francés" },
-  { id: "ar", label: "العربية", name: "árabe", rtl: true },
-  { id: "ro", label: "Română", name: "rumano" },
-  { id: "zh", label: "中文", name: "chino simplificado" },
-  { id: "uk", label: "Українська", name: "ucraniano" },
-  { id: "pt", label: "Português", name: "portugués" },
-  { id: "de", label: "Deutsch", name: "alemán" },
-] as const;
-
-export type TranslateLanguage = (typeof TRANSLATE_LANGUAGES)[number]["id"];
+export { TRANSLATE_LANGUAGES, parseLanguage, type TranslateLanguage } from "./languages";
 export type Translation = { titulo: string; horario: string | null; descripcion: string | null };
-
-export const parseLanguage = (s: unknown): TranslateLanguage | null =>
-  TRANSLATE_LANGUAGES.find((l) => l.id === s)?.id ?? null;
 
 // Haiku: rápido y barato; solo Haiku o Sonnet (como el asistente)
 const MODEL = /^claude-(haiku|sonnet)-/.test(process.env.ANTHROPIC_MODEL ?? "") ? process.env.ANTHROPIC_MODEL! : "claude-haiku-5-5";
