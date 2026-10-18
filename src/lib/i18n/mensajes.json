@@ -1,4 +1,14 @@
 {
+  "¿Qué día vas a ir?": {
+    "en": "Which day are you going?",
+    "fr": "Quel jour vas-tu y aller ?",
+    "ar": "أي يوم ستذهب؟",
+    "ro": "În ce zi mergi?",
+    "zh": "你打算哪天去？",
+    "uk": "Якого дня ти підеш?",
+    "pt": "Em que dia vais?",
+    "de": "An welchem Tag gehst du hin?"
+  },
   "¿Ya tienes cuenta?": {
     "en": "Already have an account?",
     "fr": "Tu as déjà un compte ?",
@@ -168,6 +178,16 @@
     "uk": "Вчити іспанську",
     "pt": "Aprender espanhol",
     "de": "Spanisch lernen"
+  },
+  "Apuntarme ese día": {
+    "en": "Sign me up for that day",
+    "fr": "M'inscrire ce jour-là",
+    "ar": "سجّلني في هذا اليوم",
+    "ro": "Înscrie-mă în ziua aceea",
+    "zh": "报名这一天",
+    "uk": "Записатися на цей день",
+    "pt": "Inscrever-me nesse dia",
+    "de": "Für diesen Tag anmelden"
   },
   "Apuntarme igualmente": {
     "en": "Sign me up anyway",
@@ -878,6 +898,16 @@
     "uk": "Ти тут",
     "pt": "Estás aqui",
     "de": "Du bist hier"
+  },
+  "Este plan dura varios días: del {inicio} al {fin}.": {
+    "en": "This event runs for several days: from {inicio} to {fin}.",
+    "fr": "Cette activité dure plusieurs jours : du {inicio} au {fin}.",
+    "ar": "هذه الفعالية تستمر عدة أيام: من {inicio} إلى {fin}.",
+    "ro": "Acest eveniment durează mai multe zile: de la {inicio} până la {fin}.",
+    "zh": "这个活动持续几天：从{inicio}到{fin}。",
+    "uk": "Цей захід триває кілька днів: з {inicio} до {fin}.",
+    "pt": "Este evento dura vários dias: de {inicio} a {fin}.",
+    "de": "Diese Aktivität dauert mehrere Tage: vom {inicio} bis {fin}."
   },
   "Este plan ya no está.": {
     "en": "This plan is no longer available.",
@@ -1798,6 +1828,16 @@
     "uk": "Тебе записано · Це вже в твоєму календарі",
     "pt": "Inscreveste-te · Está na tua agenda",
     "de": "Du bist angemeldet · Es steht in deinem Kalender"
+  },
+  "Te has apuntado para el {dia} · Está en tu agenda": {
+    "en": "You've signed up for {dia} · It's in your agenda",
+    "fr": "Tu t'es inscrit(e) pour le {dia} · C'est dans ton agenda",
+    "ar": "لقد سجّلت ليوم {dia} · وهي في أجندتك",
+    "ro": "Te-ai înscris pentru {dia} · Este în agenda ta",
+    "zh": "你已报名{dia} · 已加入你的日程",
+    "uk": "Ти записався/записалася на {dia} · Це вже у твоєму розкладі",
+    "pt": "Inscreveste-te para {dia} · Está na tua agenda",
+    "de": "Du hast dich für {dia} angemeldet · Es steht in deinem Kalender"
   },
   "Teatro": {
     "en": "Theater",

@@ -34,9 +34,29 @@ function daysBetween(from: string, to: string): number {
   return Math.round((Date.parse(`${to}T12:00:00Z`) - Date.parse(`${from}T12:00:00Z`)) / 86_400_000);
 }
 
-// Próxima vez que ocurre el plan (o null si ya ha pasado). También lo usan los avisos (lib/bot)
-export function nextOccurrence(e: Evento): Omit<AgendaItem, "evento"> | null {
+// ¿Dura varios días (exposiciones, ferias…)? Entonces, al apuntarse, se elige qué día se va
+export function isMultiDay(e: Pick<Evento, "fecha_inicio" | "fecha_fin">): boolean {
+  return !!e.fecha_inicio && !!e.fecha_fin && e.fecha_fin.slice(0, 10) > e.fecha_inicio.slice(0, 10);
+}
+
+// Días que se pueden elegir de un plan de varios días: desde hoy (o su primer día) hasta el último
+export function pickableRange(e: Pick<Evento, "fecha_inicio" | "fecha_fin">): { from: string; to: string } | null {
+  if (!isMultiDay(e)) return null;
+  const today = nowInMadrid().date;
+  const from = e.fecha_inicio!.slice(0, 10) > today ? e.fecha_inicio!.slice(0, 10) : today;
+  const to = e.fecha_fin!.slice(0, 10);
+  return from <= to ? { from, to } : null;
+}
+
+// Próxima vez que ocurre el plan (o null si ya ha pasado). También lo usan los avisos (lib/bot).
+// chosen: el día que eligió al apuntarse (planes de varios días); si ya ha pasado, ya no sale
+export function nextOccurrence(e: Evento, chosen?: string | null): Omit<AgendaItem, "evento"> | null {
   const now = nowInMadrid();
+  if (chosen && isMultiDay(e)) {
+    if (chosen < now.date) return null;
+    const t = e.fecha_inicio!.slice(11, 16);
+    return { date: chosen, time: t && t !== "00:00" ? t : null, weekly: false };
+  }
   if (!e.fecha_inicio) {
     // "Cada jueves, 16:00 - 17:30": el próximo jueves (hoy, si aún no ha empezado)
     const horario = plain(e.horario ?? "");
@@ -59,12 +79,13 @@ export function nextOccurrence(e: Evento): Omit<AgendaItem, "evento"> | null {
 }
 
 export async function getMyAgenda(db: SupabaseClient, userId: string): Promise<AgendaItem[]> {
-  const { data } = await db.from("mm_inscripciones").select("evento_id").eq("usuario", userId);
+  const { data } = await db.from("mm_inscripciones").select("evento_id, fecha").eq("usuario", userId);
+  const chosen = new Map((data ?? []).map((r) => [r.evento_id as string, (r.fecha as string | null) ?? null]));
   // Los planes que ya han terminado no salen en v_eventos: se quedan fuera solos
   const eventos = await getEventsByIds(db, (data ?? []).map((r) => r.evento_id as string));
   return eventos
     .map((evento) => {
-      const next = nextOccurrence(evento);
+      const next = nextOccurrence(evento, chosen.get(evento.id));
       return next ? { evento, ...next } : null;
     })
     .filter((x): x is AgendaItem => x !== null)

@@ -21,6 +21,7 @@ import { TRANSLATE_LANGUAGES } from "@/lib/languages";
 import { getLang } from "@/lib/i18n/server";
 import { makeT, type Lang, type T } from "@/lib/i18n";
 import { isLanguagePlan, isNewcomerPlan } from "@/lib/newcomers";
+import { pickableRange } from "@/lib/simpleAgenda";
 import TranslatePlan from "./TranslatePlan";
 import { timeAgo } from "@/lib/companion";
 
@@ -61,7 +62,7 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
 
   const origin = await getOrigin(perfil, { allowZone: true });
   const { data: mine } = perfil
-    ? await supabase.from("mm_inscripciones").select("id").eq("usuario", perfil.id).eq("evento_id", id).maybeSingle()
+    ? await supabase.from("mm_inscripciones").select("id, fecha").eq("usuario", perfil.id).eq("evento_id", id).maybeSingle()
     : { data: null };
   const joined = !!mine;
 
@@ -73,6 +74,9 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
 
   const lang = await getLang();
   const t = makeT(lang);
+  // Planes de varios días: al apuntarse se elige el día (entre hoy y el último)
+  const pick = pickableRange(evento);
+  const dayRange = pick ? { ...pick, fromLabel: formatDayLong(pick.from, lang), toLabel: formatDayLong(pick.to, lang) } : null;
   const { label } = categoryInfo(evento.categoria);
   const hasPlace = evento.lat != null && evento.lon != null;
   const km = hasPlace ? distanceKm(origin, { lat: evento.lat!, lon: evento.lon! }) : null;
@@ -160,10 +164,11 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
         </section>
 
         <div className="flex flex-col gap-3">
-          <JoinButton eventoId={evento.id} joined={joined} loggedIn={!!perfil} lang={lang} />
+          <JoinButton eventoId={evento.id} joined={joined} loggedIn={!!perfil} lang={lang} range={dayRange}
+            joinedDay={mine?.fecha ? formatDayLong(mine.fecha as string, lang) : null} />
           <RecommendSlot eventId={evento.id} />
           {evento.fecha_inicio && evento.fuente !== "cepi_actividades" && (
-            <a href={`/evento/${encodeURIComponent(evento.id)}/calendario`} className="flex h-12 items-center justify-center gap-2 rounded-2xl border border-slate-300 bg-white text-base font-medium">
+            <a href={`/evento/${encodeURIComponent(evento.id)}/calendario${mine?.fecha ? `?dia=${mine.fecha}` : ""}`} className="flex h-12 items-center justify-center gap-2 rounded-2xl border border-slate-300 bg-white text-base font-medium">
               <CalendarPlus size={20} className="text-coral-texto" aria-hidden="true" /> {t("Añadir al calendario del móvil")}
             </a>
           )}

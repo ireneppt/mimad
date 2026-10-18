@@ -15,8 +15,11 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   const evento = await getEvent(supabase, decodeURIComponent(id));
   if (!evento?.fecha_inicio) return new Response("Este plan no tiene fecha concreta", { status: 404 });
 
-  const start = evento.fecha_inicio;
-  const end = evento.fecha_fin ?? evento.fecha_inicio;
+  // ?dia=: el día que eligió al apuntarse a un plan de varios días (solo si está dentro del plan)
+  const dia = new URL(request.url).searchParams.get("dia");
+  const inRange = !!dia && /^\d{4}-\d{2}-\d{2}$/.test(dia) && dia >= evento.fecha_inicio.slice(0, 10) && dia <= (evento.fecha_fin ?? evento.fecha_inicio).slice(0, 10);
+  const start = inRange ? dia! : evento.fecha_inicio;
+  const end = inRange ? dia! : evento.fecha_fin ?? evento.fecha_inicio;
   const sameDay = start.slice(0, 10) === end.slice(0, 10);
   const timed = sameDay && start.slice(11, 16) !== "00:00";
 
