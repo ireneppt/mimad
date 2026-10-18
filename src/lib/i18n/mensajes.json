@@ -69,6 +69,16 @@
     "pt": "A {distancia} de {desde}",
     "de": "{distancia} von {desde} entfernt"
   },
+  "A este plan ya no le quedan días.": {
+    "en": "This event has no days left.",
+    "fr": "Il ne reste plus de jours pour ce plan.",
+    "ar": "لم يعد هناك أي أيام متاحة لهذه الخطة.",
+    "ro": "Pentru acest plan nu mai au rămas zile.",
+    "zh": "这个活动已经没有可选的日期了。",
+    "uk": "Для цього плану більше не залишилося днів.",
+    "pt": "Este programa já não tem mais dias.",
+    "de": "Für diesen Plan gibt es keine Tage mehr."
+  },
   "Accesibilidad": {
     "en": "Accessibility",
     "fr": "Accessibilité",
@@ -1808,6 +1818,16 @@
     "uk": "Писати тут може лише організація, яка проводить захід.",
     "pt": "Só a entidade que organiza o plano pode escrever aqui.",
     "de": "Nur die Organisation, die den Plan veranstaltet, kann hier schreiben."
+  },
+  "Solo salen los días en que hay plan.": {
+    "en": "Only days with events are shown.",
+    "fr": "Seuls les jours où il y a un plan s'affichent.",
+    "ar": "تظهر فقط الأيام التي توجد فيها خطة.",
+    "ro": "Apar doar zilele în care există un plan.",
+    "zh": "只显示有活动的日期。",
+    "uk": "Показано лише дні, коли є план.",
+    "pt": "Só aparecem os dias em que há programa.",
+    "de": "Es werden nur die Tage angezeigt, an denen es einen Plan gibt."
   },
   "Talleres": {
     "en": "Workshops",
