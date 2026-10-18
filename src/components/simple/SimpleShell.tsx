@@ -3,10 +3,10 @@
 // Estructura común de las pantallas de la versión simplificada (diseños simplificada-*.png):
 // "Escuchar las instrucciones", "Necesito ayuda", la barra de pasos y, al final, "Versión por defecto".
 import Image from "next/image";
-import Link from "next/link";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { CircleHelp, Volume2, VolumeX } from "lucide-react";
 import { NoticesBell } from "./Notices";
+import { switchToDefaultVersion } from "@/lib/versionActions";
 import CamLogo from "../CamLogo";
 
 type Props = {
@@ -138,13 +138,13 @@ export default function SimpleShell({ defaultHref, step, total, title, intro, he
         </div>
       )}
 
-      {/* Abajo del todo: casi nunca se usa y así no se toca sin querer */}
-      <Link
-        href={defaultHref}
-        className="mt-auto flex h-14 items-center justify-center rounded-2xl border-2 border-slate-500 text-lg font-medium"
-      >
-        Versión por defecto
-      </Link>
+      {/* Abajo del todo: casi nunca se usa y así no se toca sin querer. Se guarda en el perfil */}
+      <form action={switchToDefaultVersion} className="mt-auto">
+        <input type="hidden" name="volver" value={defaultHref} />
+        <button type="submit" className="flex h-14 w-full items-center justify-center rounded-2xl border-2 border-slate-500 text-lg font-medium">
+          Versión por defecto
+        </button>
+      </form>
     </main>
   );
 }
