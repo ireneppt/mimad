@@ -84,6 +84,7 @@ Necesitas **Node.js 20+** y un proyecto gratuito de [Supabase](https://supabase.
    | `20261016000007_entidades.sql` | Cuentas de entidad y sus planes |
    | `20261016000008_mensajes_entidad.sql` | Mensajes de la entidad a las personas apuntadas |
    | `20261017000001_fotos_planes.sql` | Fotos de los planes de las entidades y de la agenda turística |
+   | `20261018000001_fecha_inscripcion.sql` | Día elegido al apuntarse a un plan de varios días |
 
 3. Copia `.env.example` como `.env.local` y rellena los valores (Supabase → Project Settings → API). La clave de Claude (`ANTHROPIC_API_KEY`, de [console.anthropic.com](https://console.anthropic.com)) es opcional: sin ella, el asistente usa reglas y no hay traducción de planes.
 4. Carga los datos abiertos: `npm run ingest` (`npm run ingest -- --prueba` descarga sin guardar).
