@@ -15,6 +15,14 @@ Cada plan, sitio y recomendación sale de un dataset público, y cada pantalla d
 | **Personas extranjeras** | Interruptor **«Recién llegados»** con las actividades de los CEPI (aprender español, trámites, empleo, convivencia), filtro **«Idiomas»**, la app en 8 idiomas y los planes traducidos. |
 | **Entidades y organizaciones** | Cuenta de entidad para publicar planes (con su foto), ver cuántas personas se apuntan y enviarles avisos. Se verifican cruzando su **NIF** con el Registro de centros de atención social. |
 
+## Cómo se ve
+
+| Inicio | Asistente con IA | Acompañamiento | Versión simplificada | Pedir consejo | Mapa sencillo |
+|---|---|---|---|---|---|
+| ![Inicio](docs/capturas/03-inicio.jpg) | ![Asistente](docs/capturas/06-asistente.jpg) | ![Acompañamiento](docs/capturas/09-acompanamiento.jpg) | ![Inicio simplificado](docs/capturas/10-simple-inicio.jpg) | ![Pedir consejo](docs/capturas/13-simple-consejo-resultado.jpg) | ![Mapa sencillo](docs/capturas/16-simple-mapa-sitios.jpg) |
+
+Todas las capturas, en [`docs/capturas/`](docs/capturas/).
+
 ## Datos abiertos que usa
 
 | Dataset | Organismo | Para qué | Actualización |
