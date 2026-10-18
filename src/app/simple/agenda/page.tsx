@@ -31,7 +31,11 @@ export default async function SimpleAgendaPage({ searchParams }: { searchParams:
           <p>Todavía no te has apuntado a ningún plan.</p>
         ) : (
           <p>
-            Tienes <strong>{items.length === 1 ? "1 plan" : `${items.length} planes`}</strong> apuntados.
+            {items.length === 1 ? (
+              <>Tienes <strong>1 plan</strong> apuntado.</>
+            ) : (
+              <>Tienes <strong>{items.length} planes</strong> apuntados.</>
+            )}
           </p>
         )
       }
