@@ -22,6 +22,7 @@ import { getLang } from "@/lib/i18n/server";
 import { makeT, type Lang, type T } from "@/lib/i18n";
 import { isLanguagePlan, isNewcomerPlan } from "@/lib/newcomers";
 import { pickableRange } from "@/lib/simpleAgenda";
+import { availableDays } from "@/lib/planDays";
 import TranslatePlan from "./TranslatePlan";
 import { timeAgo } from "@/lib/companion";
 
@@ -74,9 +75,12 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
 
   const lang = await getLang();
   const t = makeT(lang);
-  // Planes de varios días: al apuntarse se elige el día (entre hoy y el último)
+  // Planes de varios días: al apuntarse se elige el día, solo entre los días en que hay plan
   const pick = pickableRange(evento);
-  const dayRange = pick ? { ...pick, fromLabel: formatDayLong(pick.from, lang), toLabel: formatDayLong(pick.to, lang) } : null;
+  const days = await availableDays(supabase, evento);
+  const dayRange = pick && days
+    ? { fromLabel: formatDayLong(pick.from, lang), toLabel: formatDayLong(pick.to, lang), days: days.map((d) => ({ value: d, label: formatDayLong(d, lang) })) }
+    : null;
   const { label } = categoryInfo(evento.categoria);
   const hasPlace = evento.lat != null && evento.lon != null;
   const km = hasPlace ? distanceKm(origin, { lat: evento.lat!, lon: evento.lon! }) : null;

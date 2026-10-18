@@ -5,7 +5,8 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getEvent } from "@/lib/data";
-import { findConflict, pickableRange } from "@/lib/simpleAgenda";
+import { findConflict } from "@/lib/simpleAgenda";
+import { availableDays } from "@/lib/planDays";
 import { formatWhen } from "@/lib/format";
 
 export type JoinResult =
@@ -25,10 +26,10 @@ export async function joinEvent(eventoId: string, force = false, day?: string): 
   const evento = await getEvent(supabase, eventoId);
   if (!evento) return { status: "error", message: "Este plan ya no está disponible." };
 
-  // Plan de varios días: tiene que venir un día entre hoy (o su primer día) y el último
-  const range = pickableRange(evento);
-  if (range && !(day && /^\d{4}-\d{2}-\d{2}$/.test(day) && day >= range.from && day <= range.to)) {
-    return { status: "error", message: "Elige qué día vas a ir." };
+  // Plan de varios días: tiene que venir uno de los días en que de verdad hay plan
+  const days = await availableDays(supabase, evento);
+  if (days && !(day && days.includes(day))) {
+    return { status: "error", message: days.length ? "Elige qué día vas a ir." : "A este plan ya no le quedan días." };
   }
 
   // ¿Coincide con otro plan de su agenda el mismo día a la misma hora?
@@ -43,7 +44,7 @@ export async function joinEvent(eventoId: string, force = false, day?: string): 
     }
   }
 
-  const { error } = await supabase.from("mm_inscripciones").insert({ evento_id: eventoId, ...(range ? { fecha: day } : {}) });
+  const { error } = await supabase.from("mm_inscripciones").insert({ evento_id: eventoId, ...(days ? { fecha: day } : {}) });
   // 23505 = ya estaba apuntada: no es un error para la persona
   if (error && error.code !== "23505") return { status: "error", message: "No se ha podido apuntar. Prueba otra vez." };
 

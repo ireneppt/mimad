@@ -11,7 +11,8 @@ import { CalendarCheck, CalendarDays, CircleAlert, LoaderCircle } from "lucide-r
 import { joinEvent, leaveEvent, type JoinResult } from "./actions";
 import { announceBotUpdate } from "@/components/WhatsappNotice";
 
-type DayRange = { from: string; to: string; fromLabel: string; toLabel: string }; // "2026-10-18", "sábado 18 de octubre"
+// Días en que hay plan ("2026-10-21" / "martes 21 de octubre") y el principio y fin, ya escritos
+type DayRange = { fromLabel: string; toLabel: string; days: { value: string; label: string }[] };
 
 export default function JoinButton({
   eventoId, joined, loggedIn, lang, range, joinedDay,
@@ -25,7 +26,7 @@ export default function JoinButton({
 }) {
   const t = makeT(lang);
   const [picking, setPicking] = useState(false);
-  const [day, setDay] = useState(range?.from ?? "");
+  const [day, setDay] = useState(range?.days[0]?.value ?? "");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [result, setResult] = useState<JoinResult | null>(null);
@@ -100,16 +101,20 @@ export default function JoinButton({
           <label id="que-dia" htmlFor="dia-plan" className="flex items-center gap-2 text-lg font-semibold">
             <CalendarDays size={22} className="text-coral-texto" aria-hidden="true" /> {t("¿Qué día vas a ir?")}
           </label>
-          <p className="text-base text-gris">{t("Este plan dura varios días: del {inicio} al {fin}.", { inicio: range.fromLabel, fin: range.toLabel })}</p>
-          <input
-            id="dia-plan"
-            type="date"
-            value={day}
-            min={range.from}
-            max={range.to}
-            onChange={(e) => setDay(e.target.value)}
-            className="h-12 rounded-xl border border-slate-300 px-3 text-lg"
-          />
+          <p className="text-base text-gris">
+            {t("Este plan dura varios días: del {inicio} al {fin}.", { inicio: range.fromLabel, fin: range.toLabel })} {t("Solo salen los días en que hay plan.")}
+          </p>
+          {range.days.length ? (
+            <select id="dia-plan" value={day} onChange={(e) => setDay(e.target.value)} className="h-12 rounded-xl border border-slate-300 bg-white px-3 text-lg">
+              {range.days.map((d) => (
+                <option key={d.value} value={d.value}>
+                  {d.label}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <p role="alert" className="text-base font-medium text-red-800">{t("A este plan ya no le quedan días.")}</p>
+          )}
           <div className="flex gap-2">
             <button type="button" disabled={pending || !day} onClick={() => run(() => joinEvent(eventoId, false, day))} className="bg-degradado flex h-12 flex-1 items-center justify-center gap-2 rounded-xl font-semibold text-white disabled:opacity-60">
               {pending && <LoaderCircle size={18} className="animate-spin" aria-hidden="true" />}
