@@ -104,9 +104,23 @@ export function accessibilityLabels(e: Pick<Evento, "accesibilidad">): string[] 
 export const LIST_COLUMNS =
   "id, fuente, titulo, categoria, fecha_inicio, fecha_fin, horario, recurrente, lugar, direccion, municipio, distrito, lat, lon, url, gratuito, precio, accesibilidad, publico, idioma, organizacion, imagen";
 
+// Búsqueda de texto sin distinguir tildes ni mayúsculas: «menendez» encuentra «Menéndez» y
+// «pena» encuentra «Peña». Se busca con una expresión regular (imatch de PostgREST) en la que
+// cada vocal vale con o sin tilde; el resto del texto se escapa para que no cuente como regex.
+const ACCENTS: Record<string, string> = { a: "aáàä", e: "eéèë", i: "iíìï", o: "oóòö", u: "uúùü", n: "nñ", c: "cç" };
+export function accentPattern(text: string): string {
+  return text
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .split("")
+    .map((ch) => (ACCENTS[ch] ? `[${ACCENTS[ch]}${ACCENTS[ch].toUpperCase()}]` : ch.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")))
+    .join("");
+}
+
 export async function getEvents(db: SupabaseClient, f: EventFilters = {}): Promise<Evento[]> {
   let q = db.from("v_eventos").select(f.columns ?? LIST_COLUMNS);
-  if (f.search) q = q.ilike("titulo", `%${f.search}%`);
+  if (f.search) q = q.filter("titulo", "imatch", accentPattern(f.search));
   if (f.free) q = q.eq("gratuito", true);
   if (f.accessible) q = q.filter("accesibilidad", "match", "(^|,)1(,|$)"); // contiene el código 1
   if (f.categories?.length) q = q.in("categoria", f.categories);
@@ -154,7 +168,7 @@ export async function getPlaces(
   // Sin la descripción (no se enseña en el mapa y es lo que más pesa)
   let q = db.from("v_lugares").select("id, fuente, nombre, categoria, direccion, municipio, distrito, lat, lon, telefono, email, url, horario, accesibilidad, publico");
   if (categories?.length) q = q.in("categoria", categories);
-  if (opts.search) q = q.ilike("nombre", `%${opts.search}%`);
+  if (opts.search) q = q.filter("nombre", "imatch", accentPattern(opts.search));
   if (opts.near) {
     const dLat = opts.near.km / 111;
     const dLon = opts.near.km / (111 * Math.cos((opts.near.lat * Math.PI) / 180));
@@ -218,9 +232,32 @@ function nowInMadrid(): string {
 
 // La vista guarda los eventos hasta el final de su último día; aquí se quitan los de
 // hoy que ya han terminado (o que empezaron hace más de 2 horas si no tienen hora de fin)
+// Actividades de los CEPI: los datos solo dicen el mes, pero muchos títulos llevan los días
+// («Conoce tus leyes - Martes 06», «Español A2.2 (Mód.1) 09», «6 y 8», «1,8,15,22,29 de octubre»).
+// Devuelve el último de esos días (o null si el título no dice ninguno).
+const MONTH_NAMES = "enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre";
+const WEEKDAY_NAMES = "lunes|martes|mi[eé]rcoles|jueves|viernes|s[aá]bado|domingo";
+export function cepiLastDay(titulo: string): number | null {
+  const t = titulo.toLowerCase().replace(/\s+/g, " ").trim();
+  const lists = [
+    new RegExp(`(\\d{1,2}(?:\\s*(?:,|y)\\s*\\d{1,2})*)\\s+de\\s+(?:${MONTH_NAMES})`).exec(t)?.[1], // «1,8,15 de octubre»
+    new RegExp(`(?:${WEEKDAY_NAMES})\\s+(\\d{1,2})\\b`).exec(t)?.[1], // «martes 06»
+    /\)\s*(\d{1,2}(?:\s*(?:,|y)\s*\d{1,2})*)\s*\.?$/.exec(t)?.[1], // «(mód 2) 14», «(mód 1) 6 y 8»
+  ];
+  const days = lists.flatMap((l) => (l ? l.split(/\s*(?:,|y)\s*/).map(Number) : [])).filter((d) => d >= 1 && d <= 31);
+  return days.length ? Math.max(...days) : null;
+}
+
 export function hasEnded(e: Evento): boolean {
   if (!e.fecha_inicio) return false;
   const now = nowInMadrid();
+  // CEPI: si el título dice los días y ya han pasado todos (en el mes de la actividad), ha terminado
+  if (e.fuente === "cepi_actividades") {
+    const last = cepiLastDay(e.titulo);
+    if (last == null) return false;
+    const day = `${e.fecha_inicio.slice(0, 8)}${String(last).padStart(2, "0")}`;
+    return day < now.slice(0, 10);
+  }
   const start = e.fecha_inicio.replace(" ", "T").slice(0, 16);
   const end = (e.fecha_fin ?? e.fecha_inicio).replace(" ", "T").slice(0, 16);
   if (end.slice(0, 10) !== now.slice(0, 10)) return end < now; // otro día
