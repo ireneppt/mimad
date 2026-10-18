@@ -104,9 +104,23 @@ export function accessibilityLabels(e: Pick<Evento, "accesibilidad">): string[] 
 export const LIST_COLUMNS =
   "id, fuente, titulo, categoria, fecha_inicio, fecha_fin, horario, recurrente, lugar, direccion, municipio, distrito, lat, lon, url, gratuito, precio, accesibilidad, publico, idioma, organizacion, imagen";
 
+// Búsqueda de texto sin distinguir tildes ni mayúsculas: «menendez» encuentra «Menéndez» y
+// «pena» encuentra «Peña». Se busca con una expresión regular (imatch de PostgREST) en la que
+// cada vocal vale con o sin tilde; el resto del texto se escapa para que no cuente como regex.
+const ACCENTS: Record<string, string> = { a: "aáàä", e: "eéèë", i: "iíìï", o: "oóòö", u: "uúùü", n: "nñ", c: "cç" };
+export function accentPattern(text: string): string {
+  return text
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .split("")
+    .map((ch) => (ACCENTS[ch] ? `[${ACCENTS[ch]}${ACCENTS[ch].toUpperCase()}]` : ch.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")))
+    .join("");
+}
+
 export async function getEvents(db: SupabaseClient, f: EventFilters = {}): Promise<Evento[]> {
   let q = db.from("v_eventos").select(f.columns ?? LIST_COLUMNS);
-  if (f.search) q = q.ilike("titulo", `%${f.search}%`);
+  if (f.search) q = q.filter("titulo", "imatch", accentPattern(f.search));
   if (f.free) q = q.eq("gratuito", true);
   if (f.accessible) q = q.filter("accesibilidad", "match", "(^|,)1(,|$)"); // contiene el código 1
   if (f.categories?.length) q = q.in("categoria", f.categories);
@@ -154,7 +168,7 @@ export async function getPlaces(
   // Sin la descripción (no se enseña en el mapa y es lo que más pesa)
   let q = db.from("v_lugares").select("id, fuente, nombre, categoria, direccion, municipio, distrito, lat, lon, telefono, email, url, horario, accesibilidad, publico");
   if (categories?.length) q = q.in("categoria", categories);
-  if (opts.search) q = q.ilike("nombre", `%${opts.search}%`);
+  if (opts.search) q = q.filter("nombre", "imatch", accentPattern(opts.search));
   if (opts.near) {
     const dLat = opts.near.km / 111;
     const dLon = opts.near.km / (111 * Math.cos((opts.near.lat * Math.PI) / 180));

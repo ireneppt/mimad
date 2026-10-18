@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Accessibility } from "lucide-react";
 import { isAccessible, type Evento, type Fuente } from "@/lib/data";
 import { categoryInfo } from "@/lib/categories";
-import { formatDistance, formatWhen } from "@/lib/format";
+import { formatDistance, formatWhen, shortTime } from "@/lib/format";
 import SourceTag from "./SourceTag";
 import EventImage, { photoCredit } from "./EventImage";
 import { makeT, type Lang } from "@/lib/i18n";
@@ -59,10 +59,10 @@ export default function EventCard({
 
         <div className="flex items-end justify-between gap-3 border-t border-slate-100 pt-3">
           <SourceTag fuente={fuente} label={fuente ? undefined : evento.fuente} lang={lang} className="relative z-10 max-w-[60%]" />
-          <p className="text-right">
+          <p className="min-w-0 max-w-[55%] shrink-0 break-words text-right">
             <span className="block text-sm text-gris">{when.day}</span>
             <span className="text-lg font-bold">
-              {[when.time, distanceKm !== undefined ? formatDistance(distanceKm) : null].filter(Boolean).join(" · ")}
+              {[shortTime(when.time), distanceKm !== undefined ? formatDistance(distanceKm) : null].filter(Boolean).join(" · ")}
             </span>
           </p>
         </div>

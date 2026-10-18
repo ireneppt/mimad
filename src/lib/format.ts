@@ -111,6 +111,17 @@ export function isPickableDay(s: string | undefined | null, today: string): s is
   return date.getTime() - Date.parse(`${today}T00:00:00Z`) <= 366 * 86_400_000;
 }
 
+// Hora corta para las tarjetas. Algunos horarios (Agenda turística) son un párrafo entero
+// («Para consultar horarios… reservar visitas… / 913 59 47 24 (10:00 - 14:00)»): en la tarjeta
+// solo va la primera hora que aparezca; el texto completo se ve en el detalle del plan.
+export function shortTime(time: string | null | undefined): string | null {
+  const line = time?.split("\n")[0].trim();
+  if (!line) return null;
+  if (line.length <= 22 && /\d/.test(line)) return line;
+  const m = time!.match(/\d{1,2}[:.]\d{2}(?:\s*(?:-|–|a)\s*\d{1,2}[:.]\d{2})?(?:\s*h\b)?/);
+  return m ? m[0] : null;
+}
+
 export function formatDistance(km: number): string {
   if (km < 1) return `${Math.round(km * 100) * 10} m`;
   return `${km.toFixed(1).replace(".", ",")} km`;
