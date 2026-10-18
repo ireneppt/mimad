@@ -2,7 +2,7 @@
 // por su próxima fecha. Los talleres semanales ("Cada jueves, 16:00") se colocan
 // en el próximo jueves para que salgan en su sitio.
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { getEventsByIds, type Evento } from "./data";
+import { getEventsByIds, type Evento, hasEnded } from "./data";
 import { hourInWords } from "./format";
 
 export type AgendaItem = {
@@ -84,6 +84,8 @@ export async function getMyAgenda(db: SupabaseClient, userId: string): Promise<A
   // Los planes que ya han terminado no salen en v_eventos: se quedan fuera solos
   const eventos = await getEventsByIds(db, (data ?? []).map((r) => r.evento_id as string));
   return eventos
+    // Lo que ya ha pasado hoy (o un CEPI cuyo día ya pasó) no sale como «hoy»: ya no se puede ir
+    .filter((evento) => chosen.get(evento.id) || !hasEnded(evento))
     .map((evento) => {
       const next = nextOccurrence(evento, chosen.get(evento.id));
       return next ? { evento, ...next } : null;
