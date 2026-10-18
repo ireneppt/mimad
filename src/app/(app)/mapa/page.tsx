@@ -141,9 +141,10 @@ export default async function MapPage({ searchParams }: { searchParams: Promise<
         perfil={perfil}
         originKind={origin.kind}
         zone={origin.zone}
+        versionToggle={false}
       />
-      <div className="border-t border-slate-200 bg-fondo px-4 py-3">
-        <SearchBox search={search} action="/mapa" hidden={{ ...(picked ?? day ? { d: (picked ?? day)! } : {}), ...(show !== "planes" ? { ver: show } : {}) }} />
+      <div className="border-t border-slate-200 bg-fondo px-4 py-2">
+        <SearchBox compact search={search} action="/mapa" hidden={{ ...(picked ?? day ? { d: (picked ?? day)! } : {}), ...(show !== "planes" ? { ver: show } : {}) }} />
       </div>
 
       <section aria-label="Mapa de planes y sitios" className="relative h-[72dvh] min-h-[440px]">

@@ -29,13 +29,14 @@ function Switch({ on }: { on: boolean }) {
 const tile = "flex min-h-14 w-full items-center gap-2 rounded-2xl p-2 pr-2.5 text-left ring-1";
 
 export default async function HomeHeader({
-  db, perfil, originKind, zone, newcomers,
+  db, perfil, originKind, zone, newcomers, versionToggle = true,
 }: {
   db: SupabaseClient;
   perfil: Perfil | null;
   originKind: OriginKind;
   zone?: string; // zona elegida en "Ver planes en otra zona"
   newcomers?: { active: boolean; href: string }; // "Recién llegados" (solo en Inicio)
+  versionToggle?: boolean; // "Versión simplificada" (en el mapa no: ya está en el Inicio y quita sitio al mapa)
 }) {
   const [{ count: unread }, zones, lang] = await Promise.all([
     perfil ? db.from("mm_notificaciones").select("*", { count: "exact", head: true }).eq("leida", false) : Promise.resolve({ count: 0 }),
@@ -65,7 +66,9 @@ export default async function HomeHeader({
         </Link>
       </ShrinkOnScroll>
 
-      <div className={`grid gap-2 bg-white px-5 pb-4 pt-3 ${newcomers ? "grid-cols-2" : "grid-cols-1"}`}>
+      {(versionToggle || newcomers) && (
+      <div className={`grid gap-2 bg-white px-5 pb-4 pt-3 ${versionToggle && newcomers ? "grid-cols-2" : "grid-cols-1"}`}>
+        {versionToggle && (
         <form action={switchToSimple}>
           <button type="submit" role="switch" aria-checked="false" className={`${tile} bg-gradient-to-br from-coral/10 to-ambar/10 ring-coral/25`}>
             <span className="bg-degradado flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-sm font-bold text-white" aria-hidden="true">Aa</span>
@@ -73,6 +76,7 @@ export default async function HomeHeader({
             <Switch on={false} />
           </button>
         </form>
+        )}
         {/* Personas extranjeras: actividades de los CEPI (español, trámites, empleo…) */}
         {newcomers && (
           <Link
@@ -90,6 +94,7 @@ export default async function HomeHeader({
           </Link>
         )}
       </div>
+      )}
     </>
   );
 }
