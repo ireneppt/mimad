@@ -122,8 +122,13 @@ export default async function SimpleProfilePage({
       )}
 
       <div className="flex flex-col items-center gap-2 text-center">
+        {/* Su foto de perfil (la misma que en la versión por defecto) o, si no tiene, su inicial */}
         <span className="bg-degradado flex h-32 w-32 items-center justify-center rounded-full p-1.5" aria-hidden="true">
-          <span className="flex h-full w-full items-center justify-center rounded-full bg-crema text-6xl font-bold text-coral-texto">{inicial}</span>
+          {perfil.foto_url ? (
+            <Avatar url={perfil.foto_url} name={perfil.nombre} size={116} />
+          ) : (
+            <span className="flex h-full w-full items-center justify-center rounded-full bg-crema text-6xl font-bold text-coral-texto">{inicial}</span>
+          )}
         </span>
         <p className="text-[2rem] font-bold leading-tight">{perfil.nombre}</p>
         {perfil.municipio && <p className="text-xl text-gris">Vives en {perfil.municipio}</p>}
