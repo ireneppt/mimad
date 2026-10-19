@@ -327,7 +327,7 @@ export default async function ProfilePage() {
           <SectionTitle id="t-privacidad" icon={<Shield size={18} />} tone="gris">Privacidad</SectionTitle>
           <ul className="divide-y divide-slate-100 overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-slate-200">
             <li>
-              <Link href="/privacidad" className="flex items-center gap-4 bg-white p-4">
+              <Link href="/privacidad?volver=/perfil" className="flex items-center gap-4 bg-white p-4">
                 {tile("gris", <Shield size={22} />)}
                 <span className="min-w-0 flex-1">
                   <span className="block text-lg font-semibold">Privacidad y mis datos</span>

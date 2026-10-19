@@ -1,11 +1,15 @@
-import Link from "next/link";
-
 export const metadata = { title: "Privacidad · MiMad" };
 
-export default function PrivacyPage() {
+// "Volver" lleva a la pantalla desde la que se abrió (?volver=/simple/perfil);
+// sin ella, a crear cuenta. Solo direcciones de la propia app. Es un enlace normal (no <Link>):
+// la versión simplificada tiene su propio diseño y así se carga entera.
+const backHref = (volver?: string) => (volver?.startsWith("/") && !volver.startsWith("//") && !volver.includes("\\") ? volver : "/registro");
+
+export default async function PrivacyPage({ searchParams }: { searchParams: Promise<{ volver?: string }> }) {
+  const { volver } = await searchParams;
   return (
     <main className="flex flex-col gap-5 px-5 py-10 text-lg leading-relaxed">
-      <Link href="/registro" className="text-coral-texto">← Volver</Link>
+      <a href={backHref(volver)} className="text-coral-texto">← Volver</a>
       <h1 className="text-3xl font-bold">Política de privacidad</h1>
       <p className="rounded-2xl bg-crema p-4 text-base">
         MiMad es un <strong>prototipo</strong> para el datathon DataMad 2026. No uses datos reales que no quieras compartir.
