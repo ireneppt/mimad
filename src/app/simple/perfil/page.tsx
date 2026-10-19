@@ -278,7 +278,7 @@ export default async function SimpleProfilePage({
 
       <section className="flex flex-col gap-3" aria-labelledby="privacidad">
         <h2 id="privacidad" className="text-[1.75rem] font-bold">Privacidad</h2>
-        <DataRow href="/privacidad" icon={<Shield size={28} />} label="Mis datos y privacidad" value="Qué guardamos y para qué" plain />
+        <DataRow href="/privacidad?volver=/simple/perfil" icon={<Shield size={28} />} label="Mis datos y privacidad" value="Qué guardamos y para qué" plain />
       </section>
 
       <LogoutConfirm />
